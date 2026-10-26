@@ -1,0 +1,815 @@
+<title>От Страха к Любви</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Лейаут: одна длинная страница-путь — от сумерек (страх) в первом экране к рассвету (любовь) в финале; посередине спокойные светлые разделы. */
+:root{
+  /* постоянные цвета «пути» — одинаковы в обеих темах */
+  --night:#2b2230; --dusk:#3f4a63; --dusk-2:#2f3850; --mauve:#6c4c6b; --rose:#c4566a; --dawn:#e8a463; --glow:#ffe6c4;
+  /* тема: светлая */
+  --bg:#f6f2f3; --surface:#ffffff; --surface-2:#efe8ea; --ink:#2b2230; --soft:#6b5d6e; --line:#e2d6d9;
+  --accent:#b2475c; --accent-ink:#ffffff; --gold:#c88536; --focus:#c4566a;
+  --font-display:"Lora", Georgia, "Times New Roman", serif;
+  --font-body:"Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  --step--1:clamp(.82rem,.8rem + .1vw,.88rem);
+  --step-0:clamp(1rem,.96rem + .2vw,1.08rem);
+  --step-1:clamp(1.2rem,1.1rem + .45vw,1.4rem);
+  --step-2:clamp(1.5rem,1.3rem + 1vw,2rem);
+  --step-3:clamp(2rem,1.6rem + 2vw,3rem);
+  --step-4:clamp(2.6rem,1.9rem + 3.6vw,4.8rem);
+  --r:14px; --wrap:1120px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#19151d; --surface:#231d28; --surface-2:#2c2532; --ink:#f0e8eb; --soft:#b9a9b6; --line:#3b3240;
+    --accent:#e2788a; --accent-ink:#1d1418; --gold:#e6b26a; --focus:#e2788a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#19151d; --surface:#231d28; --surface-2:#2c2532; --ink:#f0e8eb; --soft:#b9a9b6; --line:#3b3240;
+  --accent:#e2788a; --accent-ink:#1d1418; --gold:#e6b26a; --focus:#e2788a; color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:var(--step-0);line-height:1.6;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--dusk-2)}
+img{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--font-display);font-weight:500;line-height:1.15;text-wrap:balance;margin:0}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:6px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:var(--step--1);letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--accent)}
+.lead{font-size:var(--step-1);line-height:1.5;color:var(--soft);max-width:38ch}
+.tbd{display:inline-flex;align-items:center;gap:.35em;font-size:.78rem;font-weight:500;letter-spacing:.02em;padding:.15em .6em;border:1px dashed currentColor;border-radius:999px;color:var(--soft);white-space:nowrap;vertical-align:middle}
+
+/* кнопки */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;font:600 1rem/1 var(--font-body);padding:1em 1.5em;border-radius:999px;border:0;cursor:pointer;text-decoration:none;transition:transform .2s ease,background-color .2s ease,box-shadow .2s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-warm{background:linear-gradient(120deg,var(--rose),var(--dawn));color:#fff;box-shadow:0 8px 24px -10px rgba(196,86,106,.7)}
+.btn-ghost{background:transparent;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor}
+.btn-solid{background:var(--accent);color:var(--accent-ink)}
+
+/* шапка */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(47,56,80,.86);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);color:#fff}
+.top .wrap{display:flex;align-items:center;gap:24px;height:60px}
+.brand{font-family:var(--font-display);font-size:1.1rem;text-decoration:none;white-space:nowrap}
+.brand i{font-weight:400;opacity:.8}
+.nav{display:flex;gap:22px;margin-left:auto;font-size:.92rem}
+.nav a{text-decoration:none;opacity:.85}
+.nav a:hover{opacity:1}
+.top .btn{padding:.7em 1.1em;font-size:.9rem}
+.draftbar{background:var(--dusk-2);color:rgba(255,255,255,.72);font-size:.78rem;text-align:center;padding:6px 0}
+
+/* первый экран */
+.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(172deg,var(--dusk-2) 0%,var(--dusk) 30%,var(--mauve) 68%,#93506a 100%)}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:32px;align-items:center;padding-block:clamp(48px,7vw,96px) clamp(56px,7vw,104px)}
+.hero .eyebrow{color:var(--glow);opacity:.9}
+.hero h1{font-size:var(--step-4);font-weight:500;letter-spacing:-.01em;margin-top:18px}
+.hero h1 .to{font-style:italic;font-weight:400;font-size:.78em;opacity:.85}
+.hero .sub{font-family:var(--font-display);font-style:italic;font-size:var(--step-1);margin-top:22px;max-width:30ch;opacity:.92}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:30px;font-size:.98rem}
+.facts div{display:flex;flex-direction:column}
+.facts b{font-family:var(--font-display);font-weight:600;font-size:1.25rem}
+.facts span{opacity:.8}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.hero .btn-ghost{color:#fff}
+.eight{position:relative;justify-self:center;width:min(340px,100%)}
+.eight svg{width:100%;height:auto;overflow:visible}
+.eight .sun{position:absolute;left:50%;top:22%;width:150%;aspect-ratio:1;max-width:none;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,230,196,.55) 0%,rgba(232,164,99,.22) 30%,rgba(255,255,255,0) 62%);pointer-events:none}
+.eight .lbl{font:italic 400 15px var(--font-display);fill:#fff}
+.eight .lbl-s{font:600 10px var(--font-body);letter-spacing:.16em;fill:rgba(255,255,255,.6)}
+.loop{fill:none;stroke-width:3.2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0}
+@media (prefers-reduced-motion:no-preference){
+  .loop{animation:draw 3.2s cubic-bezier(.6,.1,.3,1) .3s both}
+  .heart{animation:pulse 3.6s ease-in-out 3.2s infinite}
+  @keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+  @keyframes pulse{0%,100%{r:7}50%{r:10}}
+}
+
+/* полоса цифр */
+.strip{background:var(--surface);border-bottom:1px solid var(--line)}
+.strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-block:26px}
+.strip div{display:flex;align-items:baseline;gap:10px}
+.strip b{font-family:var(--font-display);font-size:var(--step-3);font-weight:500;color:var(--accent);line-height:1}
+.strip span{color:var(--soft);font-size:.95rem;line-height:1.3}
+
+section.block{padding-block:clamp(64px,8vw,112px)}
+.head{display:grid;gap:14px;align-content:start;margin-bottom:clamp(32px,4vw,52px)}
+.head h2{font-size:var(--step-3)}
+
+/* идея */
+.idea .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,80px);align-items:start}
+.idea .text{display:grid;gap:18px;max-width:60ch}
+.idea .text p{color:var(--soft)}
+.idea .text p:first-child{color:var(--ink);font-size:var(--step-1);line-height:1.5;font-family:var(--font-display)}
+.bridge{display:grid;gap:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+.bridge .row{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:20px 22px;background:var(--surface);border-top:1px solid var(--line)}
+.bridge .row:first-child{border-top:0}
+.bridge .w{font-family:var(--font-display);font-size:1.35rem}
+.bridge .d{color:var(--soft);font-size:.96rem}
+.bridge .fear .w{color:var(--dusk)}
+.bridge .trust{background:var(--surface-2)}
+.bridge .trust .w{color:var(--gold)}
+.bridge .love .w{color:var(--accent)}
+:root[data-theme="dark"] .bridge .fear .w{color:#9fb0d4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bridge .fear .w{color:#9fb0d4}}
+.four{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.four div{padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:.92rem;line-height:1.35}
+.four b{display:block;font-family:var(--font-display);font-weight:500;font-size:1.05rem;margin-bottom:4px}
+.four span{color:var(--soft)}
+
+/* как устроен день */
+.day{background:var(--surface)}
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-top:2px solid var(--line);position:relative}
+.timeline > div{padding:18px 14px 0 0;position:relative}
+.timeline > div::before{content:"";position:absolute;top:-7px;left:0;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.timeline .t{font-variant-numeric:tabular-nums;font-weight:600;font-size:.95rem}
+.timeline .n{font-family:var(--font-display);font-size:1.15rem;margin-top:4px}
+.timeline .x{color:var(--soft);font-size:.9rem;margin-top:4px}
+.timeline .pause::before{border-color:var(--gold)}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:44px}
+.how div{display:grid;gap:6px}
+.how b{font-family:var(--font-display);font-weight:500;font-size:1.15rem}
+.how span{color:var(--soft);font-size:.96rem}
+
+/* программа */
+.tabs{display:inline-flex;padding:5px;border-radius:999px;background:var(--surface-2);gap:4px;margin-bottom:28px;flex-wrap:wrap}
+.tabs button{font:600 .95rem var(--font-body);border:0;background:transparent;color:var(--soft);padding:.7em 1.2em;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 2px 10px -4px rgba(43,34,48,.25)}
+.tabs small{font-weight:500;opacity:.75;margin-left:.4em;font-variant-numeric:tabular-nums}
+.mks{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.mk{display:flex;flex-direction:column;gap:12px;padding:24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.mk .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.82rem;color:var(--soft)}
+.mk .hall{font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-size:.76rem}
+.mk .num{font-family:var(--font-display);font-style:italic}
+.mk h3{font-size:1.4rem}
+.mk .tag{font-family:var(--font-display);font-style:italic;color:var(--soft);margin-top:-4px}
+.mk p.txt{font-size:.96rem}
+.mk .who{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);font-size:.88rem;color:var(--soft)}
+.mk .who b{color:var(--ink);font-weight:600}
+.mk .note{font-size:.84rem;color:var(--soft);font-style:italic}
+
+/* маршрут */
+.route{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(24px,5vw,64px);align-items:start;margin-top:64px;padding-top:56px;border-top:1px solid var(--line)}
+.route h3{font-size:var(--step-2)}
+.route p{color:var(--soft);margin-top:12px}
+.groups{display:flex;gap:10px;margin-top:22px}
+.groups button{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font:500 1.4rem var(--font-display);color:var(--ink);cursor:pointer}
+.groups button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.myday{display:grid;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.myday .r{display:grid;grid-template-columns:116px 1fr;gap:14px;padding:13px 20px;border-top:1px solid var(--line);align-items:baseline}
+.myday .r:first-child{border-top:0}
+.myday .r .tm{font-variant-numeric:tabular-nums;color:var(--soft);font-size:.92rem}
+.myday .r .ev b{font-weight:600}
+.myday .r .ev span{color:var(--soft);font-size:.92rem}
+.myday .r.sep{background:var(--surface-2)}
+
+/* ведущие */
+.people{display:grid;grid-template-columns:repeat(3,1fr);gap:28px 20px}
+.person{display:grid;gap:12px;align-content:start}
+.ph{aspect-ratio:4/5;border-radius:var(--r);overflow:hidden;background:linear-gradient(160deg,var(--dusk),var(--mauve) 55%,var(--rose));position:relative;max-width:100%}
+.ph img{width:100%;height:100%;object-fit:cover}
+.ph .ini{position:absolute;inset:0;display:grid;place-items:center;font:italic 400 3.2rem var(--font-display);color:rgba(255,255,255,.88)}
+.ph .soon{position:absolute;left:12px;bottom:12px;font-size:.74rem;color:rgba(255,255,255,.85);border:1px dashed rgba(255,255,255,.6);border-radius:999px;padding:.15em .6em}
+.person h3{font-size:1.3rem}
+.person .role{color:var(--soft);font-size:.94rem;line-height:1.45}
+.person .mkl{font-size:.88rem;font-family:var(--font-display);font-style:italic;color:var(--accent)}
+
+/* подбор */
+.quiz{background:var(--surface)}
+.quiz .wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(28px,5vw,72px);align-items:start}
+.qcard{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:clamp(20px,3vw,32px);min-width:0}
+.qstep{font-size:.82rem;color:var(--soft);font-variant-numeric:tabular-nums}
+.qbar{height:4px;border-radius:4px;background:var(--line);margin:10px 0 22px;overflow:hidden}
+.qbar i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),var(--dawn));transition:width .3s ease}
+.qq{font-family:var(--font-display);font-size:var(--step-1);margin-bottom:16px}
+.qopts{display:grid;gap:10px}
+.qopts button{text-align:left;font:500 1rem/1.4 var(--font-body);color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;transition:border-color .2s}
+.qopts button:hover{border-color:var(--accent)}
+.qres h3{font-size:var(--step-2);margin:4px 0 10px}
+.qres p{color:var(--soft)}
+.qres .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--soft);text-decoration:underline;cursor:pointer}
+
+/* билеты */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
+.plan{display:flex;flex-direction:column;gap:14px;padding:28px 24px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line)}
+.plan.main{background:linear-gradient(165deg,var(--mauve),var(--rose) 80%,#d97a5f);color:#fff;border-color:transparent}
+.plan .pt{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent)}
+.plan.main .pt{color:var(--glow)}
+.plan h3{font-size:1.6rem}
+.plan .when{font-variant-numeric:tabular-nums;color:var(--soft)}
+.plan.main .when{color:rgba(255,255,255,.85)}
+.plan ul{margin:0;padding:0;list-style:none;display:grid;gap:7px;font-size:.95rem}
+.plan li{padding-left:18px;position:relative}
+.plan li::before{content:"";position:absolute;left:0;top:.6em;width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.plan.main li::before{background:var(--glow)}
+.plan .price{margin-top:auto;padding-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--font-display);font-size:1.5rem}
+.plan.main .tbd{color:rgba(255,255,255,.85)}
+.plan .btn{width:100%}
+.plan.main .btn{background:#fff;color:var(--night)}
+.gift{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:22px;padding:18px 22px;border-radius:var(--r);border:1px dashed var(--gold)}
+.gift b{font-family:var(--font-display);font-weight:500;font-size:1.15rem}
+.gift span{color:var(--soft)}
+
+/* форма */
+.formwrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(24px,5vw,64px);margin-top:64px;padding-top:56px;border-top:1px solid var(--line)}
+.formwrap h3{font-size:var(--step-2)}
+.formwrap .side p{color:var(--soft);margin-top:12px}
+form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(20px,3vw,30px);min-width:0}
+.f{display:grid;gap:6px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label{font-size:.88rem;font-weight:500}
+.f label small{color:var(--soft);font-weight:400}
+.f input,.f select{font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;width:100%;min-width:0}
+.f input:focus,.f select:focus{outline:none;border-color:var(--accent)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;color:var(--soft);line-height:1.45}
+.check input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.req .btn{justify-self:start}
+.msg{grid-column:1/-1;font-size:.92rem;padding:12px 14px;border-radius:10px;background:var(--surface-2)}
+
+/* что важно знать */
+.faq .wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(24px,5vw,64px)}
+.qa{border-top:1px solid var(--line)}
+.qa details{border-bottom:1px solid var(--line)}
+.qa summary{list-style:none;cursor:pointer;padding:20px 40px 20px 0;position:relative;font-family:var(--font-display);font-size:1.2rem}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::after{content:"";position:absolute;right:6px;top:50%;width:12px;height:12px;border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+.qa details[open] summary::after{transform:translateY(-20%) rotate(225deg)}
+.qa .ans{padding:0 0 22px;color:var(--soft);max-width:62ch;display:grid;gap:10px}
+
+/* место */
+.place{background:var(--surface)}
+.place .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);align-items:start}
+.addr{font-family:var(--font-display);font-size:var(--step-2);margin-top:14px}
+.place .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.sched{display:grid;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.sched div{display:grid;grid-template-columns:124px 1fr;gap:14px;padding:14px 20px;border-top:1px solid var(--line);background:var(--bg)}
+.sched div:first-child{border-top:0}
+.sched b{font-variant-numeric:tabular-nums;font-weight:600}
+.bring{margin-top:22px;display:grid;gap:6px;color:var(--soft);font-size:.95rem}
+.bring b{color:var(--ink)}
+
+/* финал */
+.dawn{color:#fff;background:linear-gradient(180deg,var(--mauve) 0%,var(--rose) 48%,var(--dawn) 100%);position:relative;overflow:hidden;text-align:center}
+.dawn::after{content:"";position:absolute;left:50%;bottom:-48%;width:min(900px,160%);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,230,196,.75) 0%,rgba(255,230,196,.25) 35%,rgba(255,255,255,0) 65%);pointer-events:none}
+.dawn .wrap{position:relative;z-index:1;padding-block:clamp(72px,9vw,128px);display:grid;justify-items:center;gap:22px}
+.dawn blockquote{margin:0;font-family:var(--font-display);font-style:italic;font-size:var(--step-3);line-height:1.2;max-width:22ch;text-wrap:balance}
+.dawn cite{font-style:normal;opacity:.9}
+.dawn .btn{background:#fff;color:var(--night)}
+
+footer{background:var(--dusk-2);color:rgba(255,255,255,.78);font-size:.9rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:14px 32px;justify-content:space-between;padding-block:32px}
+footer b{color:#fff;font-weight:600}
+footer a{text-decoration:none}
+
+/* адаптив */
+@media (max-width:960px){
+  .nav{display:none}
+  .top .btn{margin-left:auto}
+  .hero .wrap,.idea .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap{grid-template-columns:1fr}
+  .eight{width:min(210px,58%);order:-1}
+  .mks,.plans{grid-template-columns:1fr}
+  .people{grid-template-columns:repeat(2,1fr)}
+  .strip .wrap{grid-template-columns:repeat(2,1fr)}
+  .timeline{grid-template-columns:1fr;border-top:0;border-left:2px solid var(--line);margin-left:6px}
+  .timeline > div{padding:0 0 22px 22px}
+  .timeline > div::before{top:5px;left:-7px}
+  .how{grid-template-columns:1fr}
+  .four{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:520px){
+  .people{grid-template-columns:1fr 1fr;gap:22px 12px}
+  .person h3{font-size:1.1rem}
+  form.req{grid-template-columns:1fr}
+  .bridge .row{grid-template-columns:1fr;gap:4px}
+  .myday .r{grid-template-columns:96px 1fr;padding:12px 14px}
+  .sched div{grid-template-columns:108px 1fr}
+  .strip b{font-size:2rem}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+</style>
+
+<div class="draftbar">Черновик сайта на 26.10.2026 · цены, телефон и часть описаний ещё уточняются</div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start">От Страха <i>к</i> Любви</a>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#idea">Идея</a>
+      <a href="#program">Программа</a>
+      <a href="#people">Ведущие</a>
+      <a href="#tickets">Участие</a>
+      <a href="#place">Как добраться</a>
+    </nav>
+    <a class="btn btn-warm" href="#tickets">Записаться</a>
+  </div>
+</header>
+
+<main id="start">
+<!-- 1. Первый экран -->
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">фестиваль психологических практик</div>
+      <h1>От Страха<br><i class="to">к</i> Любви</h1>
+      <p class="sub">через доверие к миру, к себе, к своему телу и к своему роду</p>
+      <div class="facts">
+        <div><b>21 ноября 2026</b><span>суббота · 11:00–18:45</span></div>
+        <div><b>Лиговский пр., 44В</b><span>психологический центр «МирРа»</span></div>
+      </div>
+      <div class="cta">
+        <a class="btn btn-warm" href="#tickets">Выбрать участие</a>
+        <a class="btn btn-ghost" href="#program">Смотреть программу</a>
+      </div>
+    </div>
+    <div class="eight" aria-hidden="true">
+      <div class="sun"></div>
+      <svg viewBox="0 0 240 340" role="img">
+        <defs>
+          <linearGradient id="g8" x1="0" y1="320" x2="0" y2="20" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#9fb0d4"/>
+            <stop offset=".5" stop-color="#f2c6a0"/>
+            <stop offset="1" stop-color="#ffe6c4"/>
+          </linearGradient>
+        </defs>
+        <path class="loop" pathLength="1" stroke="url(#g8)" d="M120 170 C 200 110, 200 30, 120 30 C 40 30, 40 110, 120 170 C 200 230, 200 310, 120 310 C 40 310, 40 230, 120 170"/>
+        <circle class="heart" cx="120" cy="170" r="7" fill="#ffe6c4"/>
+        <text class="lbl-s" x="120" y="12" text-anchor="middle">ЛЮБОВЬ</text>
+        <text class="lbl" x="120" y="78" text-anchor="middle">раскрывает</text>
+        <text class="lbl-s" x="214" y="174">ДОВЕРИЕ</text>
+        <text class="lbl" x="120" y="268" text-anchor="middle">сжимает</text>
+        <text class="lbl-s" x="120" y="334" text-anchor="middle">СТРАХ</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Цифры -->
+<div class="strip">
+  <div class="wrap">
+    <div><b>6</b><span>мастер-классов</span></div>
+    <div><b>6</b><span>ведущих —<br>психологи и практики</span></div>
+    <div><b>3</b><span>зала работают<br>одновременно</span></div>
+    <div><b>2</b><span>части дня — можно<br>прийти на одну</span></div>
+  </div>
+</div>
+
+<!-- 3. Идея -->
+<section class="block idea" id="idea">
+  <div class="wrap">
+    <div>
+      <div class="head">
+        <div class="eyebrow">Идея фестиваля</div>
+        <h2>Между страхом и любовью есть мост</h2>
+      </div>
+      <div class="text">
+        <p>Страх знаком всем. Он сжимает: мы закрываемся, напрягаемся, перестаём доверять. А любовь раскрывает: мы дышим свободно, тянемся к людям, к жизни.</p>
+        <p>За один день вы пройдёте по этому мосту шаг за шагом. Каждый мастер-класс — отдельный шаг. Здесь не будет длинных лекций: будут мультфильм, рисунок, игра, движение, тишина — то, что можно почувствовать самому и унести с собой.</p>
+        <p>Здесь ничего не нужно делать «правильно». Если захочется просто посидеть и посмотреть — на большинстве мастер-классов это тоже участие.</p>
+      </div>
+    </div>
+    <div>
+      <div class="bridge">
+        <div class="row fear"><div class="w">Страх</div><div class="d">сжатие: закрываемся, контролируем, защищаемся</div></div>
+        <div class="row trust"><div class="w">Доверие</div><div class="d">мост: то, что помогает перейти с одного берега на другой</div></div>
+        <div class="row love"><div class="w">Любовь</div><div class="d">расширение: открыться, довериться, жить</div></div>
+      </div>
+      <div class="four">
+        <div><b>к миру</b><span>«Как Волк научился любить»</span></div>
+        <div><b>к себе</b><span>«Источник», «Улыбка»</span></div>
+        <div><b>к телу</b><span>«Внутренняя вертикаль»</span></div>
+        <div><b>к роду</b><span>расстановки Галины Власовой</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Как устроен день -->
+<section class="block day" id="day">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Как устроен день</div>
+      <h2>Два маршрута по три шага</h2>
+    </div>
+    <div class="timeline">
+      <div><div class="t">10:00</div><div class="n">Регистрация</div><div class="x">бейдж с номером группы и брошюра</div></div>
+      <div><div class="t">11:00</div><div class="n">Открытие</div><div class="x">вступительное слово Светланы Савельевой</div></div>
+      <div><div class="t">11:15–14:00</div><div class="n">Часть 1</div><div class="x">откуда берутся страх и доверие</div></div>
+      <div class="pause"><div class="t">14:00–15:30</div><div class="n">Обед</div><div class="x">программа перерыва <span class="tbd">уточняется</span></div></div>
+      <div><div class="t">16:00–18:45</div><div class="n">Часть 2</div><div class="x">на что опереться сейчас</div></div>
+    </div>
+    <div class="how">
+      <div><b>Три зала одновременно</b><span>В каждой части параллельно идут три мастер-класса по 45 минут — в Лотосе, Зал-Холле и Большом зале.</span></div>
+      <div><b>Каждая группа проходит все три</b><span>Гости делятся на группы А, Б и В и по очереди переходят из зала в зал. Между мастер-классами — 15 минут на чай и переход.</span></div>
+      <div><b>Одна часть или весь день</b><span>Можно прийти только утром, только после обеда или на весь фестиваль. На вторую часть группы собираются заново.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Программа -->
+<section class="block" id="program">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Программа</div>
+      <h2>Шесть мастер-классов</h2>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Часть фестиваля">
+      <button role="tab" id="tab-1" aria-controls="part-1" aria-selected="true">Часть 1 <small>11:15–14:00</small></button>
+      <button role="tab" id="tab-2" aria-controls="part-2" aria-selected="false">Часть 2 <small>16:00–18:45</small></button>
+    </div>
+
+    <div class="mks" id="part-1" role="tabpanel" aria-labelledby="tab-1">
+      <article class="mk">
+        <div class="meta"><span class="hall">Лотос</span><span class="num">мастер-класс 1</span></div>
+        <h3>«Как Волк научился любить»</h3>
+        <p class="tag">О доверии к миру, которое можно вырастить в любом возрасте</p>
+        <p class="txt">Может ли волк полюбить того, кого собирался съесть? Смотрим фрагменты доброго мультфильма «Волк и телёнок» и разбираемся, откуда у человека берётся чувство «я хороший, и мир ко мне добр». В конце — тихое упражнение «Тёплый взгляд»: каждый найдёт образ того, кто смотрит на него с теплом, и унесёт его с собой.</p>
+        <div class="who">Ведёт <b>Светлана Савельева</b>, психолог, основатель центра «МирРа»</div>
+      </article>
+      <article class="mk">
+        <div class="meta"><span class="hall">Зал-Холл</span><span class="num">мастер-класс 2</span></div>
+        <h3>«Источник»</h3>
+        <p class="tag">Рисую путь от страха к любви</p>
+        <p class="txt">Где в нас живёт сила, которая делает жизнь — жизнью? Не в голове и не в достижениях, а глубже — там, где мы когда-то умели удивляться, доверять и просто быть. Короткое путешествие через движение, линию и слово: игра с лёгкими платками, рисунок своего пути от страха к любви и общая история, которую сочиняет вся группа. Свой рисунок вы унесёте с собой.</p>
+        <div class="who">Ведут <b>Татьяна Елисеева</b>, арт-терапевт, педагог, и <b>Ирина Виноградова</b>, лечебный педагог</div>
+      </article>
+      <article class="mk">
+        <div class="meta"><span class="hall">Большой зал</span><span class="num">мастер-класс 3</span></div>
+        <h3>«Как не бояться любить и жить счастливо?»</h3>
+        <p class="tag">Законы счастливой жизни</p>
+        <p class="txt">Почему бывает страшно любить и откуда берутся повторяющиеся сценарии в отношениях? Галина расскажет о законах счастливой жизни и о том, как семья, в которой мы выросли, влияет на нашу любовь. В практической части — работа с отношениями с мамой и папой: без обвинений, через уважение и восстановление баланса.</p>
+        <p class="note">Участвуют все присутствующие, есть работа в парах.</p>
+        <div class="who">Ведёт <b>Галина Власова</b>, психолог, коуч, расстановщик</div>
+      </article>
+    </div>
+
+    <div class="mks" id="part-2" role="tabpanel" aria-labelledby="tab-2" hidden>
+      <article class="mk">
+        <div class="meta"><span class="hall">Лотос</span><span class="num">мастер-класс 4</span></div>
+        <h3>«Улыбка»</h3>
+        <p class="tag">Лекарство от страха</p>
+        <p class="txt">Игровой мастер-класс по мотивам сказки «Крошка Енот». Через простые роли и движение участники встречаются со своим страхом, разрешают себе немного побаловаться, вспоминают любопытство и радость внутреннего ребёнка. Уходят с улыбкой — в прямом смысле.</p>
+        <div class="who">Ведут <b>Инна Кочурова</b>, специалист по эмоциональному процессу, и <b>Виктория Трофимова</b>, специалист по соединению с телом</div>
+      </article>
+      <article class="mk">
+        <div class="meta"><span class="hall">Зал-Холл</span><span class="num">мастер-класс 5</span></div>
+        <h3>«Внутренняя вертикаль»</h3>
+        <p class="tag">Как опора внутри становится опорой в теле</p>
+        <p class="txt">Человек — единственное существо, которое ходит прямо. Наша вертикаль — это сила духа, которая помогает выпрямиться и пройти через страх. Простые телесные практики, доступные в любом возрасте: почувствовать опору под ногами, отпустить сжатие страха и найти свою внутреннюю вертикаль.</p>
+        <div class="who">Ведёт <b>Светлана Савельева</b>, психолог, основатель центра «МирРа»</div>
+      </article>
+      <article class="mk">
+        <div class="meta"><span class="hall">Большой зал</span><span class="num">мастер-класс 6</span></div>
+        <h3>«Кто стоит за моим страхом?»</h3>
+        <p class="tag">Как превратить страх в ресурс</p>
+        <p class="txt">Бывает, что одни и те же трудности повторяются снова и снова — в работе, в отношениях, в жизни. Иногда за ними стоит история нашего рода. На мастер-классе — практика соединения с силой рода: с теми, кто был до нас и передал нам жизнь. Цель — почувствовать опору за спиной и превратить страх в ресурс.</p>
+        <p class="note">Участвуют все присутствующие, есть работа в парах.</p>
+        <div class="who">Ведёт <b>Галина Власова</b>, психолог, коуч, расстановщик</div>
+      </article>
+    </div>
+
+    <div class="route" id="route">
+      <div>
+        <div class="eyebrow">Ваш маршрут</div>
+        <h3>Выберите группу — покажем ваш день</h3>
+        <p>Номер группы будет на бейдже. Если вы придёте только на вторую часть, группу назовут на регистрации.</p>
+        <div class="groups" role="group" aria-label="Группа">
+          <button type="button" data-g="0" aria-pressed="true">А</button>
+          <button type="button" data-g="1" aria-pressed="false">Б</button>
+          <button type="button" data-g="2" aria-pressed="false">В</button>
+        </div>
+      </div>
+      <div class="myday" id="myday" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Ведущие -->
+<section class="block" id="people" style="padding-top:0">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Ведущие</div>
+      <h2>Кто проведёт вас по мосту</h2>
+    </div>
+    <div class="people">
+      <div class="person">
+        <div class="ph"><span class="ini">СС</span><span class="soon">фото скоро</span></div>
+        <h3>Светлана Савельева</h3>
+        <div class="role">Психолог, основатель центра «МирРа»</div>
+        <div class="mkl">«Как Волк научился любить» · «Внутренняя вертикаль»</div>
+      </div>
+      <div class="person">
+        <div class="ph"><span class="ini">ГВ</span><span class="soon">фото скоро</span></div>
+        <h3>Галина Власова</h3>
+        <div class="role">Психолог, коуч, расстановщик, специалист по гармонизации семейных и бизнес-систем</div>
+        <div class="mkl">«Как не бояться любить…» · «Кто стоит за моим страхом?»</div>
+      </div>
+      <div class="person">
+        <div class="ph"><span class="ini">ТЕ</span><span class="soon">фото скоро</span></div>
+        <h3>Татьяна Елисеева</h3>
+        <div class="role">Арт-терапевт, педагог</div>
+        <div class="mkl">«Источник»</div>
+      </div>
+      <div class="person">
+        <div class="ph"><span class="ini">ИВ</span><span class="soon">фото скоро</span></div>
+        <h3>Ирина Виноградова</h3>
+        <div class="role">Лечебный педагог</div>
+        <div class="mkl">«Источник»</div>
+      </div>
+      <div class="person">
+        <div class="ph"><img src="img/kochurova.jpg" alt="Инна Кочурова" width="640" height="800"></div>
+        <h3>Инна Кочурова</h3>
+        <div class="role">Специалист по эмоциональному процессу</div>
+        <div class="mkl">«Улыбка»</div>
+      </div>
+      <div class="person">
+        <div class="ph"><img src="img/trofimova.jpg" alt="Виктория Трофимова" width="640" height="800"></div>
+        <h3>Виктория Трофимова</h3>
+        <div class="role">Специалист по соединению с телом</div>
+        <div class="mkl">«Улыбка»</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Подбор части -->
+<section class="block quiz" id="quiz">
+  <div class="wrap">
+    <div class="head" style="margin:0">
+      <div class="eyebrow">Не знаете, что выбрать?</div>
+      <h2>Три вопроса — и подскажем, какая часть вам ближе</h2>
+      <p class="lead">Ответы никуда не отправляются, это просто подсказка.</p>
+    </div>
+    <div class="qcard" id="qcard" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- 8. Участие -->
+<section class="block" id="tickets">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Участие</div>
+      <h2>Выберите свою часть пути</h2>
+    </div>
+    <div class="plans">
+      <div class="plan">
+        <div class="pt">Утро</div>
+        <h3>Часть 1</h3>
+        <div class="when">11:00–14:00, с открытием</div>
+        <ul>
+          <li>Открытие фестиваля</li>
+          <li>Три мастер-класса: «Как Волк научился любить», «Источник», «Как не бояться любить и жить счастливо?»</li>
+        </ul>
+        <div class="price">Цена <span class="tbd">уточняется</span></div>
+        <button class="btn btn-solid" type="button" data-plan="Часть 1">Оставить заявку</button>
+      </div>
+      <div class="plan main">
+        <div class="pt">Весь путь</div>
+        <h3>Обе части</h3>
+        <div class="when">11:00–18:45</div>
+        <ul>
+          <li>Все шесть мастер-классов</li>
+          <li>Открытие фестиваля и обеденный перерыв в центре</li>
+          <li>Полная дуга: от истоков доверия к опоре внутри</li>
+        </ul>
+        <div class="price">Цена <span class="tbd">уточняется</span></div>
+        <button class="btn" type="button" data-plan="Обе части">Оставить заявку</button>
+      </div>
+      <div class="plan">
+        <div class="pt">Вечер</div>
+        <h3>Часть 2</h3>
+        <div class="when">16:00–18:45</div>
+        <ul>
+          <li>Короткое открытие второй части</li>
+          <li>Три мастер-класса: «Улыбка», «Внутренняя вертикаль», «Кто стоит за моим страхом?»</li>
+        </ul>
+        <div class="price">Цена <span class="tbd">уточняется</span></div>
+        <button class="btn btn-solid" type="button" data-plan="Часть 2">Оставить заявку</button>
+      </div>
+    </div>
+    <div class="gift">
+      <div><b>Подарок гостям фестиваля</b><br><span>−50% на первое посещение любого занятия или мероприятия центра в течение месяца после фестиваля</span></div>
+      <span class="tbd">уточняется</span>
+    </div>
+
+    <div class="formwrap" id="request">
+      <div class="side">
+        <div class="eyebrow">Заявка</div>
+        <h3>Оставьте контакты — мы свяжемся и забронируем место</h3>
+        <p>Перезвоним или напишем, расскажем об оплате и ответим на вопросы.</p>
+      </div>
+      <form class="req" id="reqform" novalidate>
+        <div class="f"><label for="r-name">Имя</label><input id="r-name" name="name" autocomplete="given-name" required></div>
+        <div class="f"><label for="r-phone">Телефон</label><input id="r-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+7" required></div>
+        <div class="f"><label for="r-msg">Telegram или Max <small>— по желанию</small></label><input id="r-msg" name="messenger" placeholder="@имя"></div>
+        <div class="f"><label for="r-plan">Участие</label>
+          <select id="r-plan" name="plan">
+            <option>Обе части</option><option>Часть 1</option><option>Часть 2</option><option>Пока не решил(а)</option>
+          </select>
+        </div>
+        <div class="f"><label for="r-count">Сколько человек</label>
+          <select id="r-count" name="count"><option>1</option><option>2</option><option>3</option><option>4</option><option>5 и больше</option></select>
+        </div>
+        <div class="f full"><label class="check" for="r-ok"><input id="r-ok" type="checkbox" name="consent" required><span>Я согласен(а) на обработку моих персональных данных психологическим центром «МирРа» для связи со мной и рассказа о мероприятиях центра.</span></label></div>
+        <div class="f full"><button class="btn btn-warm" type="submit">Отправить заявку</button></div>
+        <div class="msg" id="r-out" hidden></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- 9. Что важно знать -->
+<section class="block faq" id="faq" style="padding-top:0">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Что важно знать</div>
+      <h2>Перед тем как прийти</h2>
+    </div>
+    <div class="qa">
+      <details open>
+        <summary>Нужна ли подготовка или опыт работы с психологом?</summary>
+        <div class="ans"><p>Нет. Практики простые и рассчитаны на любой опыт. Здесь ничего не нужно делать «правильно».</p></div>
+      </details>
+      <details>
+        <summary>Можно ли просто наблюдать?</summary>
+        <div class="ans"><p>На большинстве мастер-классов — да, скажите об этом ведущему. На расстановках Галины Власовой в Большом зале участвуют все присутствующие, там есть работа в парах.</p></div>
+      </details>
+      <details>
+        <summary>Что взять с собой?</summary>
+        <div class="ans"><p>Удобную одежду и носки или сменную обувь — будут телесные практики. Телефон на мастер-классах — в беззвучном режиме.</p></div>
+      </details>
+      <details>
+        <summary>Что если я опоздаю?</summary>
+        <div class="ans"><p>Приходите в зал вовремя. На мастер-классах в Большом зале дверь закрывается, и войти можно только между расстановками. Запись там запрещена.</p></div>
+      </details>
+      <details>
+        <summary>Можно ли прийти только на одну часть?</summary>
+        <div class="ans"><p>Да. Первая часть — с 11:00 до 14:00, вторая — с 16:00 до 18:45. Каждая часть цельная: три мастер-класса, которые группа проходит по очереди.</p></div>
+      </details>
+      <details>
+        <summary>Где пообедать?</summary>
+        <div class="ans"><p>Обед — с 14:00 до 15:30. Что будет в центре в это время и где поесть рядом, расскажем ближе к фестивалю. <span class="tbd">уточняется</span></p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- 10. Место -->
+<section class="block place" id="place">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Как добраться</div>
+      <div class="addr">Санкт-Петербург,<br>Лиговский проспект, 44В</div>
+      <p style="color:var(--soft);margin-top:10px">Психологический центр «МирРа»</p>
+      <div class="btns">
+        <a class="btn btn-solid" href="https://yandex.ru/maps/?text=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3%2C%20%D0%9B%D0%B8%D0%B3%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BF%D1%80%D0%BE%D1%81%D0%BF%D0%B5%D0%BA%D1%82%2C%2044%D0%92" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>
+        <a class="btn btn-ghost" href="https://mirra-spb.ru" target="_blank" rel="noopener">Сайт центра</a>
+      </div>
+    </div>
+    <div>
+      <div class="sched">
+        <div><b>10:00</b><span>Регистрация</span></div>
+        <div><b>11:00</b><span>Открытие фестиваля</span></div>
+        <div><b>14:00–15:30</b><span>Обед</span></div>
+        <div><b>16:00</b><span>Начало второй части</span></div>
+        <div><b>18:45</b><span>Завершение</span></div>
+      </div>
+      <div class="bring"><b>Возьмите с собой</b><span>удобную одежду · носки или сменную обувь · воду</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11. Финал -->
+<section class="dawn">
+  <div class="wrap">
+    <blockquote>Пусть в вашей жизни будет чуть меньше страха и чуть больше любви</blockquote>
+    <cite>21 ноября · психологический центр «МирРа»</cite>
+    <a class="btn" href="#tickets">Выбрать участие</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><b>Центр «МирРа»</b> · Лиговский пр., 44В · <a href="https://mirra-spb.ru" target="_blank" rel="noopener">mirra-spb.ru</a></div>
+    <div>Телефон <span class="tbd" style="color:inherit">уточняется</span></div>
+    <div>Последняя правка: 26.10.2026</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  /* === Настройка заявок ===
+     Пока адрес пустой, форма только показывает сообщение и ничего не отправляет.
+     Когда выберем приём заявок, вписать сюда адрес (например, своего обработчика,
+     который пишет в Telegram или создаёт платёж). Отправляется JSON-объект с полями формы. */
+  var FORM_ENDPOINT = "";
+
+  /* вкладки программы */
+  var tabs = document.querySelectorAll('[role="tab"]');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){
+        var on = x === t;
+        x.setAttribute('aria-selected', on);
+        document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
+      });
+    });
+  });
+
+  /* маршрут группы */
+  var HALLS = {
+    "Лотос":["«Как Волк научился любить»","«Улыбка»"],
+    "Зал-Холл":["«Источник»","«Внутренняя вертикаль»"],
+    "Большой зал":["«Как не бояться любить и жить счастливо?»","«Кто стоит за моим страхом?»"]
+  };
+  var ORDER = [["Лотос","Зал-Холл","Большой зал"],["Зал-Холл","Большой зал","Лотос"],["Большой зал","Лотос","Зал-Холл"]];
+  var T1 = ["11:15–12:00","12:15–13:00","13:15–14:00"], T2 = ["16:00–16:45","17:00–17:45","18:00–18:45"];
+  var myday = document.getElementById('myday');
+  function row(tm, b, s, sep){ return '<div class="r'+(sep?' sep':'')+'"><div class="tm">'+tm+'</div><div class="ev"><b>'+b+'</b>'+(s?' <span>· '+s+'</span>':'')+'</div></div>'; }
+  function renderDay(g){
+    var h = row('10:00–11:00','Регистрация','',true) + row('11:00–11:15','Открытие','Большой зал',true);
+    for (var i=0;i<3;i++){ var hall = ORDER[i][g]; h += row(T1[i], HALLS[hall][0], hall); }
+    h += row('14:00–15:30','Обед','',true);
+    for (var j=0;j<3;j++){ var hall2 = ORDER[j][g]; h += row(T2[j], HALLS[hall2][1], hall2); }
+    myday.innerHTML = h;
+  }
+  document.querySelectorAll('.groups button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.groups button').forEach(function(x){ x.setAttribute('aria-pressed', x===b); });
+      renderDay(+b.dataset.g);
+    });
+  });
+  renderDay(0);
+
+  /* выбор тарифа → форма */
+  var planSel = document.getElementById('r-plan');
+  function choose(plan){
+    planSel.value = plan;
+    document.getElementById('request').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    setTimeout(function(){ document.getElementById('r-name').focus({preventScroll:true}); }, 400);
+  }
+  document.querySelectorAll('[data-plan]').forEach(function(b){ b.addEventListener('click', function(){ choose(b.dataset.plan); }); });
+
+  /* подбор части */
+  var Q = [
+    {q:"Что вам сейчас ближе?", a:[["Понять, откуда берутся мои страхи и доверие", 1],["Найти опору и силу прямо сейчас", 2],["И то и другое", 0]]},
+    {q:"Какой формат вам приятнее?", a:[["Смотреть, рисовать, слушать истории", 1],["Двигаться, играть, чувствовать тело", 2],["Хочется попробовать всё", 0]]},
+    {q:"Сколько времени у вас в субботу?", a:[["Первая половина дня", 1],["Вторая половина дня", 2],["Готов(а) на весь день", 0]]}
+  ];
+  var RES = {
+    1:{t:"Вам ближе часть 1", p:"Утро — о том, откуда берутся страх и доверие: добрый мультфильм про волка, рисунок своего пути и разговор о семье, в которой мы выросли.", plan:"Часть 1"},
+    2:{t:"Вам ближе часть 2", p:"Вечер — о том, на что опереться сейчас: игра по сказке «Крошка Енот», телесная практика «Внутренняя вертикаль» и сила рода.", plan:"Часть 2"},
+    0:{t:"Вам подойдёт весь день", p:"Обе части складываются в один путь: утром ищем, откуда берётся доверие, вечером — на что опереться. Шесть мастер-классов за один день.", plan:"Обе части"}
+  };
+  var card = document.getElementById('qcard'), step = 0, score = {0:0,1:0,2:0}, time = null;
+  function renderQ(){
+    if (step < Q.length){
+      var it = Q[step];
+      card.innerHTML = '<div class="qstep">Вопрос '+(step+1)+' из '+Q.length+'</div><div class="qbar"><i style="width:'+(step/Q.length*100)+'%"></i></div><div class="qq">'+it.q+'</div><div class="qopts">'+
+        it.a.map(function(a,i){ return '<button type="button" data-i="'+i+'">'+a[0]+'</button>'; }).join('')+'</div>';
+      card.querySelectorAll('.qopts button').forEach(function(b){
+        b.addEventListener('click', function(){
+          var v = it.a[+b.dataset.i][1]; score[v]++; if (step === 2) time = v; step++; renderQ();
+          var first = card.querySelector('button'); if (first) first.focus({preventScroll:true});
+        });
+      });
+    } else {
+      var k = time === 0 ? 0 : (score[1] > score[2] ? 1 : score[2] > score[1] ? 2 : 0);
+      if (time === 1 && k === 2) k = 1; if (time === 2 && k === 1) k = 2;
+      var r = RES[k];
+      card.innerHTML = '<div class="qbar"><i style="width:100%"></i></div><div class="qres"><div class="eyebrow">Подсказка</div><h3>'+r.t+'</h3><p>'+r.p+'</p><div class="acts"><button class="btn btn-warm" type="button" id="q-go">Оставить заявку</button><button class="linkbtn" type="button" id="q-re">Пройти ещё раз</button></div></div>';
+      document.getElementById('q-go').addEventListener('click', function(){ choose(r.plan); });
+      document.getElementById('q-re').addEventListener('click', function(){ step = 0; score = {0:0,1:0,2:0}; time = null; renderQ(); });
+    }
+  }
+  renderQ();
+
+  /* заявка */
+  var form = document.getElementById('reqform'), out = document.getElementById('r-out');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,'');
+    var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : '';
+    out.hidden = false;
+    if (err){ out.textContent = err; return; }
+    var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, count:form.count.value, sent:new Date().toISOString()};
+    if (!FORM_ENDPOINT){
+      out.textContent = 'Это черновик сайта: заявки пока не отправляются. Когда подключим приём, сюда придёт подтверждение.';
+      return;
+    }
+    out.textContent = 'Отправляем…';
+    fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)})
+      .then(function(r){ if(!r.ok) throw 0; form.reset(); out.textContent = 'Спасибо, '+name+'! Заявка принята — мы свяжемся с вами в ближайшее время.'; })
+      .catch(function(){ out.textContent = 'Не получилось отправить заявку. Проверьте интернет и попробуйте ещё раз.'; });
+  });
+})();
+</script>
