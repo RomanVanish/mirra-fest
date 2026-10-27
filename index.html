@@ -118,9 +118,11 @@ html.menu-open{overflow:hidden}
 /* первый экран — рассвет */
 .hero{position:relative;overflow:hidden;background:linear-gradient(178deg,#f6e6ef 0%,#f9e0e1 30%,#fcd9c4 62%,#f9c79c 100%)}
 .hero::before{content:"";position:absolute;right:-12%;top:-30%;width:min(820px,110vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,236,206,.95) 0%,rgba(255,214,166,.55) 28%,rgba(255,214,166,0) 62%);pointer-events:none}
-.hero .wrap{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:32px;align-items:center;padding-block:clamp(44px,6vw,88px) clamp(48px,6vw,92px)}
-.hero h1{font-size:var(--step-4);letter-spacing:-.01em;margin-top:18px}
-.hero h1 .to{font-style:italic;font-weight:400;font-size:.78em;color:var(--accent)}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:32px;align-items:center;padding-block:clamp(44px,6vw,88px) clamp(48px,6vw,92px)}
+/* «От Страха» — по левому краю, «к Любви» — по правому краю первой строки (лесенкой), «к» отставлено от «Любви» */
+.hero h1{display:grid;width:max-content;max-width:100%;font-size:var(--step-4);letter-spacing:-.01em;margin-top:18px}
+.hero h1 .l2{justify-self:end}
+.hero h1 .to{font-style:italic;font-weight:400;font-size:.78em;color:var(--accent);margin-right:.42em}
 .hero .sub{font-family:var(--font-display);font-style:italic;font-size:var(--step-1);margin-top:20px;max-width:30ch;color:var(--soft)}
 .facts{display:flex;flex-wrap:wrap;gap:10px 30px;margin-top:28px}
 .facts div{display:flex;flex-direction:column}
@@ -151,7 +153,7 @@ html.menu-open{overflow:hidden}
 .ill.r169{aspect-ratio:16/9}
 .ill.arched{border-radius:999px 999px 22px 22px}
 .ill.round{border-radius:50%}
-.hero-ill{justify-self:center;width:min(380px,100%);box-shadow:0 30px 60px -36px rgba(110,84,134,.65)}
+.hero-ill{justify-self:center;width:min(480px,100%);box-shadow:0 30px 60px -36px rgba(110,84,134,.65)}
 .day-ill{margin-bottom:clamp(36px,4vw,52px)}
 .mk .ill{margin:-24px -24px 4px;border-radius:calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0}
 .quiz-ill{margin-top:28px;max-width:420px}
@@ -558,10 +560,12 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .dawn cite{font-style:normal;color:#6b4a45}
 /* «отпустить»: связка шариков с подписями на нитках; нажатие — нитка отпускается, шарик улетает и тает */
 .letgo{position:relative;width:min(560px,100%);display:grid;gap:6px;justify-items:center;margin-bottom:6px;isolation:isolate}
-/* фон блока — рассветное небо (иллюстрация dawn); края растворяются в градиенте раздела, шарики улетают прямо в него */
-.lg-sky{position:absolute;left:50%;top:-140px;z-index:-1;width:min(840px,170%);aspect-ratio:3/2;transform:translateX(-50%);border-radius:0;
-  background:radial-gradient(ellipse 40% 26% at 50% 80%,rgba(255,236,206,.95),rgba(255,236,206,0)),linear-gradient(180deg,#f1dbe8 0%,#f8dcd6 45%,#fcd7bc 100%);
-  -webkit-mask-image:radial-gradient(ellipse 50% 52% at 50% 44%,#000 52%,transparent 100%);mask-image:radial-gradient(ellipse 50% 52% at 50% 44%,#000 52%,transparent 100%)}
+/* небо (иллюстрация dawn) — от верха раздела до солнца; нарисованное солнце стоит ровно за нижним шариком,
+   связка его закрывает, отпустили шарики — открываются солнце и небо. Положение и высоту задаёт скрипт.
+   Края растворяются прозрачностью, запечённой в сам файл dawn.webp (верх, бока и сразу под солнцем):
+   CSS-маска на большой картинке в Chrome иногда гасит её */
+.lg-sky{position:absolute;left:50%;top:0;height:600px;z-index:-1;width:min(1100px,190%);aspect-ratio:auto;transform:translateX(-50%);border-radius:0;background:none}
+.lg-sky img{object-position:50% 100%}
 .lg-sky::before{display:none}
 .lg-sky .ill-ph{place-content:start center;padding-top:9%;font-size:.74rem}
 .lg-l{font-family:var(--font-display);font-size:var(--step-2);line-height:1.2}
@@ -599,7 +603,7 @@ footer a{text-decoration:none}
   .top .wrap{gap:12px}
   .burger,.mnav{display:block}
   .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast{grid-template-columns:1fr}
-  .hero-ill{width:min(250px,68%);order:-1}
+  .hero-ill{width:min(330px,86%);order:-1}
   .faq-ill{width:min(260px,75%);margin-bottom:12px}
   .mks,.pick{grid-template-columns:1fr}
   .pick .main{order:-1}
@@ -668,8 +672,8 @@ footer a{text-decoration:none}
 <section class="hero">
   <div class="wrap">
     <div>
-      <div class="eyebrow">фестиваль психологических практик</div>
-      <h1>От Страха<br><i class="to">к</i> Любви</h1>
+      <div class="eyebrow">фестиваль<br>психологических практик</div>
+      <h1><span>От Страха</span> <span class="l2"><i class="to">к</i>Любви</span></h1>
       <p class="sub">через доверие к миру, к себе, к своему телу и к своему роду</p>
       <div class="facts">
         <div><b>21 ноября 2026</b><span>суббота · 11:00–18:45</span></div>
@@ -1340,6 +1344,15 @@ footer a{text-decoration:none}
     });
     knot = document.createElement('span'); knot.className = 'knot'; knot.style.left = kx+'px'; knot.style.top = ky+'px';
     balloonsEl.appendChild(knot);
+    /* небо: верх — у верха раздела, нарисованное солнце (на 92% высоты картинки, картинка прижата к низу) — в центре нижнего шарика */
+    var sky = balloonsEl.parentNode.querySelector('.lg-sky');
+    if (sky){
+      var lg = balloonsEl.parentNode, top = -lg.offsetTop - lg.parentNode.offsetTop + 8,   /* от верха раздела, с небольшим запасом */
+          sunY = balloonsEl.offsetTop + Math.round(SPOT[7][1]*bh + bh*.45), Wb = sky.offsetWidth,
+          hW = Wb*1024/1536, bottom = sunY + .08*hW;                     /* картинка вписана по ширине */
+      if (bottom - top > hW) bottom = (sunY - .08*top) / .92;            /* картинка вписана по высоте */
+      sky.style.top = Math.round(top) + 'px'; sky.style.height = Math.round(bottom - top) + 'px';
+    }
   }
   function letGo(b){
     /* полёт от текущего положения (с учётом покачивания): немного вверх с лёгким дрейфом и плавное исчезновение */
