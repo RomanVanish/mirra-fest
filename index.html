@@ -413,24 +413,40 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .qres .acts{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:20px}
 .linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--soft);text-decoration:underline;cursor:pointer}
 
-/* билеты */
-.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
-.plan{display:flex;flex-direction:column;gap:14px;padding:28px 24px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line)}
-.plan.main{background:linear-gradient(165deg,#f1dfee 0%,#f9d2c0 55%,#f6b37c 100%);border-color:transparent;box-shadow:0 30px 50px -34px rgba(194,122,28,.6)}
-.plan .pt{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent)}
-.plan h3{font-size:1.6rem}
-.plan .when{font-variant-numeric:tabular-nums;color:var(--soft)}
-.plan ul{margin:0;padding:0;list-style:none;display:grid;gap:7px;font-size:.95rem}
-.plan li{padding-left:18px;position:relative}
-.plan li::before{content:"";position:absolute;left:0;top:.6em;width:7px;height:7px;border-radius:50%;background:var(--apricot)}
-.plan.main li::before{background:var(--accent)}
-.plan .price{margin-top:auto;padding-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--font-display);font-size:1.5rem}
-.plan .btns{display:grid;gap:8px}
-.plan .btns.two{grid-template-columns:1fr 1fr}
-.plan .btn{width:100%;padding-inline:.8em}
-.gift{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:22px;padding:18px 22px;border-radius:var(--r);border:1px dashed var(--apricot);background:#fff6ee}
-.gift b{font-family:var(--font-display);font-weight:500;font-size:1.15rem}
-.gift span{color:var(--soft)}
+/* участие: один билет, гость выбирает, когда придёт */
+.pick{display:grid;grid-template-columns:1fr 1.08fr 1fr;gap:18px;align-items:stretch}
+.opt{position:relative;display:flex;flex-direction:column;gap:10px;text-align:left;font:inherit;color:var(--ink);padding:28px 24px 26px;border-radius:var(--r);background:var(--surface);border:1.5px solid var(--line);cursor:pointer;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.opt:hover{transform:translateY(-3px);box-shadow:0 22px 40px -30px rgba(120,60,40,.45)}
+.opt.main{background:linear-gradient(165deg,#f1dfee 0%,#f9d2c0 55%,#f6b37c 100%);border-color:transparent;box-shadow:0 30px 50px -34px rgba(194,122,28,.6)}
+.opt[aria-checked="true"]{border-color:var(--accent);box-shadow:0 0 0 3px rgba(181,74,58,.16),0 26px 44px -30px rgba(181,74,58,.55)}
+.opt .o-pt{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent)}
+.opt .o-h{font-family:var(--font-display);font-size:1.55rem;line-height:1.2;padding-right:30px}
+.opt .o-when{font-variant-numeric:tabular-nums;color:var(--soft)}
+.opt .o-mk{font-size:.92rem;color:var(--soft);line-height:1.5;margin-top:auto;padding-top:10px;border-top:1px dashed var(--line)}
+.opt.main .o-mk{border-top-color:rgba(181,74,58,.25);color:var(--ink)}
+.opt .o-dot{position:absolute;top:22px;right:22px;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:#fff;display:grid;place-items:center;transition:background .2s,border-color .2s}
+.opt .o-dot::after{content:"";width:10px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-1px) rotate(-45deg) scale(0);transition:transform .2s ease}
+.opt[aria-checked="true"] .o-dot{background:var(--accent);border-color:var(--accent)}
+.opt[aria-checked="true"] .o-dot::after{transform:translateY(-1px) rotate(-45deg) scale(1)}
+.pickbar{display:flex;align-items:center;gap:14px 26px;flex-wrap:wrap;margin-top:18px;padding:16px 18px 16px 24px;border-radius:var(--r);background:var(--surface-2);border:1px solid var(--line)}
+.pickbar .pb-sel{display:grid;gap:2px;margin-right:auto}
+.pickbar .pb-sel small{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+.pickbar .pb-sel b{font-family:var(--font-display);font-weight:500;font-size:1.3rem}
+.pickbar .pb-price{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:1.2rem}
+.pick-note{margin-top:12px;font-size:.92rem;color:var(--soft)}
+
+/* подарок гостям — подарочный сертификат с лентой и бантом */
+.gift{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px 28px;margin-top:44px;padding:30px 28px 26px 96px;border-radius:20px;border:2.5px solid #c41230;
+  background:linear-gradient(90deg,transparent 40px,#c41230 40px,#e2243f 48px,#c41230 58px,transparent 58px),radial-gradient(120% 140% at 100% 0%,#ffe9e6 0%,#fff6f3 55%,#fff 100%);
+  box-shadow:inset 0 0 0 5px #fff,inset 0 0 0 6px rgba(196,18,48,.28),0 26px 50px -36px rgba(196,18,48,.6)}
+.gift .bow{position:absolute;left:-9px;top:-42px;width:116px;height:auto;filter:drop-shadow(0 5px 6px rgba(120,10,30,.25))}
+.gift .g-pct{font-family:var(--font-display);font-size:clamp(2.8rem,6vw,4rem);line-height:1;font-weight:600;letter-spacing:-.02em}
+.gift .g-title{font-family:var(--font-display);font-size:1.4rem;line-height:1.25;margin-bottom:4px}
+.shine{background:linear-gradient(100deg,#9e0c22 0%,#c8102e 25%,#f0364f 40%,#ff9aa6 48%,#f0364f 56%,#c8102e 72%,#9e0c22 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4.5s linear infinite}
+@keyframes shine{from{background-position:130% 0}to{background-position:-130% 0}}
+.gift .spark{position:absolute;width:12px;height:12px;background:radial-gradient(circle,#fff 0 18%,transparent 19%),conic-gradient(from 45deg,transparent 0 10%,#ff9aa8 10% 15%,transparent 15% 35%,#ff9aa8 35% 40%,transparent 40% 60%,#ff9aa8 60% 65%,transparent 65% 85%,#ff9aa8 85% 90%,transparent 90%);border-radius:50%;opacity:0;animation:twinkle 3.2s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+@media (prefers-reduced-motion:reduce){.shine,.gift .spark{animation:none}.gift .spark{display:none}}
 
 /* форма */
 .formwrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(24px,5vw,64px);margin-top:64px;padding-top:56px;border-top:1px solid var(--line)}
@@ -518,7 +534,12 @@ footer a{text-decoration:none}
   .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast{grid-template-columns:1fr}
   .hero-ill{width:min(250px,68%);order:-1}
   .faq-ill{width:min(260px,75%);margin-bottom:12px}
-  .mks,.plans{grid-template-columns:1fr}
+  .mks,.pick{grid-template-columns:1fr}
+  .pick .main{order:-1}
+  .gift{grid-template-columns:1fr;gap:6px;padding:30px 20px 22px 72px;background:linear-gradient(90deg,transparent 24px,#c41230 24px,#e2243f 31px,#c41230 40px,transparent 40px),radial-gradient(120% 140% at 100% 0%,#ffe9e6 0%,#fff6f3 55%,#fff 100%)}
+  .gift .bow{left:-17px;top:-36px;width:98px}
+  .gift .tbd{justify-self:start}
+  .pickbar .btn{width:100%}
   .strip .wrap{grid-template-columns:repeat(2,1fr)}
   .timeline{grid-template-columns:1fr;border-top:0;border-left:2px solid var(--line);margin-left:6px}
   .timeline > div{padding:0 0 22px 22px}
@@ -698,7 +719,7 @@ footer a{text-decoration:none}
     <div class="how">
       <div><b>Три зала одновременно</b><span>В каждой части параллельно идут три мастер-класса по 45 минут — в Лотосе, Большом зале и Мастер-зале.</span></div>
       <div><b>Каждая группа проходит все три</b><span>Гости делятся на группы А, Б и В и по очереди переходят из зала в зал. Между мастер-классами — 15 минут на чай и переход.</span></div>
-      <div><b>Весь день, часть или один мастер-класс</b><span>Билет недорогой, и прийти можно как удобно: на весь фестиваль, на одну часть или на любой отдельный мастер-класс.</span></div>
+      <div><b>Весь день, часть или один мастер-класс</b><span>Билет один, а прийти можно как удобно: на весь фестиваль, на одну часть или на любой отдельный мастер-класс.</span></div>
     </div>
   </div>
 </section>
@@ -855,51 +876,56 @@ footer a{text-decoration:none}
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">Участие</div>
-      <h2>Приходите на весь день, на часть или на один мастер-класс</h2>
-      <p class="lead">Билет недорогой: выберите, сколько шагов пройти сегодня.</p>
+      <h2>Один билет — а сколько пройти, решаете вы</h2>
+      <p class="lead">Цена одна: хоть на один мастер-класс, хоть на весь фестиваль. Подскажите только, когда вас ждать, — так мы подготовим места в залах.</p>
     </div>
-    <div class="plans">
-      <div class="plan">
-        <div class="pt">Попробовать</div>
-        <h3>Один мастер-класс</h3>
-        <div class="when">45 минут, любой из шести</div>
-        <ul>
-          <li>Каждый мастер-класс идёт три раза за часть — выберите удобное время</li>
-          <li>Можно взять несколько отдельных мастер-классов</li>
-        </ul>
-        <div class="price">Цена <span class="tbd">уточняется</span></div>
-        <div class="btns"><button class="btn btn-soft" type="button" data-plan="Один мастер-класс">Выбрать мастер-класс</button></div>
-      </div>
-      <div class="plan main">
-        <div class="pt">Весь путь</div>
-        <h3>Весь фестиваль</h3>
-        <div class="when">11:00–18:45</div>
-        <ul>
-          <li>Все шесть мастер-классов</li>
-          <li>Открытие фестиваля и обеденный перерыв в центре</li>
-          <li>Полная дуга: от истоков доверия к опоре внутри</li>
-        </ul>
-        <div class="price">Цена <span class="tbd">уточняется</span></div>
-        <div class="btns"><button class="btn btn-ink" type="button" data-plan="Весь фестиваль">Оставить заявку</button></div>
-      </div>
-      <div class="plan">
-        <div class="pt">Полдня</div>
-        <h3>Одна часть</h3>
-        <div class="when">утро 11:00–14:00 или вечер 16:00–18:45</div>
-        <ul>
-          <li>Три мастер-класса части — группа проходит их по очереди</li>
-          <li>Утро — с открытием фестиваля, вечер — с коротким открытием второй части</li>
-        </ul>
-        <div class="price">Цена <span class="tbd">уточняется</span></div>
-        <div class="btns two">
-          <button class="btn btn-soft" type="button" data-plan="Часть 1">Утро</button>
-          <button class="btn btn-soft" type="button" data-plan="Часть 2">Вечер</button>
-        </div>
-      </div>
+    <div class="pick" role="radiogroup" aria-label="Когда вы придёте">
+      <button class="opt" type="button" role="radio" aria-checked="false" data-plan="Первая часть" data-short="первая часть">
+        <span class="o-dot" aria-hidden="true"></span>
+        <span class="o-pt">Утро</span>
+        <span class="o-h">Приду на первую часть</span>
+        <span class="o-when">11:00–14:00 · с открытием фестиваля</span>
+        <span class="o-mk">«Как Волк научился любить» · «Источник» · «Как не бояться любить и жить счастливо?»</span>
+      </button>
+      <button class="opt main" type="button" role="radio" aria-checked="true" data-plan="Весь день" data-short="весь день">
+        <span class="o-dot" aria-hidden="true"></span>
+        <span class="o-pt">Весь путь</span>
+        <span class="o-h">Приду на весь день</span>
+        <span class="o-when">11:00–18:45 · все шесть мастер-классов</span>
+        <span class="o-mk">Полная дуга: утром — откуда берутся страх и доверие, вечером — на что опереться</span>
+      </button>
+      <button class="opt" type="button" role="radio" aria-checked="false" data-plan="Вторая часть" data-short="вторая часть">
+        <span class="o-dot" aria-hidden="true"></span>
+        <span class="o-pt">Вечер</span>
+        <span class="o-h">Приду на вторую часть</span>
+        <span class="o-when">16:00–18:45 · с коротким открытием</span>
+        <span class="o-mk">«Улыбка» · «Внутренняя вертикаль» · «Кто стоит за моим страхом?»</span>
+      </button>
     </div>
+    <div class="pickbar">
+      <div class="pb-sel" aria-live="polite"><small>Ваш выбор</small><b id="pick-name">весь день</b></div>
+      <div class="pb-price">Билет <span class="tbd">цена уточняется</span></div>
+      <button class="btn btn-warm" type="button" id="pick-go">Забронировать место</button>
+    </div>
+    <p class="pick-note">Хотите на один мастер-класс? Выберите часть, в которой он идёт, а в заявке отметьте, какой именно, — билет тот же.</p>
+
     <div class="gift">
-      <div><b>Подарок гостям фестиваля</b><br><span>−50% на первое посещение любого занятия или мероприятия центра в течение месяца после фестиваля</span></div>
+      <svg class="bow" viewBox="0 0 120 84" aria-hidden="true">
+        <defs><linearGradient id="bowg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4a62"/><stop offset=".55" stop-color="#d0122f"/><stop offset="1" stop-color="#8f0a1f"/></linearGradient></defs>
+        <path d="M56 46 L38 82 L48 76 L55 84 L62 48Z" fill="#a50d25"/>
+        <path d="M64 46 L82 82 L72 76 L65 84 L58 48Z" fill="#b80f2a"/>
+        <path d="M60 42 C42 14 6 8 10 32 C13 52 44 50 60 42Z" fill="url(#bowg)"/>
+        <path d="M60 42 C78 14 114 8 110 32 C107 52 76 50 60 42Z" fill="url(#bowg)"/>
+        <path d="M58 40 C46 24 22 18 20 30" fill="none" stroke="#ff8a99" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>
+        <path d="M62 40 C74 24 98 18 100 30" fill="none" stroke="#ff8a99" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>
+        <rect x="51" y="33" width="18" height="17" rx="6" fill="#c41230"/><rect x="54" y="35" width="7" height="5" rx="2.5" fill="#ff7d8e" opacity=".8"/>
+      </svg>
+      <div class="g-pct shine">−50%</div>
+      <div class="g-txt"><div class="g-title shine">Подарок гостям фестиваля</div><span>на первое посещение любого занятия или мероприятия центра в течение месяца после фестиваля</span></div>
       <span class="tbd">уточняется</span>
+      <i class="spark" style="left:150px;top:14px" aria-hidden="true"></i>
+      <i class="spark" style="left:46%;bottom:14px;animation-delay:1.1s" aria-hidden="true"></i>
+      <i class="spark" style="right:30px;top:16px;animation-delay:2.1s" aria-hidden="true"></i>
     </div>
 
     <div class="formwrap" id="request">
@@ -911,23 +937,23 @@ footer a{text-decoration:none}
       <form class="req" id="reqform" novalidate>
         <div class="f"><label for="r-name">Имя</label><input id="r-name" name="name" autocomplete="given-name" required></div>
         <div class="f"><label for="r-phone">Телефон</label><input id="r-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+7" required></div>
-        <div class="f"><label for="r-plan">Участие</label>
+        <div class="f"><label for="r-plan">Когда придёте</label>
           <select id="r-plan" name="plan">
-            <option>Весь фестиваль</option><option>Часть 1</option><option>Часть 2</option><option>Один мастер-класс</option><option>Пока не решил(а)</option>
+            <option>Весь день</option><option>Первая часть</option><option>Вторая часть</option><option>Пока не решил(а)</option>
           </select>
         </div>
         <div class="f"><label for="r-count">Сколько человек</label>
           <select id="r-count" name="count"><option>1</option><option>2</option><option>3</option><option>4</option><option>5 и больше</option></select>
         </div>
-        <div class="f full" id="r-mk-wrap" hidden><label for="r-mk">Какой мастер-класс</label>
+        <div class="f full" id="r-mk-wrap"><label for="r-mk">Особенно хочется на… <small>— по желанию</small></label>
           <select id="r-mk" name="mk">
+            <option>Все интересны</option>
             <option>«Как Волк научился любить» · часть 1, Лотос</option>
             <option>«Источник» · часть 1, Большой зал</option>
             <option>«Как не бояться любить и жить счастливо?» · часть 1, Мастер-зал</option>
             <option>«Улыбка» · часть 2, Лотос</option>
             <option>«Внутренняя вертикаль» · часть 2, Большой зал</option>
             <option>«Кто стоит за моим страхом?» · часть 2, Мастер-зал</option>
-            <option>Несколько — обсудим</option>
           </select>
         </div>
         <div class="f full"><label for="r-msg">Telegram или Max <small>— по желанию</small></label><input id="r-msg" name="messenger" placeholder="@имя"></div>
@@ -956,7 +982,7 @@ footer a{text-decoration:none}
       </details>
       <details>
         <summary>Можно ли прийти на одну часть или на один мастер-класс?</summary>
-        <div class="ans"><p>Да. Первая часть идёт с 11:00 до 14:00, вторая — с 16:00 до 18:45. Каждый мастер-класс повторяется три раза за часть, поэтому на отдельный мастер-класс можно прийти к удобному началу.</p></div>
+        <div class="ans"><p>Да, билет один для любого варианта. Первая часть идёт с 11:00 до 14:00, вторая — с 16:00 до 18:45. Каждый мастер-класс повторяется три раза за часть, поэтому на отдельный мастер-класс можно прийти к удобному началу.</p></div>
       </details>
       <details>
         <summary>Можно ли просто наблюдать?</summary>
@@ -1594,16 +1620,35 @@ footer a{text-decoration:none}
     addEventListener('resize', function(){ measure(); render(); });
   })();
 
-  /* выбор участия → форма */
-  var planSel = document.getElementById('r-plan'), mkWrap = document.getElementById('r-mk-wrap');
-  function syncMk(){ mkWrap.hidden = planSel.value !== 'Один мастер-класс'; }
-  planSel.addEventListener('change', syncMk);
-  function choose(plan){
-    planSel.value = plan; syncMk();
+  /* выбор участия: карточки → строка «Ваш выбор» → форма; в заявке доступны мастер-классы только выбранной части */
+  var planSel = document.getElementById('r-plan'), mkSel = document.getElementById('r-mk');
+  var opts = [].slice.call(document.querySelectorAll('.pick .opt')), pickName = document.getElementById('pick-name');
+  function syncMk(){
+    var v = planSel.value;
+    [].forEach.call(mkSel.options, function(o, i){
+      o.disabled = (v === 'Первая часть' && i > 3) || (v === 'Вторая часть' && i >= 1 && i <= 3);
+    });
+    if (mkSel.options[mkSel.selectedIndex].disabled) mkSel.selectedIndex = 0;
+  }
+  function mark(plan){
+    opts.forEach(function(o){ var on = o.dataset.plan === plan; o.setAttribute('aria-checked', on); o.tabIndex = on ? 0 : -1; if (on) pickName.textContent = o.dataset.short; });
+  }
+  planSel.addEventListener('change', function(){ syncMk(); if (planSel.value !== 'Пока не решил(а)') mark(planSel.value); });
+  opts.forEach(function(o, i){
+    o.addEventListener('click', function(){ mark(o.dataset.plan); planSel.value = o.dataset.plan; syncMk(); });
+    o.addEventListener('keydown', function(e){
+      var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+      if (!d) return; e.preventDefault(); var n = opts[(i + d + opts.length) % opts.length]; n.click(); n.focus();
+    });
+  });
+  function choose(plan, mk){
+    planSel.value = plan; mark(plan); syncMk();
+    if (mk !== undefined) mkSel.selectedIndex = mk;
     document.getElementById('request').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
     setTimeout(function(){ document.getElementById('r-name').focus({preventScroll:true}); }, 400);
   }
-  document.querySelectorAll('[data-plan]').forEach(function(b){ b.addEventListener('click', function(){ choose(b.dataset.plan); }); });
+  document.getElementById('pick-go').addEventListener('click', function(){ choose(planSel.value === 'Пока не решил(а)' ? 'Весь день' : planSel.value); });
+  mark('Весь день'); syncMk();
 
   /* подбор */
   var Q = [
@@ -1612,11 +1657,11 @@ footer a{text-decoration:none}
     {q:"Сколько времени у вас в субботу?", a:[["Около часа", 3],["Половина дня", 4],["Готов(а) на весь день", 0]]}
   ];
   var RES = {
-    1:{t:"Вам ближе утро — часть 1", p:"Утро — о том, откуда берутся страх и доверие: добрый мультфильм про волка, рисунок своего пути и разговор о семье, в которой мы выросли.", plan:"Часть 1"},
-    2:{t:"Вам ближе вечер — часть 2", p:"Вечер — о том, на что опереться сейчас: игра по сказке «Крошка Енот», телесная практика «Внутренняя вертикаль» и сила рода.", plan:"Часть 2"},
-    0:{t:"Вам подойдёт весь фестиваль", p:"Обе части складываются в один путь: утром ищем, откуда берётся доверие, вечером — на что опереться. Шесть мастер-классов за один день.", plan:"Весь фестиваль"},
-    m1:{t:"Начните с одного мастер-класса", p:"Попробуйте «Как Волк научился любить» — добрый мультфильм и тихое упражнение «Тёплый взгляд». Он идёт трижды за утро: в 11:15, 12:15 и 13:15.", plan:"Один мастер-класс", mk:0},
-    m2:{t:"Начните с одного мастер-класса", p:"Попробуйте «Улыбку» — игру по сказке «Крошка Енот», после которой уходят с улыбкой. Она идёт трижды за вечер: в 16:00, 17:00 и 18:00.", plan:"Один мастер-класс", mk:3}
+    1:{t:"Вам ближе утро — часть 1", p:"Утро — о том, откуда берутся страх и доверие: добрый мультфильм про волка, рисунок своего пути и разговор о семье, в которой мы выросли.", plan:"Первая часть"},
+    2:{t:"Вам ближе вечер — часть 2", p:"Вечер — о том, на что опереться сейчас: игра по сказке «Крошка Енот», телесная практика «Внутренняя вертикаль» и сила рода.", plan:"Вторая часть"},
+    0:{t:"Вам подойдёт весь фестиваль", p:"Обе части складываются в один путь: утром ищем, откуда берётся доверие, вечером — на что опереться. Шесть мастер-классов за один день.", plan:"Весь день"},
+    m1:{t:"Начните с одного мастер-класса", p:"Попробуйте «Как Волк научился любить» — добрый мультфильм и тихое упражнение «Тёплый взгляд». Он идёт трижды за утро: в 11:15, 12:15 и 13:15.", plan:"Первая часть", mk:1},
+    m2:{t:"Начните с одного мастер-класса", p:"Попробуйте «Улыбку» — игру по сказке «Крошка Енот», после которой уходят с улыбкой. Она идёт трижды за вечер: в 16:00, 17:00 и 18:00.", plan:"Вторая часть", mk:4}
   };
   var card = document.getElementById('qcard'), step = 0, score = {0:0,1:0,2:0}, time = null;
   function renderQ(){
@@ -1635,7 +1680,7 @@ footer a{text-decoration:none}
       if (time === 0) k = 0; else if (time === 3) k = lean === 2 ? 'm2' : 'm1'; else k = (score[1]===score[2] && score[0]>0) ? 1 : lean;
       var r = RES[k];
       card.innerHTML = '<div class="qbar"><i style="width:100%"></i></div><div class="qres"><div class="eyebrow">Подсказка</div><h3>'+r.t+'</h3><p>'+r.p+'</p><div class="acts"><button class="btn btn-warm" type="button" id="q-go">Оставить заявку</button><button class="linkbtn" type="button" id="q-re">Пройти ещё раз</button></div></div>';
-      document.getElementById('q-go').addEventListener('click', function(){ choose(r.plan); if (r.mk !== undefined) document.getElementById('r-mk').selectedIndex = r.mk; });
+      document.getElementById('q-go').addEventListener('click', function(){ choose(r.plan, r.mk); });
       document.getElementById('q-re').addEventListener('click', function(){ step = 0; score = {0:0,1:0,2:0}; time = null; renderQ(); });
     }
   }
@@ -1649,14 +1694,14 @@ footer a{text-decoration:none}
     var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : '';
     out.hidden = false;
     if (err){ out.textContent = err; return; }
-    var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: mkWrap.hidden ? '' : form.mk.value, count:form.count.value, sent:new Date().toISOString()};
+    var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value, sent:new Date().toISOString()};
     if (!FORM_ENDPOINT){
       out.textContent = 'Это черновик сайта: заявки пока не отправляются. Когда подключим приём, сюда придёт подтверждение.';
       return;
     }
     out.textContent = 'Отправляем…';
     fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)})
-      .then(function(r){ if(!r.ok) throw 0; form.reset(); syncMk(); out.textContent = 'Спасибо, '+name+'! Заявка принята — мы свяжемся с вами в ближайшее время.'; })
+      .then(function(r){ if(!r.ok) throw 0; form.reset(); mark('Весь день'); syncMk(); out.textContent = 'Спасибо, '+name+'! Заявка принята — мы свяжемся с вами в ближайшее время.'; })
       .catch(function(){ out.textContent = 'Не получилось отправить заявку. Проверьте интернет и попробуйте ещё раз.'; });
   });
 })();
