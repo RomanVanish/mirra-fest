@@ -406,6 +406,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-person::before{content:"";position:absolute;left:-12%;right:-12%;top:36%;bottom:0;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse 48% 54% at 50% 62%,rgb(var(--pl) / .96) 0%,rgb(var(--pl) / .88) 48%,rgb(var(--pl) / .48) 68%,rgb(var(--pl) / 0) 84%)}
 .a-person{isolation:isolate}
+.a-person.sil::before{display:none}
 .a-person img{filter:drop-shadow(0 0 3px rgba(255,238,205,.9)) drop-shadow(0 0 9px rgba(255,214,150,.75)) drop-shadow(0 0 20px rgba(255,196,120,.55)) drop-shadow(0 0 34px rgba(255,186,110,.35));
   /* фигура «вписана» в арку: края кадра (обрезанные руки, низ) мягко растворяются, голова и плечи нетронуты */
   -webkit-mask-image:radial-gradient(ellipse 66% 88% at 50% 26%,#000 64%,transparent 100%),linear-gradient(180deg,#000 74%,transparent 98%);
@@ -446,11 +447,26 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 @keyframes a-ring{from{transform:scale(1);opacity:.9}to{transform:scale(1.8);opacity:0}}
 /* подпись и управление под сценой */
 .a-below{display:grid;grid-template-columns:1fr auto;gap:16px 24px;align-items:center;padding:22px 0 6px}
-.a-cap{min-height:96px;transition:opacity .35s ease}
+.a-cap{min-height:150px;transition:opacity .35s ease}
 .a-cap.out{opacity:0}
 .a-cap .a-nm{font:500 clamp(1.5rem,1.3rem + 1vw,2rem)/1.2 var(--font-display)}
 .a-cap .a-rl{color:var(--soft);font-size:.95rem}
 .a-cap .a-mk{font:italic 400 1rem var(--font-display);color:var(--accent);margin-top:2px}
+.a-cap .a-ab{font-size:.95rem;line-height:1.5;margin:6px 0 4px;max-width:62ch}
+/* облачко-послание ведущего */
+.a-say{position:absolute;left:0;top:0;z-index:155;max-width:230px;padding:14px 18px 12px;border-radius:20px 20px 20px 6px;
+  background:rgba(255,250,244,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 14px 30px -14px rgba(60,20,40,.55),0 0 0 1px rgba(255,255,255,.8) inset;
+  font:italic 400 1.08rem/1.35 var(--font-display);color:var(--ink);pointer-events:none;
+  opacity:0;transform:translate(0,-50%) translateY(10px) scale(.92);transform-origin:0 100%;transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1)}
+.a-say::before{content:"";position:absolute;left:-9px;bottom:10px;width:18px;height:14px;background:inherit;clip-path:polygon(100% 0,100% 100%,0 70%)}
+.a-say .tbd{display:table;margin-top:6px;font-size:.66rem}
+.a-say.on{opacity:1;transform:translate(0,-50%)}
+.a-say.mid{width:max-content;max-width:min(270px,84%);border-radius:20px;text-align:center;transform:translate(-50%,-50%) translateY(10px) scale(.92);transform-origin:50% 0}
+.a-say.mid.on{transform:translate(-50%,-50%)}
+.a-say.mid::before{left:50%;top:-10px;bottom:auto;width:20px;height:12px;transform:translateX(-50%);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.a-say.mid .tbd{margin:6px auto 0}
+@media (max-width:640px){.a-say{font-size:.95rem;padding:10px 14px 9px}}
+@media (prefers-reduced-motion:reduce){.a-say{transition:opacity .2s}}
 .a-ctrls{display:flex;gap:10px;align-items:center}
 .a-round{width:48px;height:48px;padding:0;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line);font-size:1.2rem}
 .a-ctrls .btn:disabled{opacity:.35;cursor:default}
@@ -942,6 +958,7 @@ footer a{text-decoration:none}
         <div class="a-light"></div>
       </div>
       <canvas class="a-fx" aria-hidden="true"></canvas>
+      <div class="a-say" aria-live="polite"></div>
       <div class="a-mist"><div class="a-ml"><i></i></div><div class="a-ml"><i></i></div><div class="a-ml"><i></i></div></div>
       <button class="a-way fwd" type="button" aria-label="Вперёд, к следующему ведущему"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span></button>
       <button class="a-way back" type="button" aria-label="Назад, к предыдущему ведущему" hidden><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span></button>
@@ -1460,13 +1477,26 @@ footer a{text-decoration:none}
     function q(sel){ return sec.querySelector(sel); }
     /* порядок — как в программе; img — вырезанное фото на прозрачном фоне (img/people/), без img рисуется силуэт */
     var PEOPLE = [
-      {n:"Светлана Савельева", r:"Психолог, основатель центра «МирРа»", mk:"«Как Волк научился любить» · «Внутренняя вертикаль»", img:"img/people/savelieva.webp"},
-      {n:"Татьяна Елисеева", r:"Арт-терапевт, педагог", mk:"«Источник» · мастер-класс 2"},
-      {n:"Ирина Виноградова", r:"Лечебный педагог", mk:"«Источник» · мастер-класс 2", img:"img/people/vinogradova.webp"},
-      {n:"Галина Власова", r:"Психолог, коуч, расстановщик, специалист по гармонизации семейных и бизнес-систем", mk:"«Как не бояться любить и жить счастливо?» · «Кто стоит за моим страхом?»"},
-      {n:"Инна Кочурова", r:"Специалист по эмоциональному процессу", mk:"«Улыбка» · мастер-класс 4"},
-      {n:"Виктория Трофимова", r:"Специалист по соединению с телом", mk:"«Улыбка» · мастер-класс 4", img:"img/people/trofimova.webp"},
-      {n:"Любовь", r:"Вы прошли мост — от страха к любви", mk:"21 ноября · центр «МирРа»", end:true}
+      {n:"Светлана Савельева", r:"Психолог, основатель центра «МирРа»", mk:"«Как Волк научился любить» · «Внутренняя вертикаль»", img:"img/people/savelieva.webp",
+       about:"Врач, акушер-гинеколог, клинический и перинатальный психолог, психоаналитик. Сопровождает родителей и малышей в первый, самый важный год жизни.",
+       say:"Вы хороший.<br>И мир к вам добр."},
+      {n:"Татьяна Елисеева", r:"Арт-терапевт, педагог", mk:"«Источник» · мастер-класс 2",
+       about:"Педагог высшей категории, учитель изобразительного искусства, 32 года стажа. Работает с красками, играми, сказками и фольклором.",
+       say:"Пусть рука ведёт —<br>а ум отдохнёт."},
+      {n:"Ирина Виноградова", r:"Лечебный педагог", mk:"«Источник» · мастер-класс 2", img:"img/people/vinogradova.webp",
+       about:"Переводчик, преподаватель, заместитель директора Института лечебной педагогики и социальной терапии Санкт-Петербурга.",
+       say:"Внутри вас есть тот,<br>кто умеет удивляться."},
+      {n:"Галина Власова", r:"Психолог, коуч, расстановщик, специалист по гармонизации семейных и бизнес-систем", mk:"«Как не бояться любить и жить счастливо?» · «Кто стоит за моим страхом?»",
+       about:"Психоантрополог, системный терапевт. Училась у Берта Хеллингера и 13 лет — у Идриса Лаора; проводит расстановки для групп до 70 человек.",
+       say:"За вашей спиной —<br>сила всего рода."},
+      {n:"Инна Кочурова", r:"Специалист по эмоциональному процессу", mk:"«Улыбка» · мастер-класс 4",
+       about:"Психоаналитик, транзактный аналитик, ведёт группы с элементами психодрамы. Больше 20 лет индивидуальной и групповой психотерапии.",
+       say:"Тот, кто пугает, —<br>часто наше отражение."},
+      {n:"Виктория Трофимова", r:"Специалист по соединению с телом", mk:"«Улыбка» · мастер-класс 4", img:"img/people/trofimova.webp",
+       about:"Врач, психоаналитик, транзактный аналитик, работает с телом. Президент Санкт-Петербургского объединения транзактного анализа.",
+       say:"Улыбнитесь —<br>и мир улыбнётся в ответ."},
+      {n:"Любовь", r:"Вы прошли мост — от страха к любви", mk:"21 ноября · центр «МирРа»", end:true,
+       say:"Чуть меньше страха —<br>чуть больше любви."}
     ];
     var R = 1.18;                 // высота арки к ширине
     var C0 = [222,170,200], C1 = [246,162,150], C2 = [252,198,130];   // цвет арок: от сиреневого (страх) к абрикосовому (любовь)
@@ -1537,7 +1567,7 @@ footer a{text-decoration:none}
       el._pool = 0.35 + 0.6*lit; el.style.setProperty('--pool', el._pool.toFixed(3));
       el.style.setProperty('--pl', mix([150,98,122],[238,190,164],lit).join(' '));   /* подложка под фигурой — в тон своей арки: сумеречная → рассветная */
       el.innerHTML = '<div class="a-pool"></div><div class="a-frame"></div>' +
-        (p.end ? '<div class="a-glow"></div><div class="a-love"><span class="a-love-ph">иллюстрация<br><small>love · 2:3</small></span></div>' : '<div class="a-person">'+(p.img ? '<img src="'+p.img+'" alt="'+p.n+'" draggable="false">' : SIL)+'</div>');
+        (p.end ? '<div class="a-glow"></div><div class="a-love"><span class="a-love-ph">иллюстрация<br><small>love · 2:3</small></span></div>' : '<div class="a-person'+(p.img ? '' : ' sil')+'">'+(p.img ? '<img src="'+p.img+'" alt="'+p.n+'" draggable="false">' : SIL)+'</div>');
       el.addEventListener('click', function(){ if (swiped) return; if (Math.round(cam) === i) go(i+1); else go(i); });
       world.appendChild(el);
       return el;
@@ -1632,13 +1662,13 @@ footer a{text-decoration:none}
     }
     /* назад на две арки и больше — сцена гаснет и проявляется сразу на нужной арке */
     function fadeTo(i){
-      if (anim) cancelAnimationFrame(anim.raf);
+      if (anim){ cancelAnimationFrame(anim.raf); clearTimeout(anim.safe); }
       anim = {fade:true};
       [world, mist, fx].forEach(function(el){ el.style.transition = 'opacity .35s ease'; el.style.opacity = 0; });
       setTimeout(function(){
         cam = i; render(); setMist(0,0);
         [world, mist, fx].forEach(function(el){ el.style.transition = 'opacity .5s ease'; el.style.opacity = 1; });
-        setTimeout(function(){ anim = null; [world, mist, fx].forEach(function(el){ el.style.transition = ''; }); }, 500);
+        setTimeout(function(){ anim = null; [world, mist, fx].forEach(function(el){ el.style.transition = ''; }); sayLater(i); }, 500);
       }, 350);
     }
     function go(i){
@@ -1647,17 +1677,19 @@ footer a{text-decoration:none}
       if (i === target && !anim) return;
       target = i; caption(i);
       if (i < cam - 1.001){ fadeTo(i); return; }
-      if (REDUCE){ layers.forEach(function(l){ l.style.transition = 'opacity .3s'; }); setMist(1,0); setTimeout(function(){ cam = i; render(); setMist(0,0); }, 300); return; }
-      if (anim) cancelAnimationFrame(anim.raf);
+      if (REDUCE){ layers.forEach(function(l){ l.style.transition = 'opacity .3s'; }); setMist(1,0); setTimeout(function(){ cam = i; render(); setMist(0,0); sayLater(i); }, 300); return; }
+      if (anim){ cancelAnimationFrame(anim.raf); clearTimeout(anim.safe); }
       var from = cam, dist = Math.abs(i-from), dur = 1700*Math.sqrt(dist), t0 = performance.now();
       anim = {};
+      /* страховка: если кадры не идут (вкладка в фоне), переход всё равно завершается — арка на месте, облачко появляется */
+      var me = anim; me.safe = setTimeout(function(){ if (anim === me){ cancelAnimationFrame(me.raf); anim = null; cam = i; render(); setMist(0,0); sayLater(i); } }, dur + 250);
       (function step(now){
         var t = clamp((now-t0)/dur), e = ease(t);
         cam = from + (i-from)*e; render();
         var thick = t < .4 ? smooth(t/.4) : 1 - smooth((t-.4)/.6);
         setMist(thick, t < .4 ? 0 : smooth((t-.4)/.6));
         if (t < 1) anim.raf = requestAnimationFrame(step);
-        else { anim = null; cam = i; render(); setMist(0,0); }
+        else { clearTimeout(anim.safe); anim = null; cam = i; render(); setMist(0,0); sayLater(i); }
       })(t0);
     }
 
@@ -1703,15 +1735,28 @@ footer a{text-decoration:none}
     var cap = q('.a-cap'), next = q('.a-ctrls .btn-warm'), prev = q('.a-round'), dots = q('.a-dots');
     dots.innerHTML = PEOPLE.map(function(p,i){ return '<button type="button" data-i="'+i+'">'+(p.end ? 'Финал' : p.n.split(' ')[0])+'</button>'; }).join('');
     dots.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.i); }); });
-    var capTimer;
+    var capTimer, sayTimer, say = q('.a-say');
+    /* облачко-послание у передней арки: всплывает рядом с лицом, хвостик смотрит на ведущего; у финала — по центру над сиянием */
+    function sayHide(){ say.classList.remove('on'); }
+    function sayLater(i){ clearTimeout(sayTimer); sayTimer = setTimeout(function(){ sayShow(i); }, REDUCE ? 0 : 350); }
+    function sayShow(i){
+      var p = PEOPLE[i]; if (!p.say || Math.abs(cam - i) > .05) return;
+      say.innerHTML = p.say + '<span class="tbd">черновик</span>';
+      var ah = A0*R, narrow = W < 640;
+      say.classList.toggle('mid', narrow || !!p.end);
+      if (narrow || p.end){ say.style.left = (W/2)+'px'; say.style.top = (FLOOR - ah*(p.end ? .72 : .2))+'px'; }
+      else { say.style.left = (W/2 + A0*0.5 + 18)+'px'; say.style.top = (FLOOR - ah*0.34)+'px'; }
+      say.classList.add('on');
+    }
     function caption(i){
       var p = PEOPLE[i];
       clearTimeout(capTimer); cap.classList.add('out');
       capTimer = setTimeout(function(){
-        cap.innerHTML = '<div class="a-nm">'+p.n+'</div><div class="a-rl">'+p.r+'</div><div class="a-mk">'+p.mk+'</div>';
+        cap.innerHTML = '<div class="a-nm">'+p.n+'</div><div class="a-rl">'+p.r+'</div>'+(p.about ? '<p class="a-ab">'+p.about+'</p>' : '')+'<div class="a-mk">'+p.mk+'</div>';
         cap.classList.remove('out');
       }, REDUCE ? 0 : 450);
       prev.disabled = i === 0;
+      sayHide(); clearTimeout(sayTimer);
       next.textContent = p.end ? 'Записаться' : i === 0 ? 'Войти в арку' : 'Пройти дальше';
       dots.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-current', +b.dataset.i === i); });
       wayBack.hidden = i === 0; wayFwd.hidden = !!p.end;
@@ -1741,10 +1786,10 @@ footer a{text-decoration:none}
     measure();
     for (var k=0;k<46;k++) motes.push(newMote({}, true));
     for (var k2=0;k2<34;k2++) petals.push(newPetal({}, true));
-    render(); caption(0); setMist(0,0);
+    render(); caption(0); setMist(0,0); sayLater(0);
     if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ fxRun(es[0].isIntersecting); }).observe(scene);
     else fxRun(true);
-    addEventListener('resize', function(){ measure(); render(); });
+    addEventListener('resize', function(){ measure(); render(); if (!anim) sayShow(target); });
   })();
 
   /* бабочки меню: заострённые передние крылья, задние с «хвостиком», прожилки и тёмная кайма с точками по краю.
