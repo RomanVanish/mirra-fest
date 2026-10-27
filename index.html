@@ -138,14 +138,18 @@ a{color:inherit}
 .cards .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,80px);align-items:center}
 .cards .head{margin:0}
 .deckwrap{display:grid;justify-items:center;gap:22px}
-.deck{position:relative;width:min(320px,82vw);aspect-ratio:3/4.1;perspective:1400px}
+.deck{position:relative;width:min(320px,82vw);aspect-ratio:3/4.1}
+/* обёртка карты отвечает за появление и исчезновение (прозрачность, сдвиг), сама карта — только за переворот:
+   прозрачность на элементе с 3D-переворотом «сплющивает» его, и на миг видна зеркальная оборотная сторона */
+.mslot{position:absolute;inset:0;perspective:1400px;transition:opacity .3s ease,translate .3s ease}
+.mslot.out{opacity:0;translate:-30px -24px}
+.mslot.pre{opacity:0;translate:30px 18px}
+.mslot.instant{transition:none}
 .stack,.face.cover{background:radial-gradient(circle at 50% 38%,rgba(255,236,206,.9) 0%,rgba(255,236,206,0) 42%),linear-gradient(165deg,#e9d6ec 0%,#f6cbbd 55%,#f2aa72 100%)}
 .stack{position:absolute;inset:0;border-radius:18px;box-shadow:0 20px 40px -30px rgba(110,84,134,.6)}
 .stack.s2{transform:translate(9px,7px) rotate(3deg)}
 .stack.s3{transform:translate(18px,14px) rotate(6.5deg);opacity:.75}
-.mcard{all:unset;position:absolute;inset:0;cursor:pointer;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.7,.25,1),opacity .3s ease,translate .3s ease}
-.mcard.out{opacity:0;translate:-30px -24px}
-.mcard.pre{opacity:0;translate:30px 18px}
+.mcard{all:unset;position:absolute;inset:0;cursor:pointer;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.7,.25,1)}
 .mcard.instant{transition:none}
 .face{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:grid;align-content:center;justify-items:center;gap:14px;padding:30px 26px;text-align:center;box-shadow:0 30px 50px -30px rgba(110,84,134,.65);overflow:hidden}
 .face.fb{transform:rotateY(180deg)}
@@ -169,7 +173,7 @@ a{color:inherit}
 .c-prac{display:grid;gap:4px;font-size:.92rem;line-height:1.45;padding-top:14px;border-top:1px solid rgba(181,74,58,.2)}
 .c-prac b{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
 .deckacts{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:center}
-@media (prefers-reduced-motion:reduce){.mcard{transition:none}}
+@media (prefers-reduced-motion:reduce){.mcard,.mslot{transition:none}}
 
 /* полоса цифр */
 .strip{background:var(--surface);border-bottom:1px solid var(--line)}
@@ -657,10 +661,12 @@ footer a{text-decoration:none}
     <div class="deckwrap">
       <div class="deck">
         <div class="stack s3" aria-hidden="true"></div><div class="stack s2" aria-hidden="true"></div>
+        <div class="mslot" id="mslot">
         <button class="mcard" id="mcard" type="button" aria-live="polite">
           <span class="face fa" id="mc-a"></span>
           <span class="face fb" id="mc-b"></span>
         </button>
+        </div>
       </div>
       <div class="deckacts">
         <button class="btn btn-warm" type="button" id="mc-draw">Вытянуть карту</button>
@@ -1125,7 +1131,7 @@ footer a{text-decoration:none}
     {f:'Я должен всё держать под контролем', l:'Можно довериться — жизнь подхватит.', p:'Отпустите сегодня одну мелочь, которую обычно контролируете. Посмотрите, что будет.'},
     {f:'Если покажу чувства, мне будет больно', l:'Чувства — это не слабость, а живость.', p:'Назовите вслух одним словом, что вы чувствуете прямо сейчас.'}
   ];
-  var mcard = document.getElementById('mcard'), mcA = document.getElementById('mc-a'), mcB = document.getElementById('mc-b');
+  var mslot = document.getElementById('mslot'), mcard = document.getElementById('mcard'), mcA = document.getElementById('mc-a'), mcB = document.getElementById('mc-b');
   var mcDraw = document.getElementById('mc-draw'), mcShare = document.getElementById('mc-share');
   var order = CARDS.map(function(c,i){ return i; }).sort(function(){ return Math.random() - .5; });
   var mcI = -1, mcState = 'cover', mcAngle = 0;
@@ -1146,13 +1152,13 @@ footer a{text-decoration:none}
   /* другая карта: старая уезжает, новая въезжает сбоку сразу стороной «страх» — без мелькания рубашки */
   function drawCard(){
     if (mcState === 'cover'){ reveal(); return; }
-    mcard.classList.add('out');
+    mslot.classList.add('out');
     setTimeout(function(){
       var c = CARDS[order[++mcI % order.length]];
       mcard.classList.add('instant'); mcAngle = 180; mcard.style.transform = 'rotateY(180deg)';
       cardFace(mcB, 'fear', c); cardFace(mcA, 'love', c);
-      mcard.classList.remove('out'); mcard.classList.add('pre');
-      void mcard.offsetWidth; mcard.classList.remove('instant', 'pre');
+      mslot.classList.add('instant'); mslot.classList.remove('out'); mslot.classList.add('pre');
+      void mslot.offsetWidth; mcard.classList.remove('instant'); mslot.classList.remove('instant', 'pre');
       mcState = 'fear'; mcShare.hidden = true;
     }, REDUCE ? 0 : 300);
   }
