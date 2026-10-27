@@ -1771,6 +1771,26 @@ footer a{text-decoration:none}
       '</svg></div></div>';
   });
 
+  /* переход по ссылкам-якорям: надзаголовок раздела встаёт чуть ниже шапки (у разделов свои внутренние отступы сверху,
+     поэтому общий scroll-padding оставлял над заголовком лишние 100–180 px) */
+  function anchorY(id){
+    var t = document.getElementById(id); if (!t) return null;
+    if (id === 'start') return 0;
+    var h = t.querySelector('.eyebrow') || t.querySelector('h2') || t, top = document.querySelector('.top');
+    return Math.max(0, h.getBoundingClientRect().top + scrollY - top.getBoundingClientRect().height - 22);
+  }
+  function goAnchor(id, smooth){
+    var y = anchorY(id); if (y === null) return false;
+    scrollTo({top: y, behavior: smooth && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 'smooth' : 'auto'});
+    return true;
+  }
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || e.defaultPrevented) return;
+    var id = a.getAttribute('href').slice(1);
+    if (id && goAnchor(id, true)){ e.preventDefault(); history.replaceState(null, '', '#' + id); }
+  });
+  if (location.hash.length > 1) addEventListener('load', function(){ goAnchor(decodeURIComponent(location.hash.slice(1)), false); });
+
   /* мобильное меню: раскрывается кругом от кнопки; закрыть — той же кнопкой, пунктом меню, Esc */
   var burger = document.getElementById('burger'), mnav = document.getElementById('mnav');
   function setMenu(on, focus){
@@ -1811,7 +1831,7 @@ footer a{text-decoration:none}
   function choose(plan, mk){
     planSel.value = plan; mark(plan); syncMk();
     if (mk !== undefined) mkSel.selectedIndex = mk;
-    document.getElementById('request').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    goAnchor('request', true);
     setTimeout(function(){ document.getElementById('r-name').focus({preventScroll:true}); }, 400);
   }
   document.getElementById('pick-go').addEventListener('click', function(){ choose(planSel.value === 'Пока не решил(а)' ? 'Весь день' : planSel.value); });
