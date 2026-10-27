@@ -55,7 +55,8 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
   box-shadow:0 0 0 3px rgba(181,74,58,.28),0 8px 18px -6px rgba(60,20,30,.6)}
 .way.fwd::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(255,255,255,.8);pointer-events:none;animation:ring 2.2s ease-out infinite}
 .way.back{width:38px;height:38px}
-.way.back span{color:#fff;background:linear-gradient(160deg,rgba(84,48,80,.82),rgba(42,22,42,.75));box-shadow:0 8px 18px -8px rgba(30,10,24,.7)}
+/* «назад» нужен редко — приглушённое серое стекло: видно, но не спорит с «вперёд» */
+.way.back span{color:rgba(255,255,255,.85);background:linear-gradient(160deg,rgba(150,140,146,.5),rgba(110,100,106,.42));border-color:rgba(255,255,255,.4);box-shadow:0 6px 14px -8px rgba(30,10,24,.5)}
 .way.back svg{width:18px;height:18px}
 .way:hover span{filter:brightness(1.06)}
 .way[hidden]{display:none}
