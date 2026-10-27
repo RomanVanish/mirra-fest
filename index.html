@@ -475,10 +475,11 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 /* «отпустить»: связка шариков с подписями на нитках; нажатие — нитка отпускается, шарик улетает и тает */
 .letgo{position:relative;width:min(560px,100%);display:grid;gap:6px;justify-items:center;margin-bottom:6px;isolation:isolate}
 /* фон блока — рассветное небо (иллюстрация dawn); края растворяются в градиенте раздела, шарики улетают прямо в него */
-.lg-sky{position:absolute;left:50%;top:-40px;z-index:-1;width:min(780px,150%);aspect-ratio:3/2;transform:translateX(-50%);border-radius:0;
-  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%)}
+.lg-sky{position:absolute;left:50%;top:-140px;z-index:-1;width:min(840px,170%);aspect-ratio:3/2;transform:translateX(-50%);border-radius:0;
+  background:radial-gradient(ellipse 40% 26% at 50% 80%,rgba(255,236,206,.95),rgba(255,236,206,0)),linear-gradient(180deg,#f1dbe8 0%,#f8dcd6 45%,#fcd7bc 100%);
+  -webkit-mask-image:radial-gradient(ellipse 50% 52% at 50% 44%,#000 52%,transparent 100%);mask-image:radial-gradient(ellipse 50% 52% at 50% 44%,#000 52%,transparent 100%)}
 .lg-sky::before{display:none}
-.lg-sky .ill-ph{place-content:start end;padding:13% 15% 0 0;font-size:.7rem}
+.lg-sky .ill-ph{place-content:start center;padding-top:9%;font-size:.74rem}
 .lg-l{font-family:var(--font-display);font-size:var(--step-2);line-height:1.2}
 .lg-hint{font-size:.9rem;color:#6b4a45}
 .balloons{position:relative;width:100%;height:360px;margin-top:4px}
@@ -1005,7 +1006,7 @@ footer a{text-decoration:none}
 <section class="dawn">
   <div class="wrap">
     <div class="letgo" id="letgo">
-      <figure class="ill lg-sky" data-ill="dawn" data-ratio="3:2"></figure>
+      <figure class="ill lg-sky" data-ill="dawn" data-ratio="3:2 · небо, куда улетают шарики"></figure>
       <p class="lg-l">Отпустите то, что тяжело нести</p>
       <p class="lg-hint">Нажмите на шарик — и он улетит</p>
       <div class="balloons" id="balloons"></div>
@@ -1209,9 +1210,9 @@ footer a{text-decoration:none}
     /* полёт от текущего положения (с учётом покачивания): немного вверх с лёгким дрейфом и плавное исчезновение */
     var from = getComputedStyle(b).transform;
     b.classList.add('fly');
-    var to = 'translate('+rnd(-30,30).toFixed(0)+'px,'+(-rnd(150,200)).toFixed(0)+'px) rotate('+rnd(-10,10).toFixed(0)+'deg)';
-    b.animate([{transform: from === 'none' ? 'none' : from, opacity:1}, {opacity:1, offset:.3}, {transform: to, opacity:0}],
-      {duration: REDUCE ? 300 : 1800, easing:'cubic-bezier(.3,.1,.5,1)', fill:'forwards'});
+    var to = 'translate('+rnd(-30,30).toFixed(0)+'px,'+(-rnd(220,280)).toFixed(0)+'px) rotate('+rnd(-10,10).toFixed(0)+'deg)';
+    b.animate([{transform: from === 'none' ? 'none' : from, opacity:1}, {opacity:1, offset:.45}, {transform: to, opacity:0}],
+      {duration: REDUCE ? 300 : 2200, easing:'cubic-bezier(.3,.1,.5,1)', fill:'forwards'});
     released++;
     if (released === LET.length){
       knot.style.opacity = 0;
