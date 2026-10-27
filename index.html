@@ -361,6 +361,23 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .dawn .wrap{position:relative;z-index:1;padding-block:clamp(72px,9vw,128px);display:grid;justify-items:center;gap:22px}
 .dawn blockquote{margin:0;font-family:var(--font-display);font-style:italic;font-size:var(--step-3);line-height:1.2;max-width:22ch;text-wrap:balance}
 .dawn cite{font-style:normal;color:#6b4a45}
+/* «отпустить страх»: буквы взлетают и тают вместе с лепестками; ничего не отправляется */
+.letgo{position:relative;width:min(520px,100%);display:grid;gap:10px;justify-items:center;margin-bottom:10px}
+.lg-l{font-family:var(--font-display);font-size:var(--step-1)}
+.lg-row{position:relative;display:flex;gap:10px;width:100%}
+.lg-row input{flex:1;min-width:0;font:inherit;color:var(--ink);background:rgba(255,255,255,.78);border:1.5px solid rgba(181,74,58,.25);border-radius:999px;padding:12px 18px}
+.lg-row input:focus{outline:none;border-color:var(--accent-2)}
+.lg-row .btn{padding:.9em 1.3em}
+.lg-fly{position:absolute;left:19.5px;top:0;bottom:0;display:flex;align-items:center;white-space:pre;pointer-events:none;color:var(--ink)}
+.lg-fly span{display:inline-block;animation:lgfly 1.7s cubic-bezier(.3,.6,.4,1) forwards}
+.lg-fly i{position:absolute;left:0;top:50%;width:10px;height:6px;border-radius:50%;background:rgba(255,246,248,.95);box-shadow:0 0 8px rgba(255,214,190,.9);opacity:0;animation:lgpetal 2.1s ease-out forwards}
+@keyframes lgfly{0%{transform:none;opacity:1}35%{color:var(--accent-2)}100%{transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(.3);opacity:0;color:#fff}}
+@keyframes lgpetal{20%{opacity:1}100%{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+.lg-note{font-size:.82rem;color:#6b4a45}
+.lg-done{min-height:1.6em;font-family:var(--font-display);font-style:italic;font-size:var(--step-1);opacity:0;transition:opacity .6s ease}
+.lg-done.on{opacity:1}
+@media (max-width:520px){.lg-row{flex-direction:column}.lg-fly{top:0;bottom:auto;height:50px}}
+@media (prefers-reduced-motion:reduce){.lg-fly span,.lg-fly i{animation-duration:.01s}}
 
 footer{background:#f7e4d6;color:var(--soft);font-size:.9rem}
 footer .wrap{display:flex;flex-wrap:wrap;gap:14px 32px;justify-content:space-between;padding-block:30px}
@@ -849,6 +866,16 @@ footer a{text-decoration:none}
 <section class="dawn">
   <div class="wrap">
     <figure class="ill r11 round dawn-ill" data-ill="dawn" data-ratio="1:1"></figure>
+    <div class="letgo" id="letgo">
+      <label class="lg-l" for="lg-in">Напишите, от чего хотите освободиться</label>
+      <div class="lg-row">
+        <input id="lg-in" maxlength="60" placeholder="например: страх ошибиться" autocomplete="off">
+        <button class="btn btn-warm" type="button" id="lg-go">Отпустить</button>
+        <div class="lg-fly" id="lg-fly" aria-hidden="true"></div>
+      </div>
+      <p class="lg-note">Ничего не отправляется и не сохраняется — это только для вас.</p>
+      <p class="lg-done" id="lg-done" aria-live="polite"></p>
+    </div>
     <blockquote>Пусть в вашей жизни будет чуть меньше страха и чуть больше любви</blockquote>
     <cite>21 ноября · психологический центр «МирРа»</cite>
     <a class="btn btn-ink" href="#tickets">Выбрать участие</a>
@@ -995,6 +1022,33 @@ footer a{text-decoration:none}
     else if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + location.href.split('#')[0]).then(function(){ mcShare.textContent = 'Скопировано'; setTimeout(function(){ mcShare.textContent = 'Поделиться картой'; }, 1800); });
   });
   cardFace(mcA, 'cover'); cardFace(mcB, 'fear', CARDS[order[0]]);
+
+  /* «отпустить страх»: текст рассыпается по буквам, буквы улетают вверх и тают, вместе с ними — лепестки.
+     Ничего никуда не отправляется и не сохраняется. */
+  var lgIn = document.getElementById('lg-in'), lgGo = document.getElementById('lg-go'), lgFly = document.getElementById('lg-fly'), lgDone = document.getElementById('lg-done');
+  function rnd(a, b){ return a + Math.random()*(b-a); }
+  function letGo(){
+    var t = lgIn.value.trim();
+    if (!t){ lgIn.focus(); return; }
+    lgFly.innerHTML = '';
+    Array.prototype.forEach.call(t, function(ch, i){
+      var s = document.createElement('span');
+      s.textContent = ch;
+      s.style.cssText = '--x:'+rnd(-90,90).toFixed(0)+'px;--y:'+rnd(-260,-130).toFixed(0)+'px;--r:'+rnd(-160,160).toFixed(0)+'deg;animation-delay:'+(i*28)+'ms';
+      lgFly.appendChild(s);
+    });
+    for (var k=0;k<14;k++){
+      var p = document.createElement('i');
+      p.style.cssText = 'left:'+rnd(0, Math.max(60, t.length*9)).toFixed(0)+'px;--x:'+rnd(-120,120).toFixed(0)+'px;--y:'+rnd(-280,-150).toFixed(0)+'px;--r:'+rnd(-220,220).toFixed(0)+'deg;animation-delay:'+(250+k*60)+'ms';
+      lgFly.appendChild(p);
+    }
+    lgIn.value = ''; lgIn.blur();
+    lgDone.classList.remove('on');
+    setTimeout(function(){ lgDone.textContent = 'Отпущено. Приходите 21 ноября — продолжим вместе.'; lgDone.classList.add('on'); lgGo.textContent = 'Отпустить ещё'; }, REDUCE ? 0 : 1500);
+    setTimeout(function(){ lgFly.innerHTML = ''; }, REDUCE ? 50 : 3200);
+  }
+  lgGo.addEventListener('click', letGo);
+  lgIn.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); letGo(); } });
 
   /* вкладки программы */
   var tabs = document.querySelectorAll('[role="tab"]');
