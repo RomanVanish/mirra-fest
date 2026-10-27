@@ -28,19 +28,19 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body)
 h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
 
 /* сцена */
-.scene{position:relative;height:min(74vh,700px);min-height:440px;border-radius:22px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:#3a2c5c}
+.scene{position:relative;height:min(74vh,700px);min-height:440px;border-radius:22px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:#4a3048}
 .world{position:absolute;inset:0}
-/* сумерки: глубокий сине-сиреневый верх, у горизонта — розово-персиковая полоса, будто за лесом встаёт солнце */
-.sky{position:absolute;left:0;right:0;top:0;background:linear-gradient(180deg,#2a2452 0%,#463873 38%,#7f5a8c 68%,#cf8c93 88%,#f2b48e 100%)}
+/* тёплые сумерки: сливово-розовый верх, у горизонта — персиковая полоса, будто за лесом встаёт солнце */
+.sky{position:absolute;left:0;right:0;top:0;background:linear-gradient(180deg,#4a2c4a 0%,#7a4664 36%,#b46c7a 64%,#e49a8c 85%,#f8c69a 100%)}
 .water{position:absolute;left:0;right:0;bottom:0;
-  background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0 9px,rgba(255,236,220,.07) 9px 10px),linear-gradient(180deg,#c4868f 0%,#7c5883 22%,#4c3a6a 60%,#352a52 100%)}
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0 9px,rgba(255,236,220,.08) 9px 10px),linear-gradient(180deg,#dc9a8e 0%,#a86a76 22%,#734660 60%,#55344f 100%)}
 .haze{position:absolute;left:0;right:0;height:24%;transform:translateY(-60%);pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,200,190,0),rgba(255,214,196,.32) 55%,rgba(255,200,190,0))}
-/* рассвет: с каждым шагом вглубь сцена теплеет и светлеет */
+  background:linear-gradient(180deg,rgba(255,206,180,0),rgba(255,218,190,.36) 55%,rgba(255,206,180,0))}
+/* рассвет: с каждым шагом вглубь сцена теплеет и светлеет, к финалу заливает персиком */
 .dawn{position:absolute;inset:0;pointer-events:none;opacity:0;
-  background:linear-gradient(180deg,rgba(255,196,180,.18) 0%,rgba(255,204,170,.4) 50%,rgba(255,222,180,.5) 64%,rgba(255,200,170,.25) 100%)}
+  background:linear-gradient(180deg,rgba(255,190,150,.32) 0%,rgba(255,202,156,.5) 48%,rgba(255,224,176,.62) 64%,rgba(255,200,156,.38) 100%)}
 /* виньетка по краям: в начале пути гуще, к финалу почти исчезает */
-.dusk{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 70% at 50% 55%,rgba(24,14,40,0) 40%,rgba(24,14,40,.65) 100%)}
+.dusk{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 70% at 50% 55%,rgba(52,24,38,0) 40%,rgba(52,24,38,.6) 100%)}
 .fx{position:absolute;inset:0;width:100%;height:100%;z-index:140;pointer-events:none}
 /* тёмная дымка: полупрозрачные клубы и пряди (текстура шума). При проходе наплывает, затем расползается и редеет */
 .mist{position:absolute;inset:0;z-index:150;pointer-events:none;overflow:hidden}
@@ -142,7 +142,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
   ];
   var R = 1.18;                 // высота арки к ширине
   /* цвет арок: от сиреневого (страх) к абрикосовому (любовь) */
-  var C0 = [196,172,226], C1 = [242,164,170], C2 = [251,198,142];
+  var C0 = [222,170,200], C1 = [246,162,150], C2 = [252,198,130];
   function mix(a,b,t){ return a.map(function(v,i){ return Math.round(v+(b[i]-v)*t); }); }
   function colorAt(i){ var t = i/(PEOPLE.length-1); var c = t < .5 ? mix(C0,C1,t*2) : mix(C1,C2,(t-.5)*2); return 'rgb('+c.join(',')+')'; }
 
@@ -179,8 +179,8 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
         }
       })(x, VY+4, len, -Math.PI/2 + out*0.08, 5, Math.max(2, len*0.1));
     }
-    /* по три дерева у каждого края: дальние — светлые сиреневые силуэты в дымке, ближние темнее и выше */
-    [[-1,'#7a5f92',0],[1,'#7a5f92',0],[-1,'#3a2a55',1],[1,'#3a2a55',1]].forEach(function(g,k){
+    /* по три дерева у каждого края: дальние — светлые тёплые силуэты в дымке, ближние темнее и выше */
+    [[-1,'#a07186',0],[1,'#a07186',0],[-1,'#5c3650',1],[1,'#5c3650',1]].forEach(function(g,k){
       for (var j=0;j<3;j++){
         var edge = (j + rnd()*0.6) / 3 * (W/2 - A0*0.55);       // от края сцены до арки
         var x = g[0] < 0 ? edge : W - edge;
@@ -284,7 +284,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     return 'url("data:image/svg+xml,' + encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><filter id="f" x="0" y="0" width="100%" height="100%">' +
       '<feTurbulence type="fractalNoise" baseFrequency="'+freq+'" numOctaves="5" seed="'+seed+'"/>' +
-      '<feColorMatrix values="0 0 0 0 .2  0 0 0 0 .14  0 0 0 0 .3  2.4 0 0 0 -1.05"/></filter>' +
+      '<feColorMatrix values="0 0 0 0 .32  0 0 0 0 .17  0 0 0 0 .24  2.4 0 0 0 -1.05"/></filter>' +
       '<rect width="100%" height="100%" filter="url(#f)"/></svg>') + '")';
   }
   [[3,'.0035 .005'],[9,'.005 .0065'],[17,'.0028 .004']].forEach(function(p,j){ layers[j].firstChild.style.backgroundImage = smokeSVG(p[0], p[1]); });
