@@ -340,6 +340,8 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .mk .times i{font-style:normal;font-variant-numeric:tabular-nums;padding:.2em .6em;border-radius:999px;background:var(--surface-2);color:var(--ink)}
 .mk .who{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);font-size:.88rem;color:var(--soft)}
 .mk .who b{color:var(--ink);font-weight:600}
+.mk .who-l{color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:rgba(181,74,58,.4);text-underline-offset:3px;transition:color .2s,text-decoration-color .2s}
+.mk .who-l:hover{color:var(--accent);text-decoration-color:currentColor}
 .mk .note{font-size:.84rem;color:var(--soft);font-style:italic}
 
 /* маршрут */
@@ -611,6 +613,20 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 @media (max-width:520px){.bl .lbl{font-size:.72rem}}
 @media (prefers-reduced-motion:reduce){.bl{animation:none}}
 
+/* плавающая кнопка: «к началу предыдущего раздела»; после перехода по имени ведущего — «← Вернуться назад» */
+.upbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:45;display:inline-flex;align-items:center;gap:8px;height:48px;min-width:48px;padding:0 13px;border:0;border-radius:999px;cursor:pointer;
+  color:var(--accent);background:radial-gradient(circle at 35% 28%,#fff 0%,#fff 45%,#fdeee6 100%);box-shadow:0 0 0 1px rgba(181,74,58,.18),0 12px 26px -12px rgba(110,50,40,.55);
+  font:600 .92rem var(--font-body);transition:opacity .3s ease,transform .3s ease,padding .3s ease}
+.upbtn svg{width:22px;height:22px;flex:none;transition:transform .35s ease}
+.upbtn span{display:none}
+.upbtn.back{padding:0 18px 0 14px;color:#fff;background:linear-gradient(120deg,var(--accent),var(--accent-2))}
+.upbtn.back svg{transform:rotate(-90deg)}
+.upbtn.back span{display:inline}
+.upbtn.gone{opacity:0;transform:translateY(12px);pointer-events:none}
+.upbtn:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+html.menu-open .upbtn{display:none}
+@media (prefers-reduced-motion:reduce){.upbtn,.upbtn svg{transition:none}}
+
 footer{background:#f7e4d6;color:var(--soft);font-size:.9rem}
 footer .wrap{display:flex;flex-wrap:wrap;gap:14px 32px;justify-content:space-between;padding-block:30px}
 footer b{color:var(--ink);font-weight:600}
@@ -863,7 +879,7 @@ footer a{text-decoration:none}
         <p class="tag">О доверии к миру, которое можно вырастить в любом возрасте</p>
         <p class="txt">Может ли волк полюбить того, кого собирался съесть? Смотрим фрагменты доброго мультфильма «Волк и телёнок» и разбираемся, откуда у человека берётся чувство «я хороший, и мир ко мне добр». В конце — тихое упражнение «Тёплый взгляд»: каждый найдёт образ того, кто смотрит на него с теплом, и унесёт его с собой.</p>
         <div class="times">Начало: <i>11:15</i><i>12:15</i><i>13:15</i></div>
-        <div class="who">Ведёт <b>Светлана Савельева</b>, психолог, основатель центра «МирРа»</div>
+        <div class="who">Ведёт <a class="who-l" href="#people" data-person="0">Светлана Савельева</a>, психолог, основатель центра «МирРа»</div>
       </article>
       <article class="mk">
         <figure class="ill" data-ill="mk2" data-ratio="3:2"></figure>
@@ -872,7 +888,7 @@ footer a{text-decoration:none}
         <p class="tag">Рисую путь от страха к любви</p>
         <p class="txt">Где в нас живёт сила, которая делает жизнь — жизнью? Не в голове и не в достижениях, а глубже — там, где мы когда-то умели удивляться, доверять и просто быть. Короткое путешествие через движение, линию и слово: игра с лёгкими платками, рисунок своего пути от страха к любви и общая история, которую сочиняет вся группа. Свой рисунок вы унесёте с собой.</p>
         <div class="times">Начало: <i>11:15</i><i>12:15</i><i>13:15</i></div>
-        <div class="who">Ведут <b>Татьяна Елисеева</b>, арт-терапевт, педагог, и <b>Ирина Виноградова</b>, лечебный педагог</div>
+        <div class="who">Ведут <a class="who-l" href="#people" data-person="1">Татьяна Елисеева</a>, арт-терапевт, педагог, и <a class="who-l" href="#people" data-person="2">Ирина Виноградова</a>, лечебный педагог</div>
       </article>
       <article class="mk">
         <figure class="ill" data-ill="mk3" data-ratio="3:2"></figure>
@@ -882,7 +898,7 @@ footer a{text-decoration:none}
         <p class="txt">Почему бывает страшно любить и откуда берутся повторяющиеся сценарии в отношениях? Галина расскажет о законах счастливой жизни и о том, как семья, в которой мы выросли, влияет на нашу любовь. В практической части — работа с отношениями с мамой и папой: без обвинений, через уважение и восстановление баланса.</p>
         <p class="note">Участвуют все присутствующие, есть работа в парах.</p>
         <div class="times">Начало: <i>11:15</i><i>12:15</i><i>13:15</i></div>
-        <div class="who">Ведёт <b>Галина Власова</b>, психолог, коуч, расстановщик</div>
+        <div class="who">Ведёт <a class="who-l" href="#people" data-person="3">Галина Власова</a>, психолог, коуч, расстановщик</div>
       </article>
     </div>
 
@@ -894,7 +910,7 @@ footer a{text-decoration:none}
         <p class="tag">Лекарство от страха</p>
         <p class="txt">Игровой мастер-класс по мотивам сказки «Крошка Енот». Через простые роли и движение участники встречаются со своим страхом, разрешают себе немного побаловаться, вспоминают любопытство и радость внутреннего ребёнка. Уходят с улыбкой — в прямом смысле.</p>
         <div class="times">Начало: <i>16:00</i><i>17:00</i><i>18:00</i></div>
-        <div class="who">Ведут <b>Инна Кочурова</b>, специалист по эмоциональному процессу, и <b>Виктория Трофимова</b>, специалист по соединению с телом</div>
+        <div class="who">Ведут <a class="who-l" href="#people" data-person="4">Инна Кочурова</a>, специалист по эмоциональному процессу, и <a class="who-l" href="#people" data-person="5">Виктория Трофимова</a>, специалист по соединению с телом</div>
       </article>
       <article class="mk">
         <figure class="ill" data-ill="mk5" data-ratio="3:2"></figure>
@@ -903,7 +919,7 @@ footer a{text-decoration:none}
         <p class="tag">Как опора внутри становится опорой в теле</p>
         <p class="txt">Человек — единственное существо, которое ходит прямо. Наша вертикаль — это сила духа, которая помогает выпрямиться и пройти через страх. Простые телесные практики, доступные в любом возрасте: почувствовать опору под ногами, отпустить сжатие страха и найти свою внутреннюю вертикаль.</p>
         <div class="times">Начало: <i>16:00</i><i>17:00</i><i>18:00</i></div>
-        <div class="who">Ведёт <b>Светлана Савельева</b>, психолог, основатель центра «МирРа»</div>
+        <div class="who">Ведёт <a class="who-l" href="#people" data-person="0">Светлана Савельева</a>, психолог, основатель центра «МирРа»</div>
       </article>
       <article class="mk">
         <figure class="ill" data-ill="mk6" data-ratio="3:2"></figure>
@@ -913,7 +929,7 @@ footer a{text-decoration:none}
         <p class="txt">Бывает, что одни и те же трудности повторяются снова и снова — в работе, в отношениях, в жизни. Иногда за ними стоит история нашего рода. На мастер-классе — практика соединения с силой рода: с теми, кто был до нас и передал нам жизнь. Цель — почувствовать опору за спиной и превратить страх в ресурс.</p>
         <p class="note">Участвуют все присутствующие, есть работа в парах.</p>
         <div class="times">Начало: <i>16:00</i><i>17:00</i><i>18:00</i></div>
-        <div class="who">Ведёт <b>Галина Власова</b>, психолог, коуч, расстановщик</div>
+        <div class="who">Ведёт <a class="who-l" href="#people" data-person="3">Галина Власова</a>, психолог, коуч, расстановщик</div>
       </article>
     </div>
     </div>
@@ -1163,6 +1179,7 @@ footer a{text-decoration:none}
   </div>
 </section>
 </main>
+<button class="upbtn" id="upbtn" type="button" aria-label="К предыдущему разделу" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span>Вернуться назад</span></button>
 
 <footer>
   <div class="wrap">
@@ -1790,6 +1807,7 @@ footer a{text-decoration:none}
     if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ fxRun(es[0].isIntersecting); }).observe(scene);
     else fxRun(true);
     addEventListener('resize', function(){ measure(); render(); if (!anim) sayShow(target); });
+    window.anfGo = function(i){ go(i); };
   })();
 
   /* бабочки меню: заострённые передние крылья, задние с «хвостиком», прожилки и тёмная кайма с точками по краю.
@@ -1842,6 +1860,42 @@ footer a{text-decoration:none}
     if (id && goAnchor(id, true)){ e.preventDefault(); history.replaceState(null, '', '#' + id); }
   });
   if (location.hash.length > 1) addEventListener('load', function(){ goAnchor(decodeURIComponent(location.hash.slice(1)), false); });
+
+  /* имена ведущих в программе → арка нужного ведущего; плавающая кнопка: к началу предыдущего раздела,
+     а после такого перехода — «Вернуться назад» к той карточке, откуда нажали имя */
+  var upbtn = document.getElementById('upbtn'), backY = null, landing = false;
+  var SECS = [].slice.call(document.querySelectorAll('main > section[id]'));
+  function curSec(){ var y = document.querySelector('.top').getBoundingClientRect().height + 40, k = -1;
+    SECS.forEach(function(sct, j){ if (sct.getBoundingClientRect().top <= y) k = j; }); return k; }
+  function syncUp(){
+    var k = curSec(), back = backY !== null;
+    upbtn.hidden = false;
+    upbtn.classList.toggle('gone', !back && k < 0);   /* на первом экране кнопки нет */
+    upbtn.classList.toggle('back', back);
+    upbtn.setAttribute('aria-label', back ? 'Вернуться назад, к программе' : 'К предыдущему разделу');
+  }
+  document.querySelectorAll('.who-l').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      backY = scrollY; landing = true; setTimeout(function(){ landing = false; }, 1500);
+      goAnchor('people', true);
+      if (window.anfGo) window.anfGo(+a.dataset.person);
+      syncUp();
+    });
+  });
+  upbtn.addEventListener('click', function(){
+    if (backY !== null){ var y = backY; backY = null; landing = true; setTimeout(function(){ landing = false; }, 1500);
+      scrollTo({top: y, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); syncUp(); return; }
+    var k = curSec();
+    if (k <= 0) scrollTo({top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    else goAnchor(SECS[k - 1].id, true);
+  });
+  addEventListener('scroll', function(){
+    if (backY !== null && !landing){ var pr = document.getElementById('people').getBoundingClientRect();
+      if (pr.bottom < 80 || pr.top > innerHeight - 80) backY = null; }   /* ушли из «Ведущих» сами — кнопка снова обычная */
+    syncUp();
+  }, {passive:true});
+  syncUp();
 
   /* мобильное меню: раскрывается кругом от кнопки; закрыть — той же кнопкой, пунктом меню, Esc */
   var burger = document.getElementById('burger'), mnav = document.getElementById('mnav');
