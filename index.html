@@ -661,7 +661,7 @@ footer a{text-decoration:none}
         </div>
         <figure class="rmap" aria-hidden="true">
           <svg viewBox="0 0 320 230" id="rmap"></svg>
-          <figcaption>Схема условная: порядок залов и время начала в обеих частях</figcaption>
+          <figcaption>Схема условная: порядок залов и время начала — первой части, в скобках — второй</figcaption>
         </figure>
       </div>
       <div class="myday" id="myday" aria-live="polite"></div>
@@ -1088,7 +1088,7 @@ footer a{text-decoration:none}
       var p = MAP[n], k = ORDER.map(function(o){ return o[g]; }).indexOf(n);
       s += '<g class="hall on"><rect x="'+(p[0]-56)+'" y="'+(p[1]-22)+'" width="112" height="44" rx="12"/>' +
            '<text x="'+p[0]+'" y="'+(p[1]-2)+'" text-anchor="middle">'+n+'</text>' +
-           '<text class="tm" x="'+p[0]+'" y="'+(p[1]+13)+'" text-anchor="middle">'+T1[k].slice(0,5)+' · '+T2[k].slice(0,5)+'</text></g>';
+           '<text class="tm" x="'+p[0]+'" y="'+(p[1]+13)+'" text-anchor="middle">'+T1[k].slice(0,5)+' ('+T2[k].slice(0,5)+')'+'</text></g>';
     });
     s = '<g class="start"><circle cx="'+HALL0[0]+'" cy="'+HALL0[1]+'" r="20"/><text x="'+HALL0[0]+'" y="'+(HALL0[1]+3)+'" text-anchor="middle">ХОЛЛ</text></g>' + s;
     ORDER.forEach(function(o){ pts.push(MAP[o[g]]); });
