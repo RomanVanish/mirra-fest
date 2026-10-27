@@ -136,6 +136,7 @@ a{color:inherit}
 .stack.s3{transform:translate(18px,14px) rotate(6.5deg);opacity:.75}
 .mcard{all:unset;position:absolute;inset:0;cursor:pointer;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.7,.25,1),opacity .3s ease,translate .3s ease}
 .mcard.out{opacity:0;translate:-30px -24px}
+.mcard.pre{opacity:0;translate:30px 18px}
 .mcard.instant{transition:none}
 .face{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:grid;align-content:center;justify-items:center;gap:14px;padding:30px 26px;text-align:center;box-shadow:0 30px 50px -30px rgba(110,84,134,.65);overflow:hidden}
 .face.fb{transform:rotateY(180deg)}
@@ -144,6 +145,12 @@ a{color:inherit}
 .face.cover .c-mark{position:absolute;left:0;right:0;bottom:18%;font:500 1.3rem/1.2 var(--font-display);color:var(--ink)}
 .face.cover .c-mark i{color:var(--accent)}
 .face.cover .c-hint{position:absolute;left:0;right:0;bottom:11%;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:rgba(59,39,49,.6)}
+/* рубашка-картинка (card): заглушка с аркой исчезает, внизу светлая вуаль под надписью */
+.face.cover .c-ph{position:absolute;left:0;right:0;top:9%;font-size:.7rem;color:rgba(59,39,49,.45)}
+.deck.has-card .stack,.deck.has-card .face.cover{background:var(--card) center/cover no-repeat}
+.deck.has-card .face.cover::before,.deck.has-card .face.cover .c-ph{display:none}
+.deck.has-card .face.cover::after{content:"";position:absolute;left:0;right:0;bottom:0;height:36%;background:linear-gradient(180deg,rgba(255,250,245,0),rgba(255,250,245,.88))}
+.face.cover .c-mark,.face.cover .c-hint{z-index:1}
 .face.fear{background:linear-gradient(170deg,#f1e8f5 0%,#e3d3ec 100%);color:var(--ink)}
 .face.fear .eyebrow{color:var(--lilac-deep)}
 .face.love{background:linear-gradient(170deg,#fff3e6 0%,#fbd6bb 100%);color:var(--ink)}
@@ -458,7 +465,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .lg-sky{position:absolute;left:50%;top:-40px;z-index:-1;width:min(780px,150%);aspect-ratio:3/2;transform:translateX(-50%);border-radius:0;
   -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%)}
 .lg-sky::before{display:none}
-.lg-sky .ill-ph{place-content:end center;padding-bottom:7%}
+.lg-sky .ill-ph{place-content:start end;padding:13% 15% 0 0;font-size:.7rem}
 .lg-l{font-family:var(--font-display);font-size:var(--step-2);line-height:1.2}
 .lg-hint{font-size:.9rem;color:#6b4a45}
 .balloons{position:relative;width:100%;height:360px;margin-top:4px}
@@ -1114,7 +1121,7 @@ footer a{text-decoration:none}
   var mcI = -1, mcState = 'cover', mcAngle = 0;
   function cardFace(el, kind, c){
     el.className = 'face ' + (el === mcA ? 'fa ' : 'fb ') + kind;
-    el.innerHTML = kind === 'cover' ? '<span class="c-mark">От Страха <i>к</i> Любви</span><span class="c-hint">Карта дня</span>'
+    el.innerHTML = kind === 'cover' ? '<span class="c-ph">иллюстрация · card · 2:3</span><span class="c-mark">От Страха <i>к</i> Любви</span><span class="c-hint">Карта дня</span>'
       : kind === 'fear' ? '<span class="eyebrow">Страх</span><span class="c-big">«' + c.f + '»</span><span class="c-hint2">Нажмите на карту, чтобы перевернуть</span>'
       : '<span class="eyebrow">Опора</span><span class="c-big">' + c.l + '</span><span class="c-prac"><b>Практика на сегодня</b>' + c.p + '</span>';
   }
@@ -1126,15 +1133,26 @@ footer a{text-decoration:none}
     setTimeout(function(){ cardFace(mcA, 'love', c); }, REDUCE ? 0 : 380);
     mcDraw.textContent = 'Вытянуть другую карту';
   }
+  /* другая карта: старая уезжает, новая въезжает сбоку сразу стороной «страх» — без мелькания рубашки */
   function drawCard(){
     if (mcState === 'cover'){ reveal(); return; }
     mcard.classList.add('out');
     setTimeout(function(){
-      mcard.classList.add('instant'); mcAngle = 0; mcard.style.transform = 'rotateY(0deg)'; cardFace(mcA, 'cover');
-      void mcard.offsetWidth; mcard.classList.remove('instant', 'out');
-      requestAnimationFrame(function(){ requestAnimationFrame(reveal); });
+      var c = CARDS[order[++mcI % order.length]];
+      mcard.classList.add('instant'); mcAngle = 180; mcard.style.transform = 'rotateY(180deg)';
+      cardFace(mcB, 'fear', c); cardFace(mcA, 'love', c);
+      mcard.classList.remove('out'); mcard.classList.add('pre');
+      void mcard.offsetWidth; mcard.classList.remove('instant', 'pre');
+      mcState = 'fear'; mcShare.hidden = true;
     }, REDUCE ? 0 : 300);
   }
+  /* рубашка карты: картинка img/ill/card.webp|.jpg|.png подставляется сама на верхнюю карту и колоду под ней */
+  (function(){
+    var deck = document.querySelector('.deck'), ext = ['webp','jpg','png'], k = 0, im = new Image();
+    im.onload = function(){ deck.style.setProperty('--card', 'url("' + im.src + '")'); deck.classList.add('has-card'); };
+    im.onerror = function(){ if (++k < ext.length) im.src = 'img/ill/card.' + ext[k]; };
+    im.src = 'img/ill/card.' + ext[0];
+  })();
   mcard.addEventListener('click', function(){
     if (mcState === 'cover'){ reveal(); return; }
     turn(); mcState = mcState === 'fear' ? 'love' : 'fear';
