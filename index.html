@@ -129,6 +129,37 @@ a{color:inherit}
   @keyframes pulse{0%,100%{r:7}50%{r:10}}
 }
 
+/* карта дня: колода, карта переворачивается — страх → опора и практика */
+.cards{background:linear-gradient(180deg,var(--bg) 0%,#fcefe6 100%)}
+.cards .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,80px);align-items:center}
+.cards .head{margin:0}
+.deckwrap{display:grid;justify-items:center;gap:22px}
+.deck{position:relative;width:min(320px,82vw);aspect-ratio:3/4.1;perspective:1400px}
+.stack,.face.cover{background:radial-gradient(circle at 50% 38%,rgba(255,236,206,.9) 0%,rgba(255,236,206,0) 42%),linear-gradient(165deg,#e9d6ec 0%,#f6cbbd 55%,#f2aa72 100%)}
+.stack{position:absolute;inset:0;border-radius:18px;box-shadow:0 20px 40px -30px rgba(110,84,134,.6)}
+.stack.s2{transform:translate(9px,7px) rotate(3deg)}
+.stack.s3{transform:translate(18px,14px) rotate(6.5deg);opacity:.75}
+.mcard{all:unset;position:absolute;inset:0;cursor:pointer;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.7,.25,1),opacity .3s ease,translate .3s ease}
+.mcard.out{opacity:0;translate:-30px -24px}
+.mcard.instant{transition:none}
+.face{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:grid;align-content:center;justify-items:center;gap:14px;padding:30px 26px;text-align:center;box-shadow:0 30px 50px -30px rgba(110,84,134,.65);overflow:hidden}
+.face.fb{transform:rotateY(180deg)}
+.mcard:focus-visible .face{outline:2px solid var(--focus);outline-offset:4px}
+.face.cover::before{content:"";position:absolute;left:50%;top:22%;width:46%;aspect-ratio:3/3.6;transform:translateX(-50%);border:2px solid rgba(255,255,255,.85);border-bottom:0;border-radius:999px 999px 0 0}
+.face.cover .c-mark{position:absolute;left:0;right:0;bottom:18%;font:500 1.3rem/1.2 var(--font-display);color:var(--ink)}
+.face.cover .c-mark i{color:var(--accent)}
+.face.cover .c-hint{position:absolute;left:0;right:0;bottom:11%;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:rgba(59,39,49,.6)}
+.face.fear{background:linear-gradient(170deg,#f1e8f5 0%,#e3d3ec 100%);color:var(--ink)}
+.face.fear .eyebrow{color:var(--lilac-deep)}
+.face.love{background:linear-gradient(170deg,#fff3e6 0%,#fbd6bb 100%);color:var(--ink)}
+.c-big{font:italic 400 clamp(1.4rem,1.2rem + 1vw,1.75rem)/1.25 var(--font-display);text-wrap:balance}
+.face.love .c-big{font-style:normal}
+.c-hint2{font-size:.8rem;color:var(--soft)}
+.c-prac{display:grid;gap:4px;font-size:.92rem;line-height:1.45;padding-top:14px;border-top:1px solid rgba(181,74,58,.2)}
+.c-prac b{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.deckacts{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:center}
+@media (prefers-reduced-motion:reduce){.mcard{transition:none}}
+
 /* полоса цифр */
 .strip{background:var(--surface);border-bottom:1px solid var(--line)}
 .strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-block:26px}
@@ -323,7 +354,7 @@ footer a{text-decoration:none}
 @media (max-width:960px){
   .nav{display:none}
   .top .btn{margin-left:auto}
-  .hero .wrap,.idea .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast{grid-template-columns:1fr}
+  .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast{grid-template-columns:1fr}
   .hero-ill{width:min(250px,68%);order:-1}
   .faq-ill{width:min(260px,75%);margin-bottom:12px}
   .mks,.plans{grid-template-columns:1fr}
@@ -456,6 +487,31 @@ footer a{text-decoration:none}
         <div><b>к себе</b><span>«Источник», «Улыбка»</span></div>
         <div><b>к телу</b><span>«Внутренняя вертикаль»</span></div>
         <div><b>к роду</b><span>расстановки Галины Власовой</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3а. Карта дня -->
+<section class="block cards" id="card">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Карта дня</div>
+      <h2>Вытяните карту — и посмотрите, что за страхом</h2>
+      <p class="lead">На одной стороне — страх, на другой — опора и маленькая практика на сегодня. Как на фестивале, только за минуту.</p>
+      <p><span class="tbd">тексты карт на согласовании</span></p>
+    </div>
+    <div class="deckwrap">
+      <div class="deck">
+        <div class="stack s3" aria-hidden="true"></div><div class="stack s2" aria-hidden="true"></div>
+        <button class="mcard" id="mcard" type="button" aria-live="polite">
+          <span class="face fa" id="mc-a"></span>
+          <span class="face fb" id="mc-b"></span>
+        </button>
+      </div>
+      <div class="deckacts">
+        <button class="btn btn-warm" type="button" id="mc-draw">Вытянуть карту</button>
+        <button class="linkbtn" type="button" id="mc-share" hidden>Поделиться картой</button>
       </div>
     </div>
   </div>
@@ -867,6 +923,57 @@ footer a{text-decoration:none}
     })(t0);
   });
   set8(p8v.value/100);
+
+  /* карта дня. ТЕКСТЫ — ЧЕРНОВИК, на согласовании со Светланой Савельевой: f — страх, l — опора, p — практика на сегодня */
+  var CARDS = [
+    {f:'Я не справлюсь', l:'Вы уже справлялись раньше — и не раз.', p:'Вспомните один случай, когда было трудно, а вы справились. Что тогда помогло?'},
+    {f:'Меня не примут таким, какой я есть', l:'Вас есть за что любить — просто за то, что вы есть.', p:'Вспомните человека, который смотрит на вас с теплом. Побудьте с этим образом минуту.'},
+    {f:'Я совсем один', l:'Рядом есть люди, которым вы дороги.', p:'Напишите сегодня одно тёплое сообщение тому, о ком давно думаете.'},
+    {f:'Сейчас случится что-то плохое', l:'Сейчас вы в безопасности. Под ногами — опора.', p:'Встаньте, почувствуйте стопы и сделайте три медленных выдоха — длиннее вдоха.'},
+    {f:'Мне нельзя ошибаться', l:'Ошибка — это шаг, а не приговор.', p:'Вспомните ошибку, которая чему-то вас научила, и мысленно скажите себе спасибо.'},
+    {f:'Радоваться — несерьёзно', l:'Радость — ваша по праву.', p:'Найдите сегодня пять минут на то, что просто приятно. Без пользы и без отчёта.'},
+    {f:'Я должен всё держать под контролем', l:'Можно довериться — жизнь подхватит.', p:'Отпустите сегодня одну мелочь, которую обычно контролируете. Посмотрите, что будет.'},
+    {f:'Если покажу чувства, мне будет больно', l:'Чувства — это не слабость, а живость.', p:'Назовите вслух одним словом, что вы чувствуете прямо сейчас.'}
+  ];
+  var mcard = document.getElementById('mcard'), mcA = document.getElementById('mc-a'), mcB = document.getElementById('mc-b');
+  var mcDraw = document.getElementById('mc-draw'), mcShare = document.getElementById('mc-share');
+  var order = CARDS.map(function(c,i){ return i; }).sort(function(){ return Math.random() - .5; });
+  var mcI = -1, mcState = 'cover', mcAngle = 0;
+  function cardFace(el, kind, c){
+    el.className = 'face ' + (el === mcA ? 'fa ' : 'fb ') + kind;
+    el.innerHTML = kind === 'cover' ? '<span class="c-mark">От Страха <i>к</i> Любви</span><span class="c-hint">Карта дня</span>'
+      : kind === 'fear' ? '<span class="eyebrow">Страх</span><span class="c-big">«' + c.f + '»</span><span class="c-hint2">Нажмите на карту, чтобы перевернуть</span>'
+      : '<span class="eyebrow">Опора</span><span class="c-big">' + c.l + '</span><span class="c-prac"><b>Практика на сегодня</b>' + c.p + '</span>';
+  }
+  function turn(){ mcAngle += 180; mcard.style.transform = 'rotateY(' + mcAngle + 'deg)'; }
+  /* лицевая сторона (fa) после первого переворота показывает опору, обратная (fb) — страх */
+  function reveal(){
+    var c = CARDS[order[++mcI % order.length]];
+    cardFace(mcB, 'fear', c); turn(); mcState = 'fear'; mcShare.hidden = true;
+    setTimeout(function(){ cardFace(mcA, 'love', c); }, REDUCE ? 0 : 380);
+    mcDraw.textContent = 'Вытянуть другую карту';
+  }
+  function drawCard(){
+    if (mcState === 'cover'){ reveal(); return; }
+    mcard.classList.add('out');
+    setTimeout(function(){
+      mcard.classList.add('instant'); mcAngle = 0; mcard.style.transform = 'rotateY(0deg)'; cardFace(mcA, 'cover');
+      void mcard.offsetWidth; mcard.classList.remove('instant', 'out');
+      requestAnimationFrame(function(){ requestAnimationFrame(reveal); });
+    }, REDUCE ? 0 : 300);
+  }
+  mcard.addEventListener('click', function(){
+    if (mcState === 'cover'){ reveal(); return; }
+    turn(); mcState = mcState === 'fear' ? 'love' : 'fear';
+    mcShare.hidden = mcState !== 'love';
+  });
+  mcDraw.addEventListener('click', drawCard);
+  mcShare.addEventListener('click', function(){
+    var c = CARDS[order[mcI % order.length]], text = 'Моя карта дня: «' + c.f + '» → ' + c.l + ' ' + c.p + ' — фестиваль «От Страха к Любви», 21 ноября';
+    if (navigator.share) navigator.share({title:'Карта дня', text:text, url:location.href.split('#')[0]}).catch(function(){});
+    else if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + location.href.split('#')[0]).then(function(){ mcShare.textContent = 'Скопировано'; setTimeout(function(){ mcShare.textContent = 'Поделиться картой'; }, 1800); });
+  });
+  cardFace(mcA, 'cover'); cardFace(mcB, 'fear', CARDS[order[0]]);
 
   /* вкладки программы */
   var tabs = document.querySelectorAll('[role="tab"]');
