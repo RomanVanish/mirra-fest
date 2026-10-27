@@ -91,14 +91,14 @@ a{color:inherit}
 /* бабочка видна под углом: наклон к зрителю (rotateX) и поворот в плоскости — взмах сжатием крыла тогда читается как объёмный */
 .bf .tilt{transform:perspective(420px) rotateX(var(--rx,34deg)) rotateZ(var(--rz,-22deg))}
 .bf svg{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 0 4px rgba(255,60,120,.45)) drop-shadow(0 6px 10px rgba(150,40,60,.18))}
-.bf .w{animation:bf-flap var(--fp,7s) ease-in-out infinite;animation-delay:var(--fd,0s)}
+.bf .w{animation:bf-flap var(--fp,6s) ease-in-out infinite;animation-delay:var(--fd,0s)}
 /* крупная — справа от пунктов «Ведущие — Участие», маленькая — справа от кнопки «Забронировать место» */
 .mnav nav{position:relative}
 .bf.b1{width:clamp(104px,31vw,132px);right:-6px;top:132px;--d:.6s;--ft:10s}
 .mnav .m-cta{display:flex;align-items:center;gap:18px}
-.bf.b2{position:relative;flex:none;width:52px;--d:.95s;--ft:11s;--fp:8.6s;--fd:-3.1s;--rz:18deg;--rx:30deg}
-/* бабочка в основном отдыхает с раскрытыми крыльями (чуть «дышит»), потом один неторопливый взмах и второй, помельче */
-@keyframes bf-flap{0%,52%,100%{transform:scaleX(1)}26%{transform:scaleX(.94)}62%{transform:scaleX(.42)}72%{transform:scaleX(.98)}80%{transform:scaleX(.62)}89%{transform:scaleX(1)}}
+.bf.b2{position:relative;flex:none;width:52px;--d:.95s;--ft:11s;--fp:7.4s;--fd:-2.6s;--rz:18deg;--rx:30deg}
+/* бабочка подолгу сидит с раскрытыми крыльями, потом два коротких живых взмаха (быстрее, но неглубоко) — и снова покой */
+@keyframes bf-flap{0%,70%,85%,100%{transform:scaleX(1)}35%{transform:scaleX(.97)}74%{transform:scaleX(.58)}78%{transform:scaleX(1)}81%{transform:scaleX(.72)}}
 @keyframes bf-float{0%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(-14px,-12px) rotate(4deg)}100%{transform:translate(8px,-22px) rotate(-2deg)}}
 .mnav ol{list-style:none;margin:0;padding:0;display:grid;gap:6px;position:relative}
 .mnav li{opacity:0;transform:translateY(22px);filter:blur(8px);transition:opacity .3s ease,transform .3s ease,filter .3s ease}
