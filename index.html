@@ -110,6 +110,9 @@ a{color:inherit}
 .mnav.open .m-foot{opacity:1;transform:none;transition:opacity .6s ease .75s,transform .7s cubic-bezier(.2,.8,.2,1) .75s}
 .mnav .m-foot p{color:var(--soft);font-size:.95rem;line-height:1.5}
 html.menu-open{overflow:hidden}
+/* невысокие экраны: пункты и отступы компактнее, чтобы меню с кнопкой помещалось целиком */
+@media (max-height:760px){.mnav{padding-bottom:20px}.mnav ol{gap:2px}.mnav ol a{font-size:1.9rem;padding:5px 0}.mnav .m-foot{margin-top:20px;gap:12px}.bf.b1{top:96px;width:104px}}
+@media (max-height:600px){.mnav ol a{font-size:1.5rem;padding:3px 0}.mnav .m-foot{margin-top:14px}.mnav .m-foot p{font-size:.85rem}.bf.b1{top:80px;width:88px}}
 @media (prefers-reduced-motion:reduce){.burger::before{animation:none}.mnav,.mnav.open,.mnav li,.mnav.open li,.mnav .m-foot,.mnav.open .m-foot{transition:none!important;filter:none}.bf .fly,.bf .w{animation:none}}
 
 /* первый экран — рассвет */
@@ -1759,7 +1762,7 @@ footer a{text-decoration:none}
   function setMenu(on, focus){
     var b = burger.getBoundingClientRect();
     mnav.style.setProperty('--mx', (b.left + b.width / 2) + 'px'); mnav.style.setProperty('--my', (b.top + b.height / 2) + 'px');
-    if (on) mnav.style.paddingTop = (burger.closest('.top').getBoundingClientRect().bottom + 28) + 'px';   /* пункты — сразу под шапкой, где бы она ни была */
+    if (on) mnav.style.paddingTop = (burger.closest('.top').getBoundingClientRect().bottom + (innerHeight < 760 ? 14 : 28)) + 'px';   /* пункты — сразу под шапкой, где бы она ни была */
     mnav.classList.toggle('open', on); mnav.inert = !on;
     burger.setAttribute('aria-expanded', on); burger.setAttribute('aria-label', on ? 'Закрыть меню' : 'Открыть меню');
     document.documentElement.classList.toggle('menu-open', on);
