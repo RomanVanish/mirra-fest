@@ -42,26 +42,25 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
 /* виньетка по краям: в начале пути гуще, к финалу почти исчезает */
 .dusk{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 70% at 50% 55%,rgba(52,24,38,0) 40%,rgba(52,24,38,.6) 100%)}
 .fx{position:absolute;inset:0;width:100%;height:100%;z-index:140;pointer-events:none}
-/* плавающие стрелки в стеклянных кружках: справа выше — вперёд, вглубь; слева ниже — шаг назад */
-.way{position:absolute;left:0;top:0;z-index:160;width:56px;height:56px;padding:0;border:0;border-radius:50%;cursor:pointer;display:grid;place-items:center;background:none}
-.way span{position:relative;display:grid;place-items:center;width:100%;height:100%;border-radius:50%;overflow:hidden;color:#fff;
-  -webkit-backdrop-filter:blur(8px) saturate(1.4);backdrop-filter:blur(8px) saturate(1.4);
-  border:1px solid rgba(255,255,255,.65);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.8),inset 0 -6px 12px rgba(255,255,255,.12),0 10px 24px -10px rgba(40,16,30,.55);
-  animation:float 2.6s ease-in-out infinite}
-/* блик стекла: светлый отлив сверху и тонкий отсвет снизу */
-.way span::before{content:"";position:absolute;left:10%;right:10%;top:4%;height:46%;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,0));pointer-events:none}
-.way span::after{content:"";position:absolute;left:22%;right:22%;bottom:7%;height:14%;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.45),rgba(255,255,255,0) 70%);pointer-events:none}
-.way svg{position:relative;width:24px;height:24px;filter:drop-shadow(0 1px 2px rgba(60,20,30,.45))}
+/* стрелки в стеклянных шариках, контрастные на розовом: «вперёд» — белый шарик с тёмно-красной стрелкой и расходящимся кольцом,
+   «назад» — шарик тёмного сливового стекла с белой стрелкой */
+.way{position:absolute;left:0;top:0;z-index:160;width:44px;height:44px;padding:0;border:0;border-radius:50%;cursor:pointer;display:grid;place-items:center;background:none}
+.way span{position:relative;display:grid;place-items:center;width:100%;height:100%;border-radius:50%;overflow:hidden;
+  -webkit-backdrop-filter:blur(8px) saturate(1.4);backdrop-filter:blur(8px) saturate(1.4);border:1px solid rgba(255,255,255,.7)}
+/* блик стекла сверху */
+.way span::before{content:"";position:absolute;left:12%;right:12%;top:5%;height:44%;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0));pointer-events:none}
+.way svg{position:relative;width:22px;height:22px}
 .way:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.way.fwd span{background:linear-gradient(160deg,rgba(255,200,150,.55),rgba(226,118,63,.45));box-shadow:inset 0 1px 1px rgba(255,255,255,.8),inset 0 -6px 12px rgba(255,255,255,.12),0 10px 26px -8px rgba(217,105,47,.7),0 0 22px -4px rgba(255,190,130,.7)}
-.way.back{width:46px;height:46px}
-.way.back span{background:linear-gradient(160deg,rgba(255,255,255,.35),rgba(255,236,226,.15));animation-delay:-1.3s}
-.way.back svg{width:20px;height:20px}
-.way:hover span{filter:brightness(1.08)}
+.way.fwd span{color:var(--accent);background:radial-gradient(circle at 35% 30%,#fff 0%,#fff 40%,#fdeee6 100%);
+  box-shadow:0 0 0 3px rgba(181,74,58,.28),0 8px 18px -6px rgba(60,20,30,.6)}
+.way.fwd::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(255,255,255,.8);pointer-events:none;animation:ring 2.2s ease-out infinite}
+.way.back{width:38px;height:38px}
+.way.back span{color:#fff;background:linear-gradient(160deg,rgba(84,48,80,.82),rgba(42,22,42,.75));box-shadow:0 8px 18px -8px rgba(30,10,24,.7)}
+.way.back svg{width:18px;height:18px}
+.way:hover span{filter:brightness(1.06)}
 .way[hidden]{display:none}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@media (prefers-reduced-motion:reduce){.way span{animation:none}}
+@keyframes ring{from{transform:scale(1);opacity:.9}to{transform:scale(1.8);opacity:0}}
+@media (prefers-reduced-motion:reduce){.way.fwd::before{animation:none;opacity:0}}
 /* тёмная дымка: полупрозрачные клубы и пряди (текстура шума). При проходе наплывает, затем расползается и редеет */
 .mist{position:absolute;inset:0;z-index:150;pointer-events:none;overflow:hidden}
 .mist .ml{position:absolute;inset:-35%;opacity:0;will-change:transform,opacity}
@@ -264,8 +263,8 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     drawTrees(); sizeFx();
     /* стрелки у передней арки: «вперёд» справа на уровне плеч спикера, «назад» слева ниже */
     var ah = A0*R, al = W/2 - A0/2, ar = W/2 + A0/2;
-    wayFwd.style.transform = 'translate('+Math.min(ar + 12, W - 62).toFixed(0)+'px,'+(FLOOR - ah*0.62).toFixed(0)+'px)';
-    wayBack.style.transform = 'translate('+Math.max(8, al - 58).toFixed(0)+'px,'+(FLOOR - ah*0.3).toFixed(0)+'px)';
+    wayFwd.style.transform = 'translate('+Math.min(ar + 12, W - 52).toFixed(0)+'px,'+(FLOOR - ah*0.62).toFixed(0)+'px)';
+    wayBack.style.transform = 'translate('+Math.max(8, al - 50).toFixed(0)+'px,'+(FLOOR - ah*0.3).toFixed(0)+'px)';
   }
   function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function place(d){                                        // центр низа и масштаб арки на глубине d; путь вглубь заворачивает дугой вправо
