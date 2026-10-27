@@ -318,7 +318,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 /* ведущие — анфилада арок: передняя арка по центру, остальные уходят по дуге к свету; с каждым шагом теплеет небо,
    зацветает терн, в тоннеле золотая пыльца, у финала лепестки. Дымка — только вокруг тоннеля. Классы — с префиксом a- */
 .people{background:linear-gradient(180deg,var(--bg) 0%,#fdf1ea 100%)}
-.a-scene{position:relative;height:min(74vh,700px);min-height:440px;border-radius:22px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:#4a3048}
+.a-scene{position:relative;isolation:isolate;height:min(74vh,700px);min-height:440px;border-radius:22px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:#4a3048}
 .a-scene:focus-visible{outline:2px solid var(--focus);outline-offset:4px}
 .a-world{position:absolute;inset:0}
 .a-sky{position:absolute;left:0;right:0;top:0;background:linear-gradient(180deg,#4a2c4a 0%,#7a4664 36%,#b46c7a 64%,#e49a8c 85%,#f8c69a 100%)}
