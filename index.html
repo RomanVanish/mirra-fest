@@ -386,7 +386,8 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-dawn{position:absolute;inset:0;pointer-events:none;opacity:0;
   background:linear-gradient(180deg,rgba(255,190,150,.32) 0%,rgba(255,202,156,.5) 48%,rgba(255,224,176,.62) 64%,rgba(255,200,156,.38) 100%)}
 .a-dusk{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 70% at 50% 55%,rgba(52,24,38,0) 40%,rgba(52,24,38,.6) 100%)}
-.a-fx{position:absolute;inset:0;width:100%;height:100%;z-index:140;pointer-events:none}
+/* пыльца и лепестки — за арками и фигурами (у арок z-index от 100 и ниже), но над небом и деревьями */
+.a-fx{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
 .a-trees{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .a-light{position:absolute;left:0;top:0;width:10px;height:10px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen;
   background:radial-gradient(circle,rgba(255,253,245,1) 0%,rgba(255,244,220,1) 4%,rgba(255,220,170,.8) 11%,rgba(250,180,120,.42) 24%,rgba(220,140,120,.16) 42%,rgba(220,140,120,0) 64%)}
