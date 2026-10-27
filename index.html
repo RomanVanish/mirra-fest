@@ -378,7 +378,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 /* ведущие — анфилада арок: передняя арка по центру, остальные уходят по дуге к свету; с каждым шагом теплеет небо,
    зацветает терн, в тоннеле золотая пыльца, у финала лепестки. Дымка — только вокруг тоннеля. Классы — с префиксом a- */
 .people{background:linear-gradient(180deg,var(--bg) 0%,#fdf1ea 100%)}
-.a-scene{position:relative;isolation:isolate;height:min(74vh,700px);min-height:440px;border-radius:22px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:#4a3048}
+.a-scene{position:relative;isolation:isolate;height:min(58vh,560px);min-height:420px;border-radius:22px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:#4a3048}
 .a-scene:focus-visible{outline:2px solid var(--focus);outline-offset:4px}
 .a-world{position:absolute;inset:0}
 .a-sky{position:absolute;left:0;right:0;top:0;background:linear-gradient(180deg,#4a2c4a 0%,#7a4664 36%,#b46c7a 64%,#e49a8c 85%,#f8c69a 100%)}
@@ -396,13 +396,17 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-portal{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform,opacity;cursor:pointer}
 .a-frame{position:absolute;inset:0;border:var(--t) solid var(--c);border-bottom:0;border-radius:50% 50% 0 0/42% 42% 0 0;
   box-shadow:0 -2px 22px -8px var(--c),inset 0 18px 26px -20px rgba(255,240,225,.6);
-  background:radial-gradient(ellipse 75% 70% at 50% 72%,rgba(255,226,186,var(--in)) 0%,rgba(255,196,150,calc(var(--in)*.55)) 42%,rgba(255,196,150,0) 78%)}
+  background:radial-gradient(ellipse 75% 56% at 50% 56%,rgba(255,226,186,var(--in)) 0%,rgba(255,196,150,calc(var(--in)*.55)) 42%,rgba(255,196,150,0) 78%)}   /* к низу арки свечение уже погасло — без горизонтальной кромки */
 .a-frame::after{content:"";position:absolute;inset:0;border:2px solid rgba(255,255,255,.6);border-bottom:0;border-radius:inherit}
 .a-pool{position:absolute;left:-18%;right:-18%;bottom:-8%;height:16%;border-radius:50%;pointer-events:none;opacity:var(--pool);
   background:radial-gradient(ellipse at 50% 50%,rgba(255,222,176,.75) 0%,rgba(255,186,130,.3) 42%,rgba(255,186,130,0) 70%)}
 .a-person{position:absolute;left:50%;bottom:0;height:84%;transform:translateX(-50%);pointer-events:none}
 .a-person img,.a-person svg{display:block;height:100%;width:auto;max-width:none}
-.a-person img{filter:drop-shadow(0 0 2px rgba(255,236,210,.7)) drop-shadow(0 0 16px rgba(255,206,160,.5));
+/* тёплая подложка под фигурой: там, где края фигуры растворяются, видно ровное свечение, а не столбы и кромки дальних арок */
+.a-person::before{content:"";position:absolute;left:-12%;right:-12%;top:36%;bottom:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse 48% 54% at 50% 62%,rgb(var(--pl) / .96) 0%,rgb(var(--pl) / .88) 48%,rgb(var(--pl) / .48) 68%,rgb(var(--pl) / 0) 84%)}
+.a-person{isolation:isolate}
+.a-person img{filter:drop-shadow(0 0 3px rgba(255,238,205,.9)) drop-shadow(0 0 9px rgba(255,214,150,.75)) drop-shadow(0 0 20px rgba(255,196,120,.55)) drop-shadow(0 0 34px rgba(255,186,110,.35));
   /* фигура «вписана» в арку: края кадра (обрезанные руки, низ) мягко растворяются, голова и плечи нетронуты */
   -webkit-mask-image:radial-gradient(ellipse 66% 88% at 50% 26%,#000 64%,transparent 100%),linear-gradient(180deg,#000 74%,transparent 98%);
   -webkit-mask-composite:source-in;
@@ -455,7 +459,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-dots button[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .a-hint{font-size:.85rem;color:var(--soft);margin-top:6px}
 @media (max-width:640px){
-  .a-scene{height:auto;aspect-ratio:4/5;min-height:0;border-radius:16px}
+  .a-scene{height:auto;aspect-ratio:1/1;min-height:0;border-radius:16px}
   .a-below{grid-template-columns:1fr}
   .a-ctrls .btn-warm{flex:1}
 }
@@ -1530,7 +1534,8 @@ footer a{text-decoration:none}
       el.style.setProperty('--c', colorAt(i));
       var lit = i/(PEOPLE.length-1);
       el.style.setProperty('--in', (0.16 + 0.5*lit).toFixed(3));
-      el.style.setProperty('--pool', (0.35 + 0.6*lit).toFixed(3));
+      el._pool = 0.35 + 0.6*lit; el.style.setProperty('--pool', el._pool.toFixed(3));
+      el.style.setProperty('--pl', mix([150,98,122],[238,190,164],lit).join(' '));   /* подложка под фигурой — в тон своей арки: сумеречная → рассветная */
       el.innerHTML = '<div class="a-pool"></div><div class="a-frame"></div>' +
         (p.end ? '<div class="a-glow"></div><div class="a-love"><span class="a-love-ph">иллюстрация<br><small>love · 2:3</small></span></div>' : '<div class="a-person">'+(p.img ? '<img src="'+p.img+'" alt="'+p.n+'" draggable="false">' : SIL)+'</div>');
       el.addEventListener('click', function(){ if (swiped) return; if (Math.round(cam) === i) go(i+1); else go(i); });
@@ -1547,13 +1552,13 @@ footer a{text-decoration:none}
       box.appendChild(img);
     })(portals[portals.length-1].querySelector('.a-love'));
 
-    /* геометрия: глаза спикера на уровне горизонта, коридор уходит дугой вправо и вглубь к свету */
+    /* геометрия: горизонт на уровне плеч спикера, над передней аркой ~6% воздуха; коридор уходит дугой вправо и вглубь к свету */
     var W, H, A0, VY, FLOOR, K, wayFwd = q('.a-way.fwd'), wayBack = q('.a-way.back');
     function measure(){
       W = scene.clientWidth; H = scene.clientHeight;
       FLOOR = H*0.97;
-      A0 = Math.min(W*(W < 640 ? 0.78 : 0.72), H*0.82/R, 460);
-      VY = FLOOR - A0*R*0.66;
+      A0 = Math.min(W*(W < 640 ? 0.78 : 0.72), H*0.9/R, 460);   /* над передней аркой — около 6% высоты сцены */
+      VY = FLOOR - A0*R*0.56;   /* горизонт — чуть ниже глаз, на уровне плеч */
       K = 0.45 / (Math.pow(6,1.2) / (1+6*0.38));
       portals.forEach(function(el){ el.style.width = A0+'px'; el.style.height = A0*R+'px'; el.style.setProperty('--t', Math.max(7, A0*0.04)+'px'); });
       q('.a-sky').style.height = VY+'px';
@@ -1582,6 +1587,8 @@ footer a{text-decoration:none}
         el.style.transform = 'translate('+(p.x-w/2)+'px,'+(p.y-w*R)+'px) scale('+p.s+')';
         el.style.opacity = d < 0 ? clamp(1+d/0.5) : clamp(1-Math.max(0,d-4.5)*0.3);
         el.style.zIndex = 100 - Math.round(d*10);
+        /* пятно света на полу — только у ближней арки и у финальной: у дальних оно просвечивало полосой за фигурой */
+        if (!PEOPLE[i].end) el.firstChild.style.opacity = (el._pool * clamp(1 - Math.max(0, d - 0.15)*1.6)).toFixed(3);
         var who = el.querySelector('.a-person');
         if (who){
           who.style.opacity = d < 0 ? clamp(1+d/0.3) : clamp(1-Math.max(0,d-1.6)*0.8);
