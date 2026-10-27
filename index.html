@@ -399,6 +399,9 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .quiz .wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(28px,5vw,72px);align-items:start}
 .qcard{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:clamp(20px,3vw,32px);min-width:0}
 .qstep{font-size:.82rem;color:var(--soft);font-variant-numeric:tabular-nums}
+.qtop{display:grid;grid-template-columns:1fr auto 1fr;align-items:baseline;gap:12px}
+.qnote{font-size:.82rem;color:var(--soft);text-align:center}
+@media (max-width:560px){.qtop{grid-template-columns:auto 1fr}.qnote{text-align:right;font-size:.74rem;white-space:nowrap}}
 .qbar{height:4px;border-radius:4px;background:var(--line);margin:10px 0 22px;overflow:hidden}
 .qbar i{display:block;height:100%;background:linear-gradient(90deg,var(--lilac),var(--apricot));transition:width .3s ease}
 .qq{font-family:var(--font-display);font-size:var(--step-1);margin-bottom:16px}
@@ -841,7 +844,6 @@ footer a{text-decoration:none}
     <div class="head" style="margin:0">
       <div class="eyebrow">Не знаете, что выбрать?</div>
       <h2>Три вопроса — и подскажем, с чего начать</h2>
-      <p class="lead">Ответы никуда не отправляются, это просто подсказка.</p>
       <figure class="ill quiz-ill" data-ill="quiz" data-ratio="3:2"></figure>
     </div>
     <div class="qcard" id="qcard" aria-live="polite"></div>
@@ -1308,7 +1310,7 @@ footer a{text-decoration:none}
     function q(sel){ return sec.querySelector(sel); }
     /* порядок — как в программе; img — вырезанное фото на прозрачном фоне (img/people/), без img рисуется силуэт */
     var PEOPLE = [
-      {n:"Светлана Савельева", r:"Психолог, основатель центра «МирРа»", mk:"«Как Волк научился любить» · «Внутренняя вертикаль»"},
+      {n:"Светлана Савельева", r:"Психолог, основатель центра «МирРа»", mk:"«Как Волк научился любить» · «Внутренняя вертикаль»", img:"img/people/savelieva.webp"},
       {n:"Татьяна Елисеева", r:"Арт-терапевт, педагог", mk:"«Источник» · мастер-класс 2"},
       {n:"Ирина Виноградова", r:"Лечебный педагог", mk:"«Источник» · мастер-класс 2", img:"img/people/vinogradova.webp"},
       {n:"Галина Власова", r:"Психолог, коуч, расстановщик, специалист по гармонизации семейных и бизнес-систем", mk:"«Как не бояться любить и жить счастливо?» · «Кто стоит за моим страхом?»"},
@@ -1620,7 +1622,7 @@ footer a{text-decoration:none}
   function renderQ(){
     if (step < Q.length){
       var it = Q[step];
-      card.innerHTML = '<div class="qstep">Вопрос '+(step+1)+' из '+Q.length+'</div><div class="qbar"><i style="width:'+(step/Q.length*100)+'%"></i></div><div class="qq">'+it.q+'</div><div class="qopts">'+
+      card.innerHTML = '<div class="qtop"><div class="qstep">Вопрос '+(step+1)+' из '+Q.length+'</div><div class="qnote">ответы никуда не отправляются</div></div><div class="qbar"><i style="width:'+(step/Q.length*100)+'%"></i></div><div class="qq">'+it.q+'</div><div class="qopts">'+
         it.a.map(function(a,i){ return '<button type="button" data-i="'+i+'">'+a[0]+'</button>'; }).join('')+'</div>';
       card.querySelectorAll('.qopts button').forEach(function(b){
         b.addEventListener('click', function(){
