@@ -150,7 +150,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
             '<ellipse cx="100" cy="70" rx="38" ry="46" fill="url(#sg)"/><path d="M100 126c-48 0-84 26-92 74l-4 30h192l-4-30c-8-48-44-74-92-74z" fill="url(#sg)"/></svg>';
 
   /* терновник фоном: неподвижные деревья только по краям сцены, ветвей немного, редкие шипы.
-     На кончиках веток — цветы, разложенные по четырём слоям: первый (бутоны) виден сразу, остальные проявляются
+     На кончиках веток — цветы, разложенные по четырём слоям: в начале деревья голые, слои проявляются
      по мере пути — к финалу терн в полном цвету. Всё рисуется на canvas при изменении размера (зерно фиксированное);
      область передней арки вычищается, чтобы ветки и цветы не заходили в проёмы. */
   function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -166,10 +166,12 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
       (function branch(x,y,len,ang,depth,w){
         var x2 = x + Math.cos(ang)*len, y2 = y + Math.sin(ang)*len;
         ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x2,y2); ctx.stroke();
-        if (depth < 3){                                     // редкие шипы
+        if (depth < 4){                                     // шипы
           ctx.lineWidth = Math.max(.7, w*.5);
-          var f = .35+rnd()*.3, tx = x+(x2-x)*f, ty = y+(y2-y)*f, ta = ang+(rnd()<.5?1:-1)*(0.9+rnd()*0.5), tl = len*0.18;
-          ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(tx+Math.cos(ta)*tl, ty+Math.sin(ta)*tl); ctx.stroke();
+          for (var s=0;s<2;s++){
+            var f = .25+s*.35+rnd()*.15, tx = x+(x2-x)*f, ty = y+(y2-y)*f, ta = ang+(s?1:-1)*(0.9+rnd()*0.5), tl = len*(0.16+rnd()*0.06);
+            ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(tx+Math.cos(ta)*tl, ty+Math.sin(ta)*tl); ctx.stroke();
+          }
         }
         if (depth <= 1) tips.push([x2, y2, near]);
         if (depth <= 0) return;
@@ -187,14 +189,14 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
         tree(x, H*(k < 2 ? 0.1 + rnd()*0.05 : 0.15 + rnd()*0.07), g[0], g[1], g[2]);
       }
     });
-    /* цветы терна: белые с розовой серединкой; первый слой — мелкие бутоны */
+    /* светящиеся цветы терна: белые с розовой серединкой и мягким ореолом */
     tips.forEach(function(p){
-      var tier = Math.floor(rnd()*4), c = bctx[tier], n = tier ? 1 + Math.floor(rnd()*3) : 1;
+      var tier = Math.floor(rnd()*4), c = bctx[tier], n = 1 + Math.floor(rnd()*3);
       for (var j=0;j<n;j++){
-        var r = (tier ? 1.8 + rnd()*1.6 : 1.1 + rnd()*0.6) * (p[2] ? 1.25 : 0.9), x = p[0] + (rnd()-.5)*8, y = p[1] + (rnd()-.5)*8;
+        var r = (1.6 + rnd()*1.6) * (p[2] ? 1.25 : 0.9), x = p[0] + (rnd()-.5)*8, y = p[1] + (rnd()-.5)*8;
         c.fillStyle = 'rgba(255,236,240,.22)'; c.beginPath(); c.arc(x, y, r*2.3, 0, 7); c.fill();
-        c.fillStyle = tier ? 'rgba(255,250,248,.95)' : 'rgba(250,206,220,.9)'; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
-        if (tier){ c.fillStyle = 'rgba(236,150,175,.9)'; c.beginPath(); c.arc(x, y, r*0.38, 0, 7); c.fill(); }
+        c.fillStyle = 'rgba(255,250,248,.95)'; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+        c.fillStyle = 'rgba(236,150,175,.9)'; c.beginPath(); c.arc(x, y, r*0.38, 0, 7); c.fill();
       }
     });
     /* вычищаем область передней арки (и коридора в ней) */
@@ -273,7 +275,8 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     dawn.style.opacity = PROG.toFixed(3);
     dusk.style.opacity = (1 - 0.8*PROG).toFixed(3);
     light.style.opacity = (0.75 + 0.25*PROG).toFixed(3);
-    blooms.forEach(function(b,j){ b.style.opacity = j ? clamp((PROG - (j-1)*0.3 - 0.04)*3.5).toFixed(3) : 1; });
+    /* в начале деревья голые; слои огоньков проявляются один за другим, к финалу — все */
+    blooms.forEach(function(b,j){ b.style.opacity = clamp((PROG - 0.08 - j*0.2)*4).toFixed(3); });
   }
 
   /* переход: проходим сквозь арку в тёмную дымку — она расползается в стороны и редеет, проступает следующий спикер.
