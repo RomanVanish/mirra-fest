@@ -141,7 +141,7 @@ a{color:inherit}
 .deck{position:relative;width:min(320px,82vw);aspect-ratio:3/4.1}
 /* обёртка карты отвечает за появление и исчезновение (прозрачность, сдвиг), сама карта — только за переворот:
    прозрачность на элементе с 3D-переворотом «сплющивает» его, и на миг видна зеркальная оборотная сторона */
-.mslot{position:absolute;inset:0;perspective:1400px;transition:opacity .3s ease,translate .3s ease}
+.mslot{position:absolute;inset:0;perspective:1400px;transition:opacity .3s ease,translate .3s ease,transform .6s cubic-bezier(.3,.7,.25,1)}
 .mslot.out{opacity:0;translate:-30px -24px}
 .mslot.pre{opacity:0;translate:30px 18px}
 .mslot.instant{transition:none}
@@ -173,7 +173,18 @@ a{color:inherit}
 .c-prac{display:grid;gap:4px;font-size:.92rem;line-height:1.45;padding-top:14px;border-top:1px solid rgba(181,74,58,.2)}
 .c-prac b{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
 .deckacts{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:center}
-@media (prefers-reduced-motion:reduce){.mcard,.mslot{transition:none}}
+/* «посмотреть рисунок»: вытянутая карта отъезжает в сторону, под ней — рубашка целиком, без вуали и надписи */
+.peekimg{position:absolute;inset:0;border-radius:18px;background:var(--card) center/cover no-repeat;opacity:0;pointer-events:none;transition:opacity .45s ease;box-shadow:0 30px 50px -30px rgba(110,84,134,.65)}
+.deck.peek .peekimg{opacity:1;pointer-events:auto;cursor:pointer}
+.deck.peek .mslot{transform:translate(80%,10%) rotate(9deg) scale(.6)}
+.mc-peek{position:absolute;top:12px;right:12px;z-index:3;width:40px;height:40px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--accent);
+  background:radial-gradient(circle at 34% 28%,#fff 0%,rgba(255,255,255,.9) 42%,rgba(255,236,224,.82) 100%);box-shadow:0 8px 18px -8px rgba(110,60,50,.55),inset 0 0 0 1px rgba(255,255,255,.95);transition:opacity .3s ease,transform .2s ease}
+.mc-peek:hover{transform:scale(1.08)}
+.mc-peek:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.mc-peek svg{width:22px;height:22px}
+.deck.peek .mc-peek{opacity:0;pointer-events:none}
+@media (max-width:600px){.deck.peek .mslot{transform:translate(40%,30%) rotate(10deg) scale(.4)}}
+@media (prefers-reduced-motion:reduce){.mcard,.mslot,.peekimg{transition:none}}
 
 /* полоса цифр */
 .strip{background:var(--surface);border-bottom:1px solid var(--line)}
@@ -692,15 +703,20 @@ footer a{text-decoration:none}
     <div class="deckwrap">
       <div class="deck">
         <div class="stack s3" aria-hidden="true"></div><div class="stack s2" aria-hidden="true"></div>
+        <div class="peekimg" id="mc-img" aria-hidden="true"></div>
         <div class="mslot" id="mslot">
         <button class="mcard" id="mcard" type="button" aria-live="polite">
           <span class="face fa" id="mc-a"></span>
           <span class="face fb" id="mc-b"></span>
         </button>
         </div>
+        <button class="mc-peek" id="mc-peek" type="button" aria-label="Посмотреть рисунок" title="Посмотреть рисунок" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
       </div>
       <div class="deckacts">
         <button class="btn btn-warm" type="button" id="mc-draw">Вытянуть карту</button>
+        <button class="btn btn-soft" type="button" id="mc-back" hidden>Вернуть карту</button>
         <button class="linkbtn" type="button" id="mc-share" hidden>Поделиться картой</button>
       </div>
     </div>
@@ -1169,6 +1185,16 @@ footer a{text-decoration:none}
   ];
   var mslot = document.getElementById('mslot'), mcard = document.getElementById('mcard'), mcA = document.getElementById('mc-a'), mcB = document.getElementById('mc-b');
   var mcDraw = document.getElementById('mc-draw'), mcShare = document.getElementById('mc-share');
+  var deckEl = document.querySelector('.deck'), mcPeek = document.getElementById('mc-peek'), mcBack = document.getElementById('mc-back'), mcImg = document.getElementById('mc-img'), peeking = false;
+  /* «посмотреть рисунок»: карта отъезжает в сторону; вернуть — кнопкой «Вернуть карту», кликом по карте или по рисунку, Esc */
+  function syncPeekBtn(){ mcPeek.hidden = mcState === 'cover' || !deckEl.classList.contains('has-card'); }
+  function setPeek(on, focus){
+    peeking = on; deckEl.classList.toggle('peek', on);
+    mcPeek.setAttribute('aria-pressed', on); mcBack.hidden = !on;
+    mcShare.hidden = on || mcState !== 'love';
+    if (on) mcard.setAttribute('aria-label', 'Вернуть карту'); else mcard.removeAttribute('aria-label');
+    if (focus) (on ? mcBack : mcard).focus({preventScroll:true});   /* фокус переносим только при работе с клавиатуры */
+  }
   var order = CARDS.map(function(c,i){ return i; }).sort(function(){ return Math.random() - .5; });
   var mcI = -1, mcState = 'cover', mcAngle = 0;
   function cardFace(el, kind, c){
@@ -1183,7 +1209,7 @@ footer a{text-decoration:none}
     var c = CARDS[order[++mcI % order.length]];
     cardFace(mcB, 'fear', c); turn(); mcState = 'fear'; mcShare.hidden = true;
     setTimeout(function(){ cardFace(mcA, 'love', c); }, REDUCE ? 0 : 380);
-    mcDraw.textContent = 'Вытянуть другую карту';
+    mcDraw.textContent = 'Вытянуть другую карту'; syncPeekBtn();
   }
   /* другая карта: старая уезжает, новая въезжает сбоку сразу стороной «страх» — без мелькания рубашки */
   function drawCard(){
@@ -1193,7 +1219,7 @@ footer a{text-decoration:none}
       var c = CARDS[order[++mcI % order.length]];
       mcard.classList.add('instant'); mcAngle = 180; mcard.style.transform = 'rotateY(180deg)';
       cardFace(mcB, 'fear', c); cardFace(mcA, 'love', c);
-      mslot.classList.add('instant'); mslot.classList.remove('out'); mslot.classList.add('pre');
+      mslot.classList.add('instant'); if (peeking) setPeek(false); mslot.classList.remove('out'); mslot.classList.add('pre');
       void mslot.offsetWidth; mcard.classList.remove('instant'); mslot.classList.remove('instant', 'pre');
       mcState = 'fear'; mcShare.hidden = true;
     }, REDUCE ? 0 : 300);
@@ -1201,16 +1227,21 @@ footer a{text-decoration:none}
   /* рубашка карты: картинка img/ill/card.webp|.jpg|.png подставляется сама на верхнюю карту и колоду под ней */
   (function(){
     var deck = document.querySelector('.deck'), ext = ['webp','jpg','png'], k = 0, im = new Image();
-    im.onload = function(){ deck.style.setProperty('--card', 'url("' + im.src + '")'); deck.classList.add('has-card'); };
+    im.onload = function(){ deck.style.setProperty('--card', 'url("' + im.src + '")'); deck.classList.add('has-card'); syncPeekBtn(); };
     im.onerror = function(){ if (++k < ext.length) im.src = 'img/ill/card.' + ext[k]; };
     im.src = 'img/ill/card.' + ext[0];
   })();
   mcard.addEventListener('click', function(){
+    if (peeking){ setPeek(false); return; }
     if (mcState === 'cover'){ reveal(); return; }
     turn(); mcState = mcState === 'fear' ? 'love' : 'fear';
     mcShare.hidden = mcState !== 'love';
   });
   mcDraw.addEventListener('click', drawCard);
+  mcPeek.addEventListener('click', function(e){ setPeek(true, e.detail === 0); });
+  mcBack.addEventListener('click', function(e){ setPeek(false, e.detail === 0); });
+  mcImg.addEventListener('click', function(){ setPeek(false); });
+  deckEl.addEventListener('keydown', function(e){ if (peeking && e.key === 'Escape') setPeek(false, true); });
   mcShare.addEventListener('click', function(){
     var c = CARDS[order[mcI % order.length]], text = 'Моя карта дня: «' + c.f + '» → ' + c.l + ' ' + c.p + ' — фестиваль «От Страха к Любви», 21 ноября';
     if (navigator.share) navigator.share({title:'Карта дня', text:text, url:location.href.split('#')[0]}).catch(function(){});
