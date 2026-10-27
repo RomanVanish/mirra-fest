@@ -228,6 +228,24 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 @media (prefers-reduced-motion:reduce){.tabs button::before,.tabs button::after{animation:none}}
 @media (max-width:520px){.tabs{flex-wrap:nowrap;gap:12px}.tabs button{flex:1;display:grid;gap:2px;padding:.8em .5em;font-size:1rem}.tabs small{margin:0}}
 .mks{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+/* стрелки переключения частей по бокам карточек (компьютер) и кнопка под карточками (телефон) */
+.mkswrap{position:relative}
+.partnav{position:absolute;top:96px;z-index:3;display:grid;justify-items:center;gap:6px;padding:0;border:0;background:none;cursor:pointer;color:var(--accent)}
+.partnav.prev{left:-30px}
+.partnav.next{right:-30px}
+.partnav span{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0%,#fff 45%,#fdeee6 100%);
+  border:1px solid #fff;box-shadow:0 0 0 3px rgba(181,74,58,.22),0 10px 22px -8px rgba(59,39,49,.55);transition:transform .2s ease}
+.partnav svg{width:24px;height:24px}
+.partnav small{font:600 .74rem var(--font-body);letter-spacing:.08em;text-transform:uppercase;padding:.15em .6em;border-radius:999px;background:rgba(255,250,245,.92)}
+.partnav:hover span{transform:scale(1.07)}
+.partnav.next span{animation:nudge 2.4s ease-in-out infinite}
+.partnav.prev span{animation:nudgeL 2.4s ease-in-out infinite}
+.partnav[hidden]{display:none}
+@keyframes nudge{50%{transform:translateX(5px)}}
+@keyframes nudgeL{50%{transform:translateX(-5px)}}
+.partmore{display:none;margin-top:20px;width:100%}
+@media (max-width:960px){.partnav{display:none!important}.partmore{display:inline-flex}}
+@media (prefers-reduced-motion:reduce){.partnav span{animation:none}}
 .mk{display:flex;flex-direction:column;gap:12px;padding:24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
 .mk .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.82rem;color:var(--soft)}
 .mk .hall{font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-size:.76rem}
@@ -604,6 +622,9 @@ footer a{text-decoration:none}
       <button role="tab" id="tab-2" aria-controls="part-2" aria-selected="false">Часть 2 <small>16:00–18:45</small></button>
     </div>
 
+    <div class="mkswrap">
+    <button class="partnav prev" type="button" data-part="0" aria-label="Перейти к части 1" hidden><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></span><small>Часть 1</small></button>
+    <button class="partnav next" type="button" data-part="1" aria-label="Перейти к части 2"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><small>Часть 2</small></button>
     <div class="mks" id="part-1" role="tabpanel" aria-labelledby="tab-1">
       <article class="mk">
         <figure class="ill" data-ill="mk1" data-ratio="3:2"></figure>
@@ -665,6 +686,8 @@ footer a{text-decoration:none}
         <div class="who">Ведёт <b>Галина Власова</b>, психолог, коуч, расстановщик</div>
       </article>
     </div>
+    </div>
+    <button class="btn btn-warm partmore" type="button" id="partmore">Смотреть часть 2 →</button>
 
     <div class="route" id="route">
       <div>
@@ -1082,14 +1105,23 @@ footer a{text-decoration:none}
 
   /* вкладки программы */
   var tabs = document.querySelectorAll('[role="tab"]');
-  tabs.forEach(function(t){
+  var pnPrev = document.querySelector('.partnav.prev'), pnNext = document.querySelector('.partnav.next'), partMore = document.getElementById('partmore');
+  tabs.forEach(function(t, k){
     t.addEventListener('click', function(){
       tabs.forEach(function(x){
         var on = x === t;
         x.setAttribute('aria-selected', on);
         document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
       });
+      /* стрелки по бокам и кнопка под карточками ведут на другую часть */
+      pnPrev.hidden = k === 0; pnNext.hidden = k === 1;
+      partMore.textContent = k === 0 ? 'Смотреть часть 2 →' : '← Вернуться к части 1';
     });
+  });
+  [pnPrev, pnNext].forEach(function(b){ b.addEventListener('click', function(){ tabs[+b.dataset.part].click(); }); });
+  partMore.addEventListener('click', function(){
+    tabs[tabs[0].getAttribute('aria-selected') === 'true' ? 1 : 0].click();
+    document.querySelector('.tabs').scrollIntoView({behavior: REDUCE ? 'auto' : 'smooth', block:'start'});
   });
 
   /* маршрут группы */
