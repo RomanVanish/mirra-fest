@@ -217,12 +217,14 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 @property --ga{syntax:"<angle>";inherits:false;initial-value:0deg}
 .tabs{display:flex;gap:16px;margin-bottom:36px;flex-wrap:wrap}
 .tabs button{position:relative;isolation:isolate;font:600 1.08rem var(--font-body);border:0;background:none;color:var(--soft);padding:1em 1.7em;border-radius:999px;cursor:pointer;transition:color .4s ease}
+/* неактивная «ждёт»: бледный серебристо-лиловый контур, по нему бежит яркий огонёк с тёплым кончиком — намёк, что нажмёшь и наполнится цветом */
 .tabs button::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:2px;
-  background:conic-gradient(from var(--ga),#5a3f6e,#2e2038 25%,#8a6c9a 50%,#2e2038 75%,#5a3f6e);
+  background:conic-gradient(from var(--ga),rgba(138,108,154,.35) 0%,rgba(138,108,154,.35) 62%,rgba(255,255,255,.95) 80%,rgba(255,206,160,.95) 88%,rgba(242,163,94,.55) 93%,rgba(138,108,154,.35) 100%);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
-  opacity:.6;animation:ga 7s linear infinite;transition:opacity .4s ease}
+  animation:ga 4.5s linear infinite;transition:opacity .4s ease}
 .tabs button::after{content:"";position:absolute;inset:2px;z-index:-2;border-radius:inherit;background:#f2e7ee;
-  box-shadow:0 0 18px -2px rgba(70,40,85,.35);transition:background .4s ease,box-shadow .4s ease}
+  box-shadow:0 0 16px -2px rgba(110,84,134,.3);animation:wait 3.2s ease-in-out infinite;transition:background .4s ease,box-shadow .4s ease}
+@keyframes wait{50%{box-shadow:0 0 22px 0 rgba(110,84,134,.42)}}
 .tabs button:hover{color:var(--ink)}
 .tabs button[aria-selected="true"]{color:var(--ink)}
 .tabs button[aria-selected="true"]::before{padding:2.5px;opacity:1;animation-duration:3.5s;
@@ -266,6 +268,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .rmap .start circle{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
 .rmap .start text{font:600 9.5px var(--font-body);letter-spacing:.1em;fill:var(--soft)}
 .rmap .seg{fill:none;stroke:var(--accent-2);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:rseg .55s ease forwards}
+.rmap .ah{fill:none;stroke:var(--accent-2);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0;animation:rpop .25s ease forwards}
 .rmap .num{opacity:0;animation:rpop .3s ease forwards}
 .rmap .num circle{fill:var(--accent)}
 .rmap .num text{fill:#fff;font:600 11px var(--font-body)}
@@ -1140,6 +1143,9 @@ footer a{text-decoration:none}
     for (var i=1;i<pts.length;i++){
       var a = pts[i-1], b = pts[i], p1 = edge(a, b, i === 1), p2 = edge(b, a, false);
       segs += '<path class="seg" pathLength="1" style="animation-delay:'+((i-1)*.5)+'s" d="M'+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+' L'+p2[0].toFixed(1)+' '+p2[1].toFixed(1)+'"/>';
+      /* кончик стрелки на конце отрезка — появляется, когда линия дорисована */
+      var ang = Math.atan2(p2[1]-p1[1], p2[0]-p1[0]), L = 8, W8 = 0.5;
+      segs += '<path class="ah" style="animation-delay:'+((i-1)*.5+.45)+'s" d="M'+(p2[0]-L*Math.cos(ang-W8)).toFixed(1)+' '+(p2[1]-L*Math.sin(ang-W8)).toFixed(1)+' L'+p2[0].toFixed(1)+' '+p2[1].toFixed(1)+' L'+(p2[0]-L*Math.cos(ang+W8)).toFixed(1)+' '+(p2[1]-L*Math.sin(ang+W8)).toFixed(1)+'"/>';
       nums += '<g class="num" style="animation-delay:'+((i-1)*.5+.45)+'s"><circle cx="'+(b[0]+48)+'" cy="'+(b[1]-20)+'" r="10"/><text x="'+(b[0]+48)+'" y="'+(b[1]-16)+'" text-anchor="middle">'+i+'</text></g>';
     }
     document.getElementById('rmap').innerHTML = segs + s + nums;
