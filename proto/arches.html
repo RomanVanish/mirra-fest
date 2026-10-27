@@ -9,9 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap">
 <style>
-/* Прототип блока «Ведущие»: анфилада арок в тёмном колючем лесу. Передняя арка по центру, остальные уходят
-   вглубь по дуге к свету. Проход сквозь арку — тёмная дымка сгущается и рассеивается, с каждым шагом светлее.
-   Палитра и шрифты страницы — как на сайте (page.html). */
+/* Прототип блока «Ведущие»: анфилада арок в сумеречном лесу терновника. Передняя арка по центру, остальные уходят
+   вглубь по дуге к свету. С каждым шагом теплеет небо, терн зацветает, в тоннеле летит золотая пыльца, у финала —
+   лепестки: путь «от страха к любви». Дымка — только вокруг тоннеля. Палитра и шрифты страницы — как на сайте. */
 :root{
   --ink:#3b2731; --soft:#7a6068; --bg:#fffaf5; --line:#f0ddd0;
   --accent:#b54a3a; --accent-2:#d9692f;
@@ -28,15 +28,20 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body)
 h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
 
 /* сцена */
-.scene{position:relative;height:min(74vh,700px);min-height:440px;border-radius:22px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:#2a1d40}
-.world{position:absolute;inset:0;will-change:filter}
-.sky{position:absolute;left:0;right:0;top:0;background:linear-gradient(180deg,#0e0918 0%,#171026 50%,#241936 85%,#2f2145 100%)}
+.scene{position:relative;height:min(74vh,700px);min-height:440px;border-radius:22px;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:#3a2c5c}
+.world{position:absolute;inset:0}
+/* сумерки: глубокий сине-сиреневый верх, у горизонта — розово-персиковая полоса, будто за лесом встаёт солнце */
+.sky{position:absolute;left:0;right:0;top:0;background:linear-gradient(180deg,#2a2452 0%,#463873 38%,#7f5a8c 68%,#cf8c93 88%,#f2b48e 100%)}
 .water{position:absolute;left:0;right:0;bottom:0;
-  background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0 9px,rgba(255,226,200,.035) 9px 10px),linear-gradient(180deg,#2a1d3e 0%,#1b1229 45%,#0f0a19 100%)}
-.haze{position:absolute;left:0;right:0;height:22%;transform:translateY(-60%);pointer-events:none;
-  background:linear-gradient(180deg,rgba(110,80,140,0),rgba(120,90,150,.22) 55%,rgba(110,80,140,0))}
-/* общая тьма: чем глубже по коридору, тем светлее */
-.dusk{position:absolute;inset:0;background:#0b0713;pointer-events:none}
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0 9px,rgba(255,236,220,.07) 9px 10px),linear-gradient(180deg,#c4868f 0%,#7c5883 22%,#4c3a6a 60%,#352a52 100%)}
+.haze{position:absolute;left:0;right:0;height:24%;transform:translateY(-60%);pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,200,190,0),rgba(255,214,196,.32) 55%,rgba(255,200,190,0))}
+/* рассвет: с каждым шагом вглубь сцена теплеет и светлеет */
+.dawn{position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:linear-gradient(180deg,rgba(255,196,180,.18) 0%,rgba(255,204,170,.4) 50%,rgba(255,222,180,.5) 64%,rgba(255,200,170,.25) 100%)}
+/* виньетка по краям: в начале пути гуще, к финалу почти исчезает */
+.dusk{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 70% at 50% 55%,rgba(24,14,40,0) 40%,rgba(24,14,40,.65) 100%)}
+.fx{position:absolute;inset:0;width:100%;height:100%;z-index:140;pointer-events:none}
 /* тёмная дымка: полупрозрачные клубы и пряди (текстура шума). При проходе наплывает, затем расползается и редеет */
 .mist{position:absolute;inset:0;z-index:150;pointer-events:none;overflow:hidden}
 .mist .ml{position:absolute;inset:-35%;opacity:0;will-change:transform,opacity}
@@ -50,15 +55,17 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
   background:radial-gradient(circle,rgba(255,253,245,1) 0%,rgba(255,244,220,1) 4%,rgba(255,220,170,.8) 11%,rgba(250,180,120,.42) 24%,rgba(220,140,120,.16) 42%,rgba(220,140,120,0) 64%)}
 .portal{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform,opacity;cursor:pointer}
 .frame{position:absolute;inset:0;border:var(--t) solid var(--c);border-bottom:0;border-radius:50% 50% 0 0/42% 42% 0 0;
-  box-shadow:0 -4px 36px -6px var(--c),inset 0 24px 36px -22px var(--c);
+  box-shadow:0 -2px 22px -8px var(--c),inset 0 18px 26px -20px rgba(255,240,225,.6);
   background:radial-gradient(ellipse 75% 70% at 50% 72%,rgba(255,226,186,var(--in)) 0%,rgba(255,196,150,calc(var(--in)*.55)) 42%,rgba(255,196,150,0) 78%)}
 /* свет из глубины тоннеля: свечение в проёме арки (--in) и световое пятно на полу у её основания */
 .pool{position:absolute;left:-18%;right:-18%;bottom:-8%;height:16%;border-radius:50%;pointer-events:none;opacity:var(--pool);
   background:radial-gradient(ellipse at 50% 50%,rgba(255,222,176,.75) 0%,rgba(255,186,130,.3) 42%,rgba(255,186,130,0) 70%)}
-.frame::after{content:"";position:absolute;inset:0;border:2px solid rgba(255,255,255,.45);border-bottom:0;border-radius:inherit}
+.frame::after{content:"";position:absolute;inset:0;border:2px solid rgba(255,255,255,.6);border-bottom:0;border-radius:inherit}
 .trees{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .person{position:absolute;left:50%;bottom:0;height:84%;transform:translateX(-50%);pointer-events:none}
 .person img,.person svg{display:block;height:100%;width:auto;max-width:none}
+/* тёплый контур от света из тоннеля — спикер освещён и встречает */
+.person img{filter:drop-shadow(0 0 2px rgba(255,236,210,.7)) drop-shadow(0 0 16px rgba(255,206,160,.5))}
 .glow{position:absolute;left:50%;bottom:4%;width:92%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;
   background:radial-gradient(circle,#fffaf0 0%,#ffe2b0 26%,rgba(255,196,130,.5) 50%,rgba(255,196,130,0) 70%)}
 
@@ -99,11 +106,14 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     <div class="world" id="world">
       <div class="sky" id="sky"></div>
       <canvas class="trees" id="trees" aria-hidden="true"></canvas>
+      <canvas class="trees bloom" aria-hidden="true"></canvas><canvas class="trees bloom" aria-hidden="true"></canvas><canvas class="trees bloom" aria-hidden="true"></canvas><canvas class="trees bloom" aria-hidden="true"></canvas>
       <div class="water" id="water"></div>
       <div class="haze" id="haze"></div>
+      <div class="dawn" id="dawn"></div>
       <div class="dusk" id="dusk"></div>
       <div class="light" id="light"></div>
     </div>
+    <canvas class="fx" id="fx" aria-hidden="true"></canvas>
     <div class="mist" id="mist"><div class="ml"><i></i></div><div class="ml"><i></i></div><div class="ml"><i></i></div></div>
   </div>
 
@@ -132,23 +142,26 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
   ];
   var R = 1.18;                 // высота арки к ширине
   /* цвет арок: от сиреневого (страх) к абрикосовому (любовь) */
-  var C0 = [168,140,200], C1 = [232,130,128], C2 = [246,170,100];
+  var C0 = [196,172,226], C1 = [242,164,170], C2 = [251,198,142];
   function mix(a,b,t){ return a.map(function(v,i){ return Math.round(v+(b[i]-v)*t); }); }
   function colorAt(i){ var t = i/(PEOPLE.length-1); var c = t < .5 ? mix(C0,C1,t*2) : mix(C1,C2,(t-.5)*2); return 'rgb('+c.join(',')+')'; }
 
   var SIL = '<svg viewBox="0 0 200 230"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d9cf" stop-opacity=".6"/><stop offset=".7" stop-color="#d9b8d6" stop-opacity=".35"/><stop offset="1" stop-color="#d9b8d6" stop-opacity="0"/></linearGradient></defs>'+
             '<ellipse cx="100" cy="70" rx="38" ry="46" fill="url(#sg)"/><path d="M100 126c-48 0-84 26-92 74l-4 30h192l-4-30c-8-48-44-74-92-74z" fill="url(#sg)"/></svg>';
 
-  /* колючие деревья фоном: неподвижные, только по краям сцены слева и справа, ветвей немного, с редкими шипами.
-     Рисуются на canvas при изменении размера (зерно фиксированное — те же деревья); область передней арки вычищается,
-     чтобы ветки не заходили в проёмы. */
+  /* терновник фоном: неподвижные деревья только по краям сцены, ветвей немного, редкие шипы.
+     На кончиках веток — цветы, разложенные по четырём слоям: первый (бутоны) виден сразу, остальные проявляются
+     по мере пути — к финалу терн в полном цвету. Всё рисуется на canvas при изменении размера (зерно фиксированное);
+     область передней арки вычищается, чтобы ветки и цветы не заходили в проёмы. */
   function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var blooms = document.querySelectorAll('.bloom');
+  function canvasCtx(cv, dpr){ cv.width = W*dpr; cv.height = H*dpr; var c = cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.lineCap = 'round'; return c; }
   function drawTrees(){
-    var cv = document.getElementById('trees'), dpr = Math.min(2, devicePixelRatio || 1);
-    cv.width = W*dpr; cv.height = H*dpr;
-    var ctx = cv.getContext('2d'), rnd = rng(7);
-    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineCap = 'round';
-    function tree(x, len, out, color){                       // out: -1 — крона клонится влево, 1 — вправо (наружу от арки)
+    var dpr = Math.min(2, devicePixelRatio || 1), rnd = rng(7);
+    var ctx = canvasCtx(document.getElementById('trees'), dpr);
+    var bctx = Array.prototype.map.call(blooms, function(cv){ return canvasCtx(cv, dpr); });
+    var tips = [];
+    function tree(x, len, out, color, near){                 // out: -1 — крона клонится влево, 1 — вправо (наружу от арки)
       ctx.strokeStyle = color;
       (function branch(x,y,len,ang,depth,w){
         var x2 = x + Math.cos(ang)*len, y2 = y + Math.sin(ang)*len;
@@ -158,6 +171,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
           var f = .35+rnd()*.3, tx = x+(x2-x)*f, ty = y+(y2-y)*f, ta = ang+(rnd()<.5?1:-1)*(0.9+rnd()*0.5), tl = len*0.18;
           ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(tx+Math.cos(ta)*tl, ty+Math.sin(ta)*tl); ctx.stroke();
         }
+        if (depth <= 1) tips.push([x2, y2, near]);
         if (depth <= 0) return;
         for (var i=0;i<2;i++){
           var spread = (i ? 1 : -1) * (0.35+rnd()*0.3) + out*0.12 + (rnd()-.5)*0.2;
@@ -165,19 +179,31 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
         }
       })(x, VY+4, len, -Math.PI/2 + out*0.08, 5, Math.max(2, len*0.1));
     }
-    /* по три дерева у каждого края: дальние светлее, ближние темнее и выше */
-    [[-1,'#45335f'],[1,'#45335f'],[-1,'#0a0611'],[1,'#0a0611']].forEach(function(g,k){
+    /* по три дерева у каждого края: дальние — светлые сиреневые силуэты в дымке, ближние темнее и выше */
+    [[-1,'#7a5f92',0],[1,'#7a5f92',0],[-1,'#3a2a55',1],[1,'#3a2a55',1]].forEach(function(g,k){
       for (var j=0;j<3;j++){
         var edge = (j + rnd()*0.6) / 3 * (W/2 - A0*0.55);       // от края сцены до арки
         var x = g[0] < 0 ? edge : W - edge;
-        tree(x, H*(k < 2 ? 0.1 + rnd()*0.05 : 0.15 + rnd()*0.07), g[0], g[1]);
+        tree(x, H*(k < 2 ? 0.1 + rnd()*0.05 : 0.15 + rnd()*0.07), g[0], g[1], g[2]);
+      }
+    });
+    /* цветы терна: белые с розовой серединкой; первый слой — мелкие бутоны */
+    tips.forEach(function(p){
+      var tier = Math.floor(rnd()*4), c = bctx[tier], n = tier ? 1 + Math.floor(rnd()*3) : 1;
+      for (var j=0;j<n;j++){
+        var r = (tier ? 1.8 + rnd()*1.6 : 1.1 + rnd()*0.6) * (p[2] ? 1.25 : 0.9), x = p[0] + (rnd()-.5)*8, y = p[1] + (rnd()-.5)*8;
+        c.fillStyle = 'rgba(255,236,240,.22)'; c.beginPath(); c.arc(x, y, r*2.3, 0, 7); c.fill();
+        c.fillStyle = tier ? 'rgba(255,250,248,.95)' : 'rgba(250,206,220,.9)'; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+        if (tier){ c.fillStyle = 'rgba(236,150,175,.9)'; c.beginPath(); c.arc(x, y, r*0.38, 0, 7); c.fill(); }
       }
     });
     /* вычищаем область передней арки (и коридора в ней) */
     var aw = A0*1.08, ah = A0*R*1.04, ax = W/2 - aw/2, ay = FLOOR - ah;
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath(); ctx.moveTo(ax, FLOOR); ctx.lineTo(ax, ay + aw/2); ctx.arc(W/2, ay + aw/2, aw/2, Math.PI, 0); ctx.lineTo(ax+aw, FLOOR); ctx.closePath(); ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
+    [ctx].concat(bctx).forEach(function(c){
+      c.globalCompositeOperation = 'destination-out';
+      c.beginPath(); c.moveTo(ax, FLOOR); c.lineTo(ax, ay + aw/2); c.arc(W/2, ay + aw/2, aw/2, Math.PI, 0); c.lineTo(ax+aw, FLOOR); c.closePath(); c.fill();
+      c.globalCompositeOperation = 'source-over';
+    });
   }
 
   var scene = document.getElementById('scene'), world = document.getElementById('world'), swiped = false;
@@ -211,7 +237,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     /* дымка только вокруг: окно по форме коридора — от передней арки к свету — остаётся чистым */
     var hole = 'radial-gradient('+(A0*0.78).toFixed(0)+'px '+(A0*R*0.64).toFixed(0)+'px at '+(W/2 + A0*0.2).toFixed(0)+'px '+(FLOOR - A0*R*0.5).toFixed(0)+'px, transparent 0%, transparent 60%, #000 100%)';
     mist.style.webkitMaskImage = mist.style.maskImage = hole;
-    drawTrees();
+    drawTrees(); sizeFx();
   }
   function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function place(d){                                        // центр низа и масштаб арки на глубине d; путь вглубь заворачивает дугой вправо
@@ -219,7 +245,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     var shift = d > 0 ? A0*K*Math.pow(d,1.2)*s : 0;
     return {s:s, x:W/2 + shift, y:VY + (FLOOR-VY)*s};
   }
-  var cam = 0, light = document.getElementById('light'), dusk = document.getElementById('dusk');
+  var cam = 0, PROG = 0, LX = 0, LY = 0, light = document.getElementById('light'), dusk = document.getElementById('dusk'), dawn = document.getElementById('dawn');
   function render(){
     portals.forEach(function(el,i){
       var d = i - cam;
@@ -238,13 +264,16 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     });
     /* свет в конце коридора — за последней аркой */
     var e = place(PEOPLE.length - cam + 0.6), lw = A0*e.s;
-    light.style.left = e.x+'px'; light.style.top = (e.y - lw*R*0.45)+'px';
+    LX = e.x; LY = e.y - lw*R*0.45;
+    light.style.left = LX+'px'; light.style.top = LY+'px';
     var size = Math.max(W, H) * (0.9 + 0.5*clamp(1 - (PEOPLE.length-1-cam)/3));
     light.style.width = light.style.height = size+'px';
-    /* из тьмы к свету: с каждым шагом вглубь сцена светлее, свет в конце ярче */
-    var k = cam/(PEOPLE.length-1);
-    dusk.style.opacity = (0.3*(1-k)).toFixed(3);
-    light.style.opacity = (0.6 + 0.4*k).toFixed(3);
+    /* от страха к любви: с каждым шагом теплеет небо, уходит виньетка, терн зацветает, свет в конце ярче */
+    PROG = cam/(PEOPLE.length-1);
+    dawn.style.opacity = PROG.toFixed(3);
+    dusk.style.opacity = (1 - 0.8*PROG).toFixed(3);
+    light.style.opacity = (0.75 + 0.25*PROG).toFixed(3);
+    blooms.forEach(function(b,j){ b.style.opacity = j ? clamp((PROG - (j-1)*0.3 - 0.04)*3.5).toFixed(3) : 1; });
   }
 
   /* переход: проходим сквозь арку в тёмную дымку — она расползается в стороны и редеет, проступает следующий спикер.
@@ -255,7 +284,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     return 'url("data:image/svg+xml,' + encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><filter id="f" x="0" y="0" width="100%" height="100%">' +
       '<feTurbulence type="fractalNoise" baseFrequency="'+freq+'" numOctaves="5" seed="'+seed+'"/>' +
-      '<feColorMatrix values="0 0 0 0 .06  0 0 0 0 .04  0 0 0 0 .11  2.6 0 0 0 -1.05"/></filter>' +
+      '<feColorMatrix values="0 0 0 0 .2  0 0 0 0 .14  0 0 0 0 .3  2.4 0 0 0 -1.05"/></filter>' +
       '<rect width="100%" height="100%" filter="url(#f)"/></svg>') + '")';
   }
   [[3,'.0035 .005'],[9,'.005 .0065'],[17,'.0028 .004']].forEach(function(p,j){ layers[j].firstChild.style.backgroundImage = smokeSVG(p[0], p[1]); });
@@ -265,23 +294,24 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
   function ease(t){ return t < .5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
   function smooth(t){ return t*t*(3-2*t); }
   /* thick — густота дымки 0…1 сверх постоянной (BASE); spread — насколько она расползлась (0 — собрана, 1 — разошлась) */
-  var BASE = 0.4;
+  var BASE = 0.32;
   function setMist(thick, spread){
+    var base = BASE*(1 - 0.6*PROG), peak = 0.8*(1 - 0.35*PROG);   // к финалу дымки меньше
     layers.forEach(function(l,j){
       var d = DIRS[j], m = spread*22;
-      l.style.opacity = ((BASE + (1-BASE)*thick) * (j === 2 ? .7 : 1)).toFixed(3);
+      l.style.opacity = ((base + (peak-base)*thick) * (j === 2 ? .7 : 1)).toFixed(3);
       l.style.transform = 'translate('+(d[0]*m).toFixed(2)+'%,'+(d[1]*m).toFixed(2)+'%) scale('+(1 + spread*0.35 + (1-thick)*0.08).toFixed(3)+')';
     });
   }
-  /* назад — без шагов: вся сцена гаснет и проявляется сразу на нужной арке */
+  /* назад на две арки и больше — без шагов: вся сцена гаснет и проявляется сразу на нужной арке */
   function fadeTo(i){
     if (anim) cancelAnimationFrame(anim.raf);
     anim = {fade:true};
-    [world, mist].forEach(function(el){ el.style.transition = 'opacity .35s ease'; el.style.opacity = 0; });
+    [world, mist, fx].forEach(function(el){ el.style.transition = 'opacity .35s ease'; el.style.opacity = 0; });
     setTimeout(function(){
       cam = i; render(); setMist(0,0);
-      [world, mist].forEach(function(el){ el.style.transition = 'opacity .5s ease'; el.style.opacity = 1; });
-      setTimeout(function(){ anim = null; [world, mist].forEach(function(el){ el.style.transition = ''; }); }, 500);
+      [world, mist, fx].forEach(function(el){ el.style.transition = 'opacity .5s ease'; el.style.opacity = 1; });
+      setTimeout(function(){ anim = null; [world, mist, fx].forEach(function(el){ el.style.transition = ''; }); }, 500);
     }, 350);
   }
   function go(i){
@@ -289,7 +319,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     if (anim && anim.fade) return;
     if (i === target && !anim) return;
     target = i; caption(i);
-    if (i < cam - 0.001){ fadeTo(i); return; }
+    if (i < cam - 1.001){ fadeTo(i); return; }             // на одну арку назад — обычный проход, дальше — затемнение
     if (reduce){ layers.forEach(function(l){ l.style.transition = 'opacity .3s'; }); setMist(1,0); setTimeout(function(){ cam = i; render(); setMist(0,0); }, 300); return; }
     if (anim) cancelAnimationFrame(anim.raf);
     var from = cam, dist = Math.abs(i-from), dur = 1700*Math.sqrt(dist), t0 = performance.now();
@@ -303,6 +333,57 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
       else { anim = null; cam = i; render(); setMist(0,0); }
     })(t0);
   }
+
+  /* золотая пыльца: медленно плывёт из света в конце тоннеля навстречу, вырастая по мере приближения.
+     Лепестки терна: появляются во второй половине пути и к финалу кружат по всей сцене.
+     Анимация идёт, только пока сцена на экране; при «уменьшении движения» — выключена. */
+  var fx = document.getElementById('fx'), fctx, dprFx = 1, motes = [], petals = [], fxRaf = 0, fxLast = 0, fxOn = false;
+  function sizeFx(){ dprFx = Math.min(2, devicePixelRatio || 1); fx.width = W*dprFx; fx.height = H*dprFx; fctx = fx.getContext('2d'); fctx.setTransform(dprFx,0,0,dprFx,0,0); }
+  var frnd = Math.random;
+  function newMote(m, fresh){
+    m.a = frnd()*Math.PI*2; m.age = fresh ? frnd() : 0; m.life = 6 + frnd()*5; m.sz = 0.6 + frnd()*0.9; m.ph = frnd()*7;
+    return m;
+  }
+  function newPetal(p, fresh){
+    p.x = frnd()*W*1.2 - W*0.1; p.y = fresh ? frnd()*H : -12; p.vy = 14 + frnd()*18; p.vx = -6 - frnd()*10;
+    p.rot = frnd()*7; p.vr = (frnd()-.5)*2; p.sz = 3 + frnd()*3; p.ph = frnd()*7;
+    return p;
+  }
+  for (var q=0;q<46;q++) motes.push(newMote({}, true));
+  for (var q2=0;q2<34;q2++) petals.push(newPetal({}, true));
+  function fxFrame(now){
+    var dt = Math.min(0.05, (now - (fxLast || now))/1000); fxLast = now;
+    fctx.clearRect(0, 0, W, H);
+    fctx.globalCompositeOperation = 'lighter';
+    var R0 = Math.max(W, H)*0.75, glow = 0.55 + 0.45*PROG;
+    motes.forEach(function(m){
+      m.age += dt/m.life; if (m.age > 1) newMote(m);
+      var t = m.age, dist = Math.pow(t, 1.7)*R0;
+      var x = LX + Math.cos(m.a)*dist + Math.sin(now/900 + m.ph)*6, y = LY + Math.sin(m.a)*dist*0.55;
+      var r = m.sz*(0.6 + t*3.2), al = Math.sin(Math.PI*t)*0.8*glow;
+      fctx.fillStyle = 'rgba(255,206,130,'+(al*0.18).toFixed(3)+')'; fctx.beginPath(); fctx.arc(x, y, r*3.2, 0, 7); fctx.fill();
+      fctx.fillStyle = 'rgba(255,240,200,'+al.toFixed(3)+')'; fctx.beginPath(); fctx.arc(x, y, r, 0, 7); fctx.fill();
+    });
+    fctx.globalCompositeOperation = 'source-over';
+    var np = Math.round(petals.length * clamp((PROG - 0.35)/0.6));
+    for (var i=0;i<np;i++){
+      var p = petals[i];
+      p.y += p.vy*dt; p.x += (p.vx + Math.sin(now/700 + p.ph)*12)*dt; p.rot += p.vr*dt;
+      if (p.y > H + 12 || p.x < -20) newPetal(p);
+      fctx.save(); fctx.translate(p.x, p.y); fctx.rotate(p.rot); fctx.scale(1, 0.55 + 0.35*Math.sin(now/400 + p.ph));
+      fctx.fillStyle = 'rgba(255,244,246,.9)'; fctx.beginPath(); fctx.ellipse(0, 0, p.sz, p.sz*0.62, 0, 0, 7); fctx.fill();
+      fctx.fillStyle = 'rgba(244,182,200,.75)'; fctx.beginPath(); fctx.ellipse(p.sz*0.35, 0, p.sz*0.35, p.sz*0.3, 0, 0, 7); fctx.fill();
+      fctx.restore();
+    }
+    fxRaf = requestAnimationFrame(fxFrame);
+  }
+  function fxRun(on){
+    if (reduce || on === fxOn) return;
+    fxOn = on; cancelAnimationFrame(fxRaf); fxLast = 0;
+    if (on) fxRaf = requestAnimationFrame(fxFrame);
+  }
+  if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ fxRun(es[0].isIntersecting); }).observe(scene);
+  else fxRun(true);
 
   /* подпись, кнопки, точки */
   var cap = document.getElementById('cap'), next = document.getElementById('next'), prev = document.getElementById('prev'), dots = document.getElementById('dots');
