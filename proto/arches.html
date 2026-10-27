@@ -42,6 +42,19 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
 /* виньетка по краям: в начале пути гуще, к финалу почти исчезает */
 .dusk{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 70% at 50% 55%,rgba(52,24,38,0) 40%,rgba(52,24,38,.6) 100%)}
 .fx{position:absolute;inset:0;width:100%;height:100%;z-index:140;pointer-events:none}
+/* стрелки-указатели в форме маленьких арок: справа выше — вперёд, вглубь; слева ниже — шаг назад */
+.way{position:absolute;left:0;top:0;z-index:160;width:54px;height:68px;padding:0;border:1.5px solid rgba(255,238,224,.8);border-radius:999px 999px 14px 14px;cursor:pointer;
+  display:grid;place-items:center;color:#fff;background:rgba(255,226,206,.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  box-shadow:0 0 22px -4px rgba(255,200,150,.7),inset 0 0 12px rgba(255,236,220,.35);transition:opacity .3s ease,transform .2s ease}
+.way svg{width:24px;height:24px}
+.way:hover{background:rgba(255,226,206,.3)}
+.way:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.way.fwd{background:rgba(255,190,140,.3);box-shadow:0 0 28px -2px rgba(255,190,130,.85),inset 0 0 14px rgba(255,236,220,.4)}
+.way.fwd svg{animation:bob 2.2s ease-in-out infinite}
+.way.back{width:46px;height:58px;opacity:.9}
+.way[hidden]{display:none}
+@keyframes bob{0%,100%{transform:translateY(2px)}50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.way.fwd svg{animation:none}}
 /* тёмная дымка: полупрозрачные клубы и пряди (текстура шума). При проходе наплывает, затем расползается и редеет */
 .mist{position:absolute;inset:0;z-index:150;pointer-events:none;overflow:hidden}
 .mist .ml{position:absolute;inset:-35%;opacity:0;will-change:transform,opacity}
@@ -115,6 +128,8 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     </div>
     <canvas class="fx" id="fx" aria-hidden="true"></canvas>
     <div class="mist" id="mist"><div class="ml"><i></i></div><div class="ml"><i></i></div><div class="ml"><i></i></div></div>
+    <button class="way fwd" id="way-fwd" type="button" aria-label="Вперёд, к следующему ведущему"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+    <button class="way back" id="way-back" type="button" aria-label="Назад, к предыдущему ведущему" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button>
   </div>
 
   <div class="below">
@@ -225,7 +240,7 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
 
 
   /* геометрия: глаза спикера на уровне горизонта, коридор уходит вправо и вглубь к свету */
-  var W, H, A0, VY, FLOOR, K;
+  var W, H, A0, VY, FLOOR, K, wayFwd = document.getElementById('way-fwd'), wayBack = document.getElementById('way-back');
   function measure(){
     W = scene.clientWidth; H = scene.clientHeight;
     FLOOR = H*0.97;
@@ -240,6 +255,10 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     var hole = 'radial-gradient('+(A0*0.78).toFixed(0)+'px '+(A0*R*0.64).toFixed(0)+'px at '+(W/2 + A0*0.2).toFixed(0)+'px '+(FLOOR - A0*R*0.5).toFixed(0)+'px, transparent 0%, transparent 60%, #000 100%)';
     mist.style.webkitMaskImage = mist.style.maskImage = hole;
     drawTrees(); sizeFx();
+    /* стрелки у передней арки: «вперёд» справа на уровне плеч спикера, «назад» слева ниже */
+    var ah = A0*R, al = W/2 - A0/2, ar = W/2 + A0/2;
+    wayFwd.style.transform = 'translate('+Math.min(ar + 10, W - 62).toFixed(0)+'px,'+(FLOOR - ah*0.62).toFixed(0)+'px)';
+    wayBack.style.transform = 'translate('+Math.max(8, al - 56).toFixed(0)+'px,'+(FLOOR - ah*0.3).toFixed(0)+'px)';
   }
   function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function place(d){                                        // центр низа и масштаб арки на глубине d; путь вглубь заворачивает дугой вправо
@@ -403,9 +422,12 @@ h2{font:500 clamp(2rem,1.6rem + 2vw,3rem)/1.15 var(--font-display);margin:0}
     prev.disabled = i === 0;
     next.textContent = p.end ? 'Записаться' : i === 0 ? 'Войти в арку' : 'Пройти дальше';
     dots.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-current', +b.dataset.i === i); });
+    wayBack.hidden = i === 0; wayFwd.hidden = !!p.end;
   }
   next.addEventListener('click', function(){ if (PEOPLE[target].end) location.href = '../index.html#tickets'; else go(target+1); });
   prev.addEventListener('click', function(){ go(target-1); });
+  wayFwd.addEventListener('click', function(){ go(target+1); });
+  wayBack.addEventListener('click', function(){ go(target-1); });
   document.addEventListener('keydown', function(e){
     if (e.target.closest('input,textarea,select')) return;
     if (e.key === 'ArrowRight' || e.key === 'ArrowUp'){ e.preventDefault(); go(target+1); }
