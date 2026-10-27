@@ -1064,7 +1064,7 @@ footer a{text-decoration:none}
     var name = f.dataset.ill, ext = ['webp','jpg','png'], k = 0;
     f.innerHTML = '<span class="ill-ph" aria-hidden="true"><b>иллюстрация</b>'+name+' · '+f.dataset.ratio+'</span>';
     var img = document.createElement('img');
-    img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+    img.alt = ''; img.loading = name === 'hero' ? 'eager' : 'lazy'; img.decoding = 'async';  /* первый экран — сразу */
     img.onload = function(){ f.classList.add('has'); };
     img.onerror = function(){ if (++k < ext.length) img.src = 'img/ill/'+name+'.'+ext[k]; else img.remove(); };
     img.src = 'img/ill/'+name+'.'+ext[0];
