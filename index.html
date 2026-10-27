@@ -67,6 +67,38 @@ a{color:inherit}
 .nav a{text-decoration:none;color:var(--soft)}
 .nav a:hover{color:var(--ink)}
 .top .btn{padding:.7em 1.1em;font-size:.9rem}
+/* мобильное меню: круглая кнопка, по контуру бежит алый огонёк; панель раскрывается кругом от кнопки, как рассвет,
+   на фоне прорисовывается алая арка, пункты всплывают из дымки по очереди */
+.burger{display:none;position:relative;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.75);box-shadow:0 6px 16px -8px rgba(196,18,48,.5)}
+.burger::before{content:"";position:absolute;inset:0;border-radius:50%;padding:2px;
+  background:conic-gradient(from var(--ga),rgba(196,18,48,0) 0deg,rgba(196,18,48,0) 220deg,rgba(255,120,138,.9) 300deg,#e01a3c 340deg,#ffd0d6 356deg,rgba(196,18,48,0) 360deg),linear-gradient(rgba(196,18,48,.2),rgba(196,18,48,.2));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ga 2.4s linear infinite}
+.burger i{position:absolute;left:13px;right:13px;height:2px;border-radius:2px;background:var(--ink);transition:transform .45s cubic-bezier(.6,0,.2,1),opacity .25s ease,background .3s}
+.burger i:nth-child(1){top:15px}.burger i:nth-child(2){top:21px;right:17px}.burger i:nth-child(3){top:27px}
+.burger[aria-expanded="true"] i{background:#c41230}
+.burger[aria-expanded="true"] i:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger[aria-expanded="true"] i:nth-child(2){opacity:0;transform:translateX(6px)}
+.burger[aria-expanded="true"] i:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.burger:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.mnav{display:none;position:fixed;inset:0;z-index:49;overflow:hidden auto;padding:calc(env(safe-area-inset-top,0px) + 108px) 28px 40px;
+  background:radial-gradient(90% 60% at 85% 100%,rgba(255,206,160,.9) 0%,rgba(255,206,160,0) 70%),linear-gradient(172deg,#f6e6ef 0%,#fbe1df 42%,#fcd4bb 78%,#f9c294 100%);
+  visibility:hidden;clip-path:circle(0 at var(--mx,90%) var(--my,30px));transition:clip-path .55s cubic-bezier(.7,0,.3,1),visibility 0s .55s}
+.mnav.open{visibility:visible;clip-path:circle(150% at var(--mx,90%) var(--my,30px));transition:clip-path .8s cubic-bezier(.65,0,.25,1),visibility 0s}
+.mnav .m-arch{position:absolute;right:-30%;bottom:-16%;width:min(84vw,480px);height:auto;pointer-events:none}
+.mnav .m-arch path{fill:none;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 0s .55s}
+.mnav.open .m-arch path{stroke-dashoffset:0;transition:stroke-dashoffset 1.8s cubic-bezier(.4,0,.2,1) .25s}
+.mnav.open .m-arch path + path{transition-delay:.55s}
+.mnav ol{list-style:none;margin:0;padding:0;display:grid;gap:6px;position:relative}
+.mnav li{opacity:0;transform:translateY(22px);filter:blur(8px);transition:opacity .3s ease,transform .3s ease,filter .3s ease}
+.mnav.open li{opacity:1;transform:none;filter:none;transition:opacity .6s ease calc(.28s + var(--i) * .07s),transform .7s cubic-bezier(.2,.8,.2,1) calc(.28s + var(--i) * .07s),filter .6s ease calc(.28s + var(--i) * .07s)}
+.mnav ol a{display:flex;align-items:baseline;gap:14px;padding:8px 0;text-decoration:none;font:400 clamp(1.9rem,8vw,2.4rem)/1.15 var(--font-display);color:var(--ink)}
+.mnav ol a small{font:600 .72rem var(--font-body);letter-spacing:.14em;color:#c41230;min-width:1.6em}
+.mnav ol a:active,.mnav ol a:hover{color:#c41230}
+.mnav .m-foot{position:relative;margin-top:34px;display:grid;gap:16px;justify-items:start;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s}
+.mnav.open .m-foot{opacity:1;transform:none;transition:opacity .6s ease .75s,transform .7s cubic-bezier(.2,.8,.2,1) .75s}
+.mnav .m-foot p{color:var(--soft);font-size:.95rem;line-height:1.5}
+html.menu-open{overflow:hidden}
+@media (prefers-reduced-motion:reduce){.burger::before{animation:none}.mnav,.mnav.open,.mnav li,.mnav.open li,.mnav .m-foot,.mnav.open .m-foot,.mnav .m-arch path{transition:none!important;filter:none}}
 
 /* первый экран — рассвет */
 .hero{position:relative;overflow:hidden;background:linear-gradient(178deg,#f6e6ef 0%,#f9e0e1 30%,#fcd9c4 62%,#f9c79c 100%)}
@@ -548,6 +580,8 @@ footer a{text-decoration:none}
 @media (max-width:960px){
   .nav{display:none}
   .top .btn{margin-left:auto}
+  .top .wrap{gap:12px}
+  .burger,.mnav{display:block}
   .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast{grid-template-columns:1fr}
   .hero-ill{width:min(250px,68%);order:-1}
   .faq-ill{width:min(260px,75%);margin-bottom:12px}
@@ -590,9 +624,31 @@ footer a{text-decoration:none}
       <a href="#place">Как добраться</a>
     </nav>
     <a class="btn btn-warm" href="#tickets">Записаться</a>
+    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="mnav" aria-label="Открыть меню"><i></i><i></i><i></i></button>
   </div>
   <div class="sunline" aria-hidden="true"><b></b><i></i></div>
 </header>
+<div class="mnav" id="mnav" inert>
+  <svg class="m-arch" viewBox="0 0 400 520" aria-hidden="true">
+    <path pathLength="1" d="M40 520 V200 A160 160 0 0 1 360 200 V520" stroke="#c41230" stroke-width="2" opacity=".55"/>
+    <path pathLength="1" d="M78 520 V214 A122 122 0 0 1 322 214 V520" stroke="#f2a35e" stroke-width="1.5" opacity=".7"/>
+  </svg>
+  <nav aria-label="Разделы">
+    <ol>
+      <li style="--i:0"><a href="#idea"><small>01</small>Идея</a></li>
+      <li style="--i:1"><a href="#program"><small>02</small>Программа</a></li>
+      <li style="--i:2"><a href="#people"><small>03</small>Ведущие</a></li>
+      <li style="--i:3"><a href="#card"><small>04</small>Карта дня</a></li>
+      <li style="--i:4"><a href="#tickets"><small>05</small>Участие</a></li>
+      <li style="--i:5"><a href="#faq"><small>06</small>Что важно знать</a></li>
+      <li style="--i:6"><a href="#place"><small>07</small>Как добраться</a></li>
+    </ol>
+  </nav>
+  <div class="m-foot">
+    <p>21 ноября · 11:00–18:45<br>центр «МирРа», Лиговский пр., 44В</p>
+    <a class="btn btn-warm" href="#tickets">Забронировать место</a>
+  </div>
+</div>
 
 <main id="start">
 <!-- 1. Первый экран -->
@@ -1657,6 +1713,22 @@ footer a{text-decoration:none}
     else fxRun(true);
     addEventListener('resize', function(){ measure(); render(); });
   })();
+
+  /* мобильное меню: раскрывается кругом от кнопки; закрыть — той же кнопкой, пунктом меню, Esc */
+  var burger = document.getElementById('burger'), mnav = document.getElementById('mnav');
+  function setMenu(on, focus){
+    var b = burger.getBoundingClientRect();
+    mnav.style.setProperty('--mx', (b.left + b.width / 2) + 'px'); mnav.style.setProperty('--my', (b.top + b.height / 2) + 'px');
+    if (on) mnav.style.paddingTop = (burger.closest('.top').getBoundingClientRect().bottom + 28) + 'px';   /* пункты — сразу под шапкой, где бы она ни была */
+    mnav.classList.toggle('open', on); mnav.inert = !on;
+    burger.setAttribute('aria-expanded', on); burger.setAttribute('aria-label', on ? 'Закрыть меню' : 'Открыть меню');
+    document.documentElement.classList.toggle('menu-open', on);
+    if (on && focus) mnav.querySelector('a').focus({preventScroll:true});
+  }
+  burger.addEventListener('click', function(e){ setMenu(!mnav.classList.contains('open'), e.detail === 0); });
+  mnav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ setMenu(false); }); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && mnav.classList.contains('open')){ setMenu(false); burger.focus(); } });
+  matchMedia('(min-width:961px)').addEventListener('change', function(m){ if (m.matches) setMenu(false); });
 
   /* выбор участия: карточки → строка «Ваш выбор» → форма; в заявке доступны мастер-классы только выбранной части */
   var planSel = document.getElementById('r-plan'), mkSel = document.getElementById('r-mk');
