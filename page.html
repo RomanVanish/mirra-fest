@@ -412,14 +412,14 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .bl:hover .ball{filter:brightness(1.05) saturate(1.05)}
 .bl:focus-visible{outline:none}
 .bl:focus-visible .ball{outline:2px solid var(--focus);outline-offset:3px}
-.bl.fly{animation:none;pointer-events:none;opacity:0;transition:transform 2.8s cubic-bezier(.45,0,.6,1),opacity 2.4s ease .4s}
+.bl.fly{animation:none;pointer-events:none}
 .bl.fly svg{opacity:0}
 .knot{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#b54a3a;box-shadow:0 0 0 3px rgba(255,255,255,.6);transition:opacity .4s ease}
 .lg-done{min-height:1.6em;font-family:var(--font-display);font-style:italic;font-size:var(--step-1);opacity:0;transition:opacity .6s ease}
 .lg-done.on{opacity:1}
 @keyframes sway{from{transform:rotate(-2.2deg)}to{transform:rotate(2.2deg)}}
 @media (max-width:520px){.bl .lbl{font-size:.72rem}}
-@media (prefers-reduced-motion:reduce){.bl{animation:none}.bl.fly{transition:opacity .3s ease}}
+@media (prefers-reduced-motion:reduce){.bl{animation:none}}
 
 footer{background:#f7e4d6;color:var(--soft);font-size:.9rem}
 footer .wrap{display:flex;flex-wrap:wrap;gap:14px 32px;justify-content:space-between;padding-block:30px}
@@ -1103,8 +1103,12 @@ footer a{text-decoration:none}
     balloonsEl.appendChild(knot);
   }
   function letGo(b){
+    /* полёт от текущего положения (с учётом покачивания): немного вверх с лёгким дрейфом и плавное исчезновение */
+    var from = getComputedStyle(b).transform;
     b.classList.add('fly');
-    b.style.transform = 'translate('+rnd(-70,70).toFixed(0)+'px,'+(-rnd(320,420)).toFixed(0)+'px) rotate('+rnd(-18,18).toFixed(0)+'deg)';
+    var to = 'translate('+rnd(-30,30).toFixed(0)+'px,'+(-rnd(150,200)).toFixed(0)+'px) rotate('+rnd(-10,10).toFixed(0)+'deg)';
+    b.animate([{transform: from === 'none' ? 'none' : from, opacity:1}, {opacity:1, offset:.3}, {transform: to, opacity:0}],
+      {duration: REDUCE ? 300 : 1800, easing:'cubic-bezier(.3,.1,.5,1)', fill:'forwards'});
     released++;
     if (released === LET.length){
       knot.style.opacity = 0;
