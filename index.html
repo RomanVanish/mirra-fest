@@ -185,6 +185,7 @@ a{color:inherit}
 section.block{padding-block:clamp(64px,8vw,112px)}
 .head{display:grid;gap:14px;align-content:start;margin-bottom:clamp(32px,4vw,52px)}
 .head h2{font-size:var(--step-3)}
+.head .head-sub{font-family:var(--font-display);font-style:italic;font-size:var(--step-1);color:var(--accent);margin-top:-4px}
 
 /* идея */
 .idea .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,80px);align-items:start}
@@ -340,7 +341,12 @@ section.block{padding-block:clamp(64px,8vw,112px)}
   background:radial-gradient(ellipse at 50% 50%,rgba(255,222,176,.75) 0%,rgba(255,186,130,.3) 42%,rgba(255,186,130,0) 70%)}
 .a-person{position:absolute;left:50%;bottom:0;height:84%;transform:translateX(-50%);pointer-events:none}
 .a-person img,.a-person svg{display:block;height:100%;width:auto;max-width:none}
-.a-person img{filter:drop-shadow(0 0 2px rgba(255,236,210,.7)) drop-shadow(0 0 16px rgba(255,206,160,.5))}
+.a-person img{filter:drop-shadow(0 0 2px rgba(255,236,210,.7)) drop-shadow(0 0 16px rgba(255,206,160,.5));
+  /* фигура «вписана» в арку: края кадра (обрезанные руки, низ) мягко растворяются, голова и плечи нетронуты */
+  -webkit-mask-image:radial-gradient(ellipse 66% 88% at 50% 26%,#000 64%,transparent 100%),linear-gradient(180deg,#000 74%,transparent 98%);
+  -webkit-mask-composite:source-in;
+  mask-image:radial-gradient(ellipse 66% 88% at 50% 26%,#000 64%,transparent 100%),linear-gradient(180deg,#000 74%,transparent 98%);
+  mask-composite:intersect}
 /* картинка «Любовь» в финальной арке: по форме проёма, низ растворяется */
 .a-love{position:absolute;left:6%;right:6%;top:5%;bottom:0;border-radius:50% 50% 0 0/40% 40% 0 0;overflow:hidden;display:grid;place-items:center}
 .a-love img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s ease;
@@ -876,7 +882,8 @@ footer a{text-decoration:none}
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">Участие</div>
-      <h2>Один билет — а сколько пройти, решаете вы</h2>
+      <h2>Один билет — вход на целый день</h2>
+      <p class="head-sub">А сколько пройти, решаете вы</p>
       <p class="lead">Цена одна: хоть на один мастер-класс, хоть на весь фестиваль. Подскажите только, когда вас ждать, — так мы подготовим места в залах.</p>
     </div>
     <div class="pick" role="radiogroup" aria-label="Когда вы придёте">
