@@ -110,7 +110,14 @@ a{color:inherit}
 
 /* восьмёрка */
 .eight{position:relative;justify-self:center;width:min(330px,100%)}
-.idea .eight{display:block;width:min(200px,60%);margin:0 auto 28px}
+.idea .eight{display:block;width:min(200px,60%);margin:0 auto}
+/* живая восьмёрка: ползунок от страха к любви сжимает и раскрывает петли; дыхание — 3 цикла вдох/выдох */
+.p8{display:grid;justify-items:center;gap:12px;margin-bottom:32px}
+.eight .lt,.eight .lb{transform-box:view-box;transform-origin:120px 170px}
+.p8-range{width:min(300px,100%);display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--soft)}
+.p8-range input{width:100%;accent-color:var(--accent-2)}
+.p8-say{min-height:3.3em;text-align:center;color:var(--soft);font-size:.95rem;max-width:36ch}
+.p8 .btn{padding:.75em 1.2em;font-size:.92rem}
 .eight svg{width:100%;height:auto;overflow:visible}
 .eight .lbl{font:italic 400 15px var(--font-display);fill:#5a3f4c}
 .eight .lbl-s{font:600 10px var(--font-body);letter-spacing:.16em;fill:#8a6c78}
@@ -411,23 +418,33 @@ footer a{text-decoration:none}
       </div>
     </div>
     <div>
-      <div class="eight" aria-hidden="true">
-        <svg viewBox="0 0 240 340">
-          <defs>
-            <linearGradient id="g8" x1="0" y1="320" x2="0" y2="20" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#a68bbd"/>
-              <stop offset=".5" stop-color="#e98a7a"/>
-              <stop offset="1" stop-color="#f0953f"/>
-            </linearGradient>
-          </defs>
-          <path class="loop" pathLength="1" stroke="url(#g8)" d="M120 170 C 200 110, 200 30, 120 30 C 40 30, 40 110, 120 170 C 200 230, 200 310, 120 310 C 40 310, 40 230, 120 170"/>
-          <circle class="heart" cx="120" cy="170" r="7" fill="#e2763f"/>
-          <text class="lbl-s" x="120" y="12" text-anchor="middle">ЛЮБОВЬ</text>
-          <text class="lbl" x="120" y="78" text-anchor="middle">раскрывает</text>
-          <text class="lbl-s" x="214" y="174">ДОВЕРИЕ</text>
-          <text class="lbl" x="120" y="268" text-anchor="middle">сжимает</text>
-          <text class="lbl-s" x="120" y="334" text-anchor="middle">СТРАХ</text>
-        </svg>
+      <div class="p8" id="p8">
+        <div class="eight" aria-hidden="true">
+          <svg viewBox="0 0 240 340">
+            <defs>
+              <linearGradient id="g8" x1="0" y1="320" x2="0" y2="20" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#a68bbd"/>
+                <stop offset=".5" stop-color="#e98a7a"/>
+                <stop offset="1" stop-color="#f0953f"/>
+              </linearGradient>
+            </defs>
+            <g class="lt" id="p8-top">
+              <path class="loop" pathLength="1" stroke="url(#g8)" d="M120 170 C 200 110, 200 30, 120 30 C 40 30, 40 110, 120 170"/>
+              <text class="lbl" x="120" y="78" text-anchor="middle">раскрывает</text>
+            </g>
+            <g class="lb" id="p8-bot">
+              <path class="loop" pathLength="1" stroke="url(#g8)" d="M120 170 C 200 230, 200 310, 120 310 C 40 310, 40 230, 120 170"/>
+              <text class="lbl" x="120" y="268" text-anchor="middle">сжимает</text>
+            </g>
+            <circle class="heart" id="p8-heart" cx="120" cy="170" r="7" fill="#e2763f"/>
+            <text class="lbl-s" x="120" y="8" text-anchor="middle">ЛЮБОВЬ</text>
+            <text class="lbl-s" x="214" y="174">ДОВЕРИЕ</text>
+            <text class="lbl-s" x="120" y="338" text-anchor="middle">СТРАХ</text>
+          </svg>
+        </div>
+        <label class="p8-range"><span>Страх</span><input type="range" id="p8-v" min="0" max="100" value="50" aria-label="От страха к любви"><span>Любовь</span></label>
+        <p class="p8-say" id="p8-say" aria-live="polite"></p>
+        <button class="btn btn-soft" type="button" id="p8-breath">Подышать 30 секунд</button>
       </div>
       <div class="bridge">
         <div class="row fear"><div class="w">Страх</div><div class="d">сжатие: закрываемся, контролируем, защищаемся</div></div>
@@ -813,6 +830,43 @@ footer a{text-decoration:none}
     img.src = 'img/ill/'+name+'.'+ext[0];
     f.appendChild(img);
   });
+
+  /* живая восьмёрка: ползунок 0 (страх) … 100 (любовь); дыхание ведёт ползунок сам: вдох 4 с — к любви, выдох 6 с — к страху, 3 раза */
+  var REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var p8v = document.getElementById('p8-v'), p8say = document.getElementById('p8-say'), p8btn = document.getElementById('p8-breath');
+  var p8top = document.getElementById('p8-top'), p8bot = document.getElementById('p8-bot'), p8heart = document.getElementById('p8-heart');
+  var SAY8 = [
+    'Страх сжимает: плечи поднимаются, дыхание становится коротким, мир кажется опасным.',
+    'Доверие — мост: можно сделать один шаг, не зная всего пути.',
+    'Любовь раскрывает: дышится свободно, хочется тянуться к людям и к жизни.'
+  ];
+  function lerpC(a, b, t){ return 'rgb(' + a.map(function(v,i){ return Math.round(v + (b[i]-v)*t); }).join(',') + ')'; }
+  function set8(v, say){
+    p8top.style.transform = 'scale(' + (0.62 + 0.5*v).toFixed(3) + ')';
+    p8bot.style.transform = 'scale(' + (1.12 - 0.5*v).toFixed(3) + ')';
+    p8heart.setAttribute('fill', lerpC([166,139,189], [226,118,63], v));
+    p8say.textContent = say || SAY8[v < .34 ? 0 : v < .67 ? 1 : 2];
+  }
+  p8v.addEventListener('input', function(){ stopBreath(); set8(p8v.value/100); });
+  var breathRaf = 0, breathOn = false;
+  function stopBreath(){ if (!breathOn) return; breathOn = false; cancelAnimationFrame(breathRaf); p8btn.textContent = 'Подышать 30 секунд'; }
+  p8btn.addEventListener('click', function(){
+    if (breathOn){ stopBreath(); set8(p8v.value/100); return; }
+    breathOn = true; p8btn.textContent = 'Остановить';
+    var t0 = performance.now(), IN = 4000, OUT = 6000, CYCLE = IN + OUT, TOTAL = CYCLE*3;
+    (function step(now){
+      if (!breathOn) return;
+      var t = now - t0;
+      if (t >= TOTAL){ breathOn = false; p8btn.textContent = 'Подышать ещё раз'; p8v.value = 100; set8(1, 'Как вы? Так ощущается переход от сжатия к раскрытию. На фестивале таких практик будет больше.'); return; }
+      var c = t % CYCLE, inhale = c < IN, ph = inhale ? c/IN : (c-IN)/OUT;
+      var v = inhale ? 0.5 - 0.5*Math.cos(Math.PI*ph) : 0.5 + 0.5*Math.cos(Math.PI*ph);
+      var left = Math.ceil(((inhale ? IN : OUT) - (inhale ? c : c-IN))/1000);
+      p8v.value = Math.round(v*100);
+      set8(v, (inhale ? 'Вдох… ' : 'Выдох… ') + left + ' · цикл ' + (Math.floor(t/CYCLE)+1) + ' из 3');
+      breathRaf = requestAnimationFrame(step);
+    })(t0);
+  });
+  set8(p8v.value/100);
 
   /* вкладки программы */
   var tabs = document.querySelectorAll('[role="tab"]');
