@@ -621,7 +621,11 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .upbtn span{display:none}
 .upbtn.back{padding:0 18px 0 14px;color:#fff;background:linear-gradient(120deg,var(--accent),var(--accent-2))}
 .upbtn.back svg{transform:rotate(-90deg)}
-.upbtn.back span{display:inline}
+.upbtn.back span,.upbtn.prog span,.upbtn.ppl span{display:inline}
+/* «Смотреть программу» — стеклянная пилюля в две строки; «Ведущие» — та же пилюля со стрелкой вверх */
+.upbtn.prog,.upbtn.ppl{height:auto;min-height:52px;padding:8px 18px 8px 12px;line-height:1.15;text-align:left;
+  background:rgba(255,250,245,.82);-webkit-backdrop-filter:blur(10px) saturate(1.3);backdrop-filter:blur(10px) saturate(1.3);box-shadow:0 0 0 1px rgba(181,74,58,.25),0 14px 30px -14px rgba(110,50,40,.6)}
+.upbtn.prog svg{transform:rotate(180deg)}
 .upbtn.gone{opacity:0;transform:translateY(12px);pointer-events:none}
 .upbtn:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
 html.menu-open .upbtn{display:none}
@@ -674,8 +678,8 @@ footer a{text-decoration:none}
     <a class="brand" href="#start">От Страха <i>к</i> Любви</a>
     <nav class="nav" aria-label="Разделы">
       <a href="#idea">Идея</a>
-      <a href="#program">Программа</a>
       <a href="#people">Ведущие</a>
+      <a href="#program">Программа</a>
       <a href="#tickets">Участие</a>
       <a href="#place">Как добраться</a>
     </nav>
@@ -689,8 +693,8 @@ footer a{text-decoration:none}
     <div class="bf b1" aria-hidden="true"></div>
     <ol>
       <li style="--i:0"><a href="#idea"><small>01</small>Идея</a></li>
-      <li style="--i:1"><a href="#program"><small>02</small>Программа</a></li>
-      <li style="--i:2"><a href="#people"><small>03</small>Ведущие</a></li>
+      <li style="--i:1"><a href="#people"><small>02</small>Ведущие</a></li>
+      <li style="--i:2"><a href="#program"><small>03</small>Программа</a></li>
       <li style="--i:3"><a href="#card"><small>04</small>Карта дня</a></li>
       <li style="--i:4"><a href="#tickets"><small>05</small>Участие</a></li>
       <li style="--i:5"><a href="#faq"><small>06</small>Что важно знать</a></li>
@@ -855,7 +859,43 @@ footer a{text-decoration:none}
   </div>
 </section>
 
-<!-- 5. Программа -->
+<!-- 5. Ведущие -->
+<section class="block people" id="people">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Ведущие</div>
+      <h2>Кто проведёт вас по мосту</h2>
+    </div>
+    <div class="a-scene" tabindex="0" role="region" aria-roledescription="анфилада" aria-label="Ведущие фестиваля. Листайте стрелками влево и вправо">
+      <div class="a-world">
+        <div class="a-sky"></div>
+        <canvas class="a-trees" aria-hidden="true"></canvas>
+        <canvas class="a-trees a-bloom" aria-hidden="true"></canvas><canvas class="a-trees a-bloom" aria-hidden="true"></canvas><canvas class="a-trees a-bloom" aria-hidden="true"></canvas><canvas class="a-trees a-bloom" aria-hidden="true"></canvas>
+        <div class="a-water"></div>
+        <div class="a-haze"></div>
+        <div class="a-dawn"></div>
+        <div class="a-dusk"></div>
+        <div class="a-light"></div>
+      </div>
+      <canvas class="a-fx" aria-hidden="true"></canvas>
+      <div class="a-say" aria-live="polite"></div>
+      <div class="a-mist"><div class="a-ml"><i></i></div><div class="a-ml"><i></i></div><div class="a-ml"><i></i></div></div>
+      <button class="a-way fwd" type="button" aria-label="Вперёд, к следующему ведущему"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span></button>
+      <button class="a-way back" type="button" aria-label="Назад, к предыдущему ведущему" hidden><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span></button>
+    </div>
+    <div class="a-below">
+      <div class="a-cap" aria-live="polite"></div>
+      <div class="a-ctrls">
+        <button class="btn a-round" type="button" aria-label="Назад">←</button>
+        <button class="btn btn-warm" type="button">Войти в арку</button>
+      </div>
+      <div class="a-dots"></div>
+    </div>
+    <p class="a-hint">Нажмите на арку или стрелку, листайте свайпом влево и вправо.</p>
+  </div>
+</section>
+
+<!-- 6. Программа -->
 <section class="block" id="program">
   <div class="wrap">
     <div class="head">
@@ -952,42 +992,6 @@ footer a{text-decoration:none}
       </div>
       <div class="myday" id="myday" aria-live="polite"></div>
     </div>
-  </div>
-</section>
-
-<!-- 6. Ведущие -->
-<section class="block people" id="people">
-  <div class="wrap">
-    <div class="head">
-      <div class="eyebrow">Ведущие</div>
-      <h2>Кто проведёт вас по мосту</h2>
-    </div>
-    <div class="a-scene" tabindex="0" role="region" aria-roledescription="анфилада" aria-label="Ведущие фестиваля. Листайте стрелками влево и вправо">
-      <div class="a-world">
-        <div class="a-sky"></div>
-        <canvas class="a-trees" aria-hidden="true"></canvas>
-        <canvas class="a-trees a-bloom" aria-hidden="true"></canvas><canvas class="a-trees a-bloom" aria-hidden="true"></canvas><canvas class="a-trees a-bloom" aria-hidden="true"></canvas><canvas class="a-trees a-bloom" aria-hidden="true"></canvas>
-        <div class="a-water"></div>
-        <div class="a-haze"></div>
-        <div class="a-dawn"></div>
-        <div class="a-dusk"></div>
-        <div class="a-light"></div>
-      </div>
-      <canvas class="a-fx" aria-hidden="true"></canvas>
-      <div class="a-say" aria-live="polite"></div>
-      <div class="a-mist"><div class="a-ml"><i></i></div><div class="a-ml"><i></i></div><div class="a-ml"><i></i></div></div>
-      <button class="a-way fwd" type="button" aria-label="Вперёд, к следующему ведущему"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span></button>
-      <button class="a-way back" type="button" aria-label="Назад, к предыдущему ведущему" hidden><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span></button>
-    </div>
-    <div class="a-below">
-      <div class="a-cap" aria-live="polite"></div>
-      <div class="a-ctrls">
-        <button class="btn a-round" type="button" aria-label="Назад">←</button>
-        <button class="btn btn-warm" type="button">Войти в арку</button>
-      </div>
-      <div class="a-dots"></div>
-    </div>
-    <p class="a-hint">Нажмите на арку или стрелку, листайте свайпом влево и вправо.</p>
   </div>
 </section>
 
@@ -1179,7 +1183,7 @@ footer a{text-decoration:none}
   </div>
 </section>
 </main>
-<button class="upbtn" id="upbtn" type="button" aria-label="К предыдущему разделу" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span>Вернуться назад</span></button>
+<button class="upbtn" id="upbtn" type="button" aria-label="К предыдущему разделу" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span class="u-t">Вернуться назад</span></button>
 
 <footer>
   <div class="wrap">
@@ -1774,12 +1778,12 @@ footer a{text-decoration:none}
       }, REDUCE ? 0 : 450);
       prev.disabled = i === 0;
       sayHide(); clearTimeout(sayTimer);
-      next.textContent = p.end ? 'Записаться' : i === 0 ? 'Войти в арку' : 'Пройти дальше';
+      next.textContent = p.end ? 'Смотреть программу' : i === 0 ? 'Войти в арку' : 'Пройти дальше';
       dots.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-current', +b.dataset.i === i); });
       wayBack.hidden = i === 0; wayFwd.hidden = !!p.end;
     }
     next.addEventListener('click', function(){
-      if (PEOPLE[target].end) document.getElementById('tickets').scrollIntoView({behavior: REDUCE ? 'auto' : 'smooth'});
+      if (PEOPLE[target].end) goAnchor('program', true);
       else go(target+1);
     });
     prev.addEventListener('click', function(){ go(target-1); });
@@ -1861,38 +1865,49 @@ footer a{text-decoration:none}
   });
   if (location.hash.length > 1) addEventListener('load', function(){ goAnchor(decodeURIComponent(location.hash.slice(1)), false); });
 
-  /* имена ведущих в программе → арка нужного ведущего; плавающая кнопка: к началу предыдущего раздела,
-     а после такого перехода — «Вернуться назад» к той карточке, откуда нажали имя */
-  var upbtn = document.getElementById('upbtn'), backY = null, landing = false;
-  var SECS = [].slice.call(document.querySelectorAll('main > section[id]'));
+  /* плавающая кнопка, по шагам:
+     1) «Смотреть программу» — пока гость не дошёл до программы (на первом экране кнопки нет, там такая же большая);
+     2) нажал её — перенос к программе мимо анфилады, кнопка становится «↑ Ведущие»; нажал — к ведущим;
+     3) дальше обычный режим: «↑» к началу предыдущего раздела, а после перехода по имени ведущего — «← Вернуться назад».
+     Долистал до программы сам — шаг 1 закончен; ушёл из программы прокруткой — «Ведущие» сменяются обычной стрелкой. */
+  var upbtn = document.getElementById('upbtn'), upTxt = upbtn.querySelector('.u-t'), backY = null, landing = false, stage = 'prog';
+  var SECS = [].slice.call(document.querySelectorAll('main > section[id]')), progEl = document.getElementById('program');
   function curSec(){ var y = document.querySelector('.top').getBoundingClientRect().height + 40, k = -1;
     SECS.forEach(function(sct, j){ if (sct.getBoundingClientRect().top <= y) k = j; }); return k; }
+  function smoothTo(y){ scrollTo({top: y, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
+  function land(){ landing = true; clearTimeout(land.t); land.t = setTimeout(function(){ landing = false; }, 1500); }
   function syncUp(){
-    var k = curSec(), back = backY !== null;
+    var k = curSec(), mode = backY !== null ? 'back' : stage === 'prog' ? 'prog' : stage === 'ppl' ? 'ppl' : 'up';
     upbtn.hidden = false;
-    upbtn.classList.toggle('gone', !back && k < 0);   /* на первом экране кнопки нет */
-    upbtn.classList.toggle('back', back);
-    upbtn.setAttribute('aria-label', back ? 'Вернуться назад, к программе' : 'К предыдущему разделу');
+    upbtn.classList.toggle('gone', mode === 'prog' ? k < 0 : mode === 'up' && k < 0);
+    ['back','prog','ppl'].forEach(function(m){ upbtn.classList.toggle(m, mode === m); });
+    upTxt.innerHTML = mode === 'back' ? 'Вернуться назад' : mode === 'prog' ? 'Смотреть<br>программу' : mode === 'ppl' ? 'Ведущие' : '';
+    upbtn.setAttribute('aria-label', mode === 'back' ? 'Вернуться назад, к программе' : mode === 'prog' ? 'Смотреть программу' : mode === 'ppl' ? 'К ведущим' : 'К предыдущему разделу');
   }
   document.querySelectorAll('.who-l').forEach(function(a){
     a.addEventListener('click', function(e){
       e.preventDefault(); e.stopPropagation();
-      backY = scrollY; landing = true; setTimeout(function(){ landing = false; }, 1500);
+      backY = scrollY; stage = 'up'; land();
       goAnchor('people', true);
       if (window.anfGo) window.anfGo(+a.dataset.person);
       syncUp();
     });
   });
   upbtn.addEventListener('click', function(){
-    if (backY !== null){ var y = backY; backY = null; landing = true; setTimeout(function(){ landing = false; }, 1500);
-      scrollTo({top: y, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); syncUp(); return; }
+    if (backY !== null){ var y = backY; backY = null; land(); smoothTo(y); syncUp(); return; }
+    if (stage === 'prog'){ stage = 'ppl'; land(); goAnchor('program', true); syncUp(); return; }
+    if (stage === 'ppl'){ stage = 'up'; land(); goAnchor('people', true); syncUp(); return; }
     var k = curSec();
-    if (k <= 0) scrollTo({top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
-    else goAnchor(SECS[k - 1].id, true);
+    if (k <= 0) smoothTo(0); else goAnchor(SECS[k - 1].id, true);
   });
   addEventListener('scroll', function(){
-    if (backY !== null && !landing){ var pr = document.getElementById('people').getBoundingClientRect();
-      if (pr.bottom < 80 || pr.top > innerHeight - 80) backY = null; }   /* ушли из «Ведущих» сами — кнопка снова обычная */
+    if (!landing){
+      var pg = progEl.getBoundingClientRect();
+      if (stage === 'prog' && pg.top < innerHeight*0.5) stage = 'up';                          /* дошёл до программы сам */
+      if (stage === 'ppl' && (pg.bottom < 80 || pg.top > innerHeight - 80)) stage = 'up';      /* ушёл из программы сам */
+      if (backY !== null){ var pr = document.getElementById('people').getBoundingClientRect();
+        if (pr.bottom < 80 || pr.top > innerHeight - 80) backY = null; }                      /* ушёл из «Ведущих» сам */
+    }
     syncUp();
   }, {passive:true});
   syncUp();
