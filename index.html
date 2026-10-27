@@ -232,6 +232,23 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .groups{display:flex;gap:10px;margin-top:22px}
 .groups button{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font:500 1.4rem var(--font-display);color:var(--ink);cursor:pointer}
 .groups button[aria-pressed="true"]{background:linear-gradient(140deg,var(--accent),var(--accent-2));border-color:transparent;color:#fff}
+/* схема маршрута: от холла по залам в порядке группы */
+.rmap{margin:26px 0 0;max-width:380px}
+.rmap svg{display:block;width:100%;height:auto}
+.rmap figcaption{font-size:.8rem;color:var(--soft);margin-top:6px}
+.rmap .hall rect{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.rmap .hall.on rect{stroke:var(--accent-2)}
+.rmap .hall text{font:500 13.5px var(--font-display);fill:var(--ink)}
+.rmap .hall .tm{font:600 10px var(--font-body);fill:var(--soft)}
+.rmap .start circle{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
+.rmap .start text{font:600 9.5px var(--font-body);letter-spacing:.1em;fill:var(--soft)}
+.rmap .seg{fill:none;stroke:var(--accent-2);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:rseg .55s ease forwards}
+.rmap .num{opacity:0;animation:rpop .3s ease forwards}
+.rmap .num circle{fill:var(--accent)}
+.rmap .num text{fill:#fff;font:600 11px var(--font-body)}
+@keyframes rseg{to{stroke-dashoffset:0}}
+@keyframes rpop{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.rmap .seg{animation:none;stroke-dashoffset:0}.rmap .num{animation:none;opacity:1}}
 .myday{display:grid;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .myday .r{display:grid;grid-template-columns:116px 1fr;gap:14px;padding:13px 20px;border-top:1px solid var(--line);align-items:baseline}
 .myday .r:first-child{border-top:0}
@@ -625,6 +642,10 @@ footer a{text-decoration:none}
           <button type="button" data-g="1" aria-pressed="false">Б</button>
           <button type="button" data-g="2" aria-pressed="false">В</button>
         </div>
+        <figure class="rmap" aria-hidden="true">
+          <svg viewBox="0 0 320 230" id="rmap"></svg>
+          <figcaption>Схема условная: порядок залов и время начала в обеих частях</figcaption>
+        </figure>
       </div>
       <div class="myday" id="myday" aria-live="polite"></div>
     </div>
@@ -1003,6 +1024,34 @@ footer a{text-decoration:none}
     h += row('14:00–15:30','Обед','',true);
     for (var j=0;j<3;j++){ var hall2 = ORDER[j][g]; h += row(T2[j], HALLS[hall2][1], hall2); }
     myday.innerHTML = h;
+    drawMap(g);
+  }
+  /* схема: холл в центре, три зала вокруг; путь группы рисуется отрезками по очереди */
+  var MAP = {"Лотос":[62,48], "Зал-Холл":[258,48], "Большой зал":[160,192]}, START = [160,108];
+  function drawMap(g){
+    var pts = [START], s = '';
+    Object.keys(MAP).forEach(function(n){
+      var p = MAP[n], k = ORDER.map(function(o){ return o[g]; }).indexOf(n);
+      s += '<g class="hall on"><rect x="'+(p[0]-56)+'" y="'+(p[1]-22)+'" width="112" height="44" rx="12"/>' +
+           '<text x="'+p[0]+'" y="'+(p[1]-2)+'" text-anchor="middle">'+n+'</text>' +
+           '<text class="tm" x="'+p[0]+'" y="'+(p[1]+13)+'" text-anchor="middle">'+T1[k].slice(0,5)+' · '+T2[k].slice(0,5)+'</text></g>';
+    });
+    s = '<g class="start"><circle cx="'+START[0]+'" cy="'+START[1]+'" r="20"/><text x="'+START[0]+'" y="'+(START[1]+3)+'" text-anchor="middle">ХОЛЛ</text></g>' + s;
+    ORDER.forEach(function(o){ pts.push(MAP[o[g]]); });
+    /* точка на краю фигуры (кружок холла или рамка зала) в сторону другой точки, с зазором 4px */
+    function edge(c, to, circle){
+      var dx = to[0]-c[0], dy = to[1]-c[1], len = Math.hypot(dx, dy);
+      var t = circle ? 20/len : Math.min(56/Math.abs(dx || 1e-6), 22/Math.abs(dy || 1e-6));
+      t += 4/len;
+      return [c[0] + dx*t, c[1] + dy*t];
+    }
+    var segs = '', nums = '';
+    for (var i=1;i<pts.length;i++){
+      var a = pts[i-1], b = pts[i], p1 = edge(a, b, i === 1), p2 = edge(b, a, false);
+      segs += '<path class="seg" pathLength="1" style="animation-delay:'+((i-1)*.5)+'s" d="M'+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+' L'+p2[0].toFixed(1)+' '+p2[1].toFixed(1)+'"/>';
+      nums += '<g class="num" style="animation-delay:'+((i-1)*.5+.45)+'s"><circle cx="'+(b[0]+48)+'" cy="'+(b[1]-20)+'" r="10"/><text x="'+(b[0]+48)+'" y="'+(b[1]-16)+'" text-anchor="middle">'+i+'</text></g>';
+    }
+    document.getElementById('rmap').innerHTML = segs + s + nums;
   }
   document.querySelectorAll('.groups button').forEach(function(b){
     b.addEventListener('click', function(){
