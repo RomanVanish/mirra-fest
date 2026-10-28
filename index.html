@@ -128,7 +128,7 @@ html.menu-open{overflow:hidden}
 /* «От Страха» — по левому краю, «к Любви» — по правому краю первой строки (лесенкой), «к» отставлено от «Любви» */
 .hero h1{display:grid;width:max-content;max-width:100%;font-size:var(--step-4);letter-spacing:-.01em;margin-top:18px}
 .hero h1 .l2{justify-self:end}
-@media (max-width:640px){.hero h1{width:100%;font-size:min(calc((100vw - 36px) / 4.9),4.4rem)}}
+@media (max-width:640px){.hero h1{width:100%;font-size:clamp(2.5rem,12.5vw,3.4rem);margin-top:10px}}   /* обе строки лесенкой во всю ширину: «к Любви» — у правого края */
 .hero h1 .to{font-style:italic;font-weight:400;font-size:.78em;color:var(--accent);margin-right:.42em}
 .hero .sub{font-family:var(--font-display);font-style:italic;font-size:var(--step-1);margin-top:20px;max-width:30ch;color:var(--soft)}
 .facts{display:flex;flex-wrap:wrap;gap:10px 30px;margin-top:28px}
@@ -476,7 +476,6 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-self:start;max-width:380px}
 .a-dots button{font:500 .85rem var(--font-body);border:1.5px solid var(--line);background:#fff;color:var(--soft);border-radius:999px;padding:.45em .9em;cursor:pointer}
 .a-dots button[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
-.a-hint{font-size:.85rem;color:var(--soft);margin-top:6px}
 @media (max-width:640px){
   .a-scene{height:auto;aspect-ratio:1/1;min-height:0;border-radius:16px}
   .a-below{grid-template-columns:1fr}
@@ -572,8 +571,9 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .route-band{display:grid;grid-template-columns:1fr minmax(0,360px);gap:24px clamp(28px,5vw,64px);align-items:center;margin-top:40px;padding:clamp(18px,3vw,32px);border-radius:22px;background:#3e2436;color:#fff0e4}
 .route-band .rt-card{margin:0}
 .rt-title{grid-column:1/-1;text-align:center;font-size:var(--step-3);color:#f2c48a;margin-bottom:4px}
-.rt-info h3{font-size:var(--step-2);color:#fff0e4}
-.rt-info .route-way{margin-top:12px;color:rgba(255,240,228,.82);font-size:1rem;max-width:46ch}
+.rt-info h3{font-size:clamp(1.5rem,1.2rem + 1.3vw,2.3rem);color:#fff0e4}
+.rt-info .route-way{margin-top:16px;color:rgba(255,240,228,.86);font-size:clamp(1rem,.95rem + .3vw,1.18rem);line-height:1.6;max-width:44ch}
+.rt-info .rt-side{margin-top:34px;padding-top:28px;border-top:1px solid rgba(242,196,138,.25)}
 .rt-info .vbtn{color:#fff0e4}
 .rt-info .vbtn-txt{background-image:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.95) 50%,transparent 60%),linear-gradient(180deg,#ffd9b0 0%,#f2c48a 50%,#e6a86c 100%)}
 .rt-info .vbtn-note{color:rgba(255,240,228,.7)}
@@ -654,15 +654,19 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 @keyframes rt-pulse{0%{transform:scale(1);opacity:.85;stroke-width:2.4}100%{transform:scale(2.8);opacity:0;stroke-width:.6}}
 @media (prefers-reduced-motion:reduce){.rt-svg .rt-pulse,.rt-svg .rt-path{animation:none}}
 
-.bring{margin-bottom:22px;display:grid;gap:6px;color:var(--soft);font-size:.95rem}
+.bring{position:relative;margin-bottom:14px;display:grid;gap:4px;padding:14px 16px 14px 54px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);color:var(--soft);font-size:.95rem}
+.bring::before{content:"";position:absolute;left:14px;top:14px;width:26px;height:26px;border-radius:50%;background:var(--accent) center/16px no-repeat;background-image:var(--bi)}
+.bring.b-when{--bi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E")}
+.bring.b-take{--bi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8h14l-1 12H6z'/%3E%3Cpath d='M9 8a3 3 0 0 1 6 0'/%3E%3C/svg%3E")}
 .bring a,.pick-note a,.qa .ans a{color:var(--accent);font-weight:600}
-.bring b{color:var(--ink)}
+.bring b{color:var(--accent);font:600 1.15rem var(--font-display)}
 
 /* финал — тёплый рассвет */
 .dawn{position:relative;overflow:hidden;text-align:center;background:linear-gradient(180deg,#fbe3dc 0%,#fbcfae 50%,#f6a868 100%)}
 .dawn::after{content:"";position:absolute;left:50%;bottom:-55%;width:min(980px,170%);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,240,214,.95) 0%,rgba(255,226,186,.5) 32%,rgba(255,226,186,0) 64%);pointer-events:none}
 .dawn .wrap{position:relative;z-index:1;padding-block:clamp(56px,7vw,96px) clamp(56px,7vw,96px);display:grid;justify-items:center;gap:16px}
-.dawn blockquote{margin:0;font-family:var(--font-display);font-style:italic;font-size:var(--step-3);line-height:1.2;max-width:30ch;text-wrap:balance}
+.dawn blockquote{margin:-6px 0 0;font-family:var(--font-display);font-style:italic;font-size:clamp(1.6rem,1.3rem + 1.4vw,2.4rem);line-height:1.2;max-width:30ch;text-wrap:balance}
+@media (max-width:640px){.dawn .wrap > .btn{display:none}}
 .dawn cite{font-style:normal;color:#6b4a45}
 /* «отпустить»: связка шариков с подписями на нитках; нажатие — нитка отпускается, шарик улетает и тает */
 .letgo{position:relative;width:min(560px,100%);display:grid;gap:6px;justify-items:center;margin-bottom:0;isolation:isolate}
@@ -691,7 +695,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .bl.fly{animation:none;pointer-events:none}
 .bl.fly svg{opacity:0}
 .knot{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#b54a3a;box-shadow:0 0 0 3px rgba(255,255,255,.6);transition:opacity .4s ease}
-.lg-done{min-height:1.4em;margin-top:-4px;font-family:var(--font-display);font-style:italic;font-size:var(--step-1);opacity:0;transition:opacity .6s ease}
+.lg-done{min-height:0;margin-top:-4px;font-family:var(--font-display);font-style:italic;font-size:var(--step-1);opacity:0;transition:opacity .6s ease}
 .lg-done.on{opacity:1}
 @keyframes sway{from{transform:rotate(-2.2deg)}to{transform:rotate(2.2deg)}}
 @media (max-width:520px){.bl .lbl{font-size:.72rem}}
@@ -710,7 +714,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 }
 
 /* плавающая кнопка: «к началу предыдущего раздела»; после перехода по имени ведущего — «← Вернуться назад» */
-.upbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:45;display:inline-flex;align-items:center;gap:8px;height:48px;min-width:48px;padding:0 13px;border:0;border-radius:999px;cursor:pointer;
+.upbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px),calc((100vw - var(--wrap)) / 2 - 72px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:45;display:inline-flex;align-items:center;gap:8px;height:48px;min-width:48px;padding:0 13px;border:0;border-radius:999px;cursor:pointer;
   color:var(--accent);background:radial-gradient(circle at 35% 28%,#fff 0%,#fff 45%,#fdeee6 100%);box-shadow:0 0 0 1px rgba(181,74,58,.18),0 12px 26px -12px rgba(110,50,40,.55);
   font:600 .92rem var(--font-body);transition:opacity .3s ease,transform .3s ease,padding .3s ease}
 .upbtn svg{width:22px;height:22px;flex:none;transition:transform .35s ease}
@@ -761,7 +765,7 @@ footer a{text-decoration:none}
   .rt-title{font-size:1.9rem;margin-bottom:12px}
   .rt-info h3{font-size:1.3rem}
   .route-band .rt-card{order:1;margin:16px 0 18px}
-  .rt-info .rt-side{order:2;margin-top:0}
+  .rt-info .rt-side{order:2;margin-top:6px;padding-top:18px}
 }
 @media (max-width:960px){
   .nav{display:none}
@@ -770,7 +774,8 @@ footer a{text-decoration:none}
   .burger{display:block}
   .mnav{display:flex;flex-direction:column}
   .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place-top,.cast{grid-template-columns:1fr}
-  .hero-ill{width:min(330px,86%);order:-1}
+  .hero-ill{width:min(230px,62%);order:-1}
+  .hero .wrap{gap:20px;padding-top:22px}
   .faq-ill{width:min(260px,75%);margin-bottom:12px}
   .mks,.pick{grid-template-columns:1fr}
   .pick .main{order:-1}
@@ -786,7 +791,10 @@ footer a{text-decoration:none}
   .four{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:520px){
-  form.req{grid-template-columns:1fr}
+  form.req{grid-template-columns:1fr 1fr;gap:10px 10px;padding:16px}
+  .f{gap:4px}.f label{font-size:.82rem}
+  .f input,.f select{padding:9px 11px;font-size:.95rem}
+  .check{font-size:.8rem}
   .bridge .row{grid-template-columns:1fr;gap:4px}
   .sched div{grid-template-columns:108px 1fr}
   .strip b{font-size:2rem}
@@ -992,7 +1000,6 @@ footer a{text-decoration:none}
       <div class="a-cap" aria-live="polite"></div>
       <div class="a-dots"></div>
     </div>
-    <p class="a-hint">Нажмите на арку или стрелку, листайте свайпом влево и вправо.</p>
   </div>
 </section>
 
@@ -1261,8 +1268,8 @@ footer a{text-decoration:none}
         <a class="btn btn-ink" href="https://yandex.ru/maps/?text=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3%2C%20%D0%9B%D0%B8%D0%B3%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BF%D1%80%D0%BE%D1%81%D0%BF%D0%B5%D0%BA%D1%82%2C%2044%D0%92" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>
         <a class="btn btn-soft" href="https://mirra-spb.ru" target="_blank" rel="noopener">Сайт центра</a>
       </div>
-      <div class="bring"><b>Когда приходить</b><span>Регистрация — с 10:00. Приходите минут за 15 до начала: бейдж и брошюра ждут на стойке.</span><span>Полное расписание — <a href="#program" data-back>в программе</a>.</span></div>
-      <div class="bring"><b>Возьмите с собой</b><span>удобную одежду · носки или сменную обувь · воду</span></div>
+      <div class="bring b-when"><b>Когда приходить</b><span>Регистрация — с 10:00. Приходите минут за 15 до начала: бейдж и брошюра ждут на стойке.</span><span>Полное расписание — <a href="#program" data-back>в программе</a>.</span></div>
+      <div class="bring b-take"><b>Возьмите с собой</b><span>удобную одежду · носки или сменную обувь · воду</span></div>
     </div>
     <figure class="ill place-ill" data-ill="place" data-ratio="3:2"></figure>
   </div>
@@ -1364,7 +1371,7 @@ footer a{text-decoration:none}
       <p class="lg-done" id="lg-done" aria-live="polite"></p>
     </div>
     <blockquote>Пусть в вашей жизни будет чуть меньше страха и чуть больше любви</blockquote>
-    <cite>21 ноября · психологический центр «МирРа»</cite>
+    <cite>До встречи 21 ноября в ПЦ «МирРа»</cite>
     <a class="btn btn-ink" href="#tickets">Забронировать место</a>
   </div>
 </section>
