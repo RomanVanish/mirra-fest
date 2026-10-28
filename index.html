@@ -565,7 +565,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 /* место */
 .place{background:var(--surface)}
 .place .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);align-items:start}
-.place .wrap > div:first-child{position:sticky;top:96px}   /* текст остаётся рядом, пока листаются картинка и схема */
+@media (min-width:961px){.place .wrap > div:first-child{position:sticky;top:96px}}   /* только на компьютере: текст рядом, пока листаются картинка и схема */
 .place-media{display:grid;gap:22px}
 .place .btns{margin-bottom:30px}
 .rt-side{margin-top:26px}
@@ -653,11 +653,11 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 /* финал — тёплый рассвет */
 .dawn{position:relative;overflow:hidden;text-align:center;background:linear-gradient(180deg,#fbe3dc 0%,#fbcfae 50%,#f6a868 100%)}
 .dawn::after{content:"";position:absolute;left:50%;bottom:-55%;width:min(980px,170%);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,240,214,.95) 0%,rgba(255,226,186,.5) 32%,rgba(255,226,186,0) 64%);pointer-events:none}
-.dawn .wrap{position:relative;z-index:1;padding-block:clamp(72px,9vw,128px);display:grid;justify-items:center;gap:22px}
-.dawn blockquote{margin:0;font-family:var(--font-display);font-style:italic;font-size:var(--step-3);line-height:1.2;max-width:22ch;text-wrap:balance}
+.dawn .wrap{position:relative;z-index:1;padding-block:clamp(56px,7vw,96px) clamp(56px,7vw,96px);display:grid;justify-items:center;gap:16px}
+.dawn blockquote{margin:0;font-family:var(--font-display);font-style:italic;font-size:var(--step-3);line-height:1.2;max-width:30ch;text-wrap:balance}
 .dawn cite{font-style:normal;color:#6b4a45}
 /* «отпустить»: связка шариков с подписями на нитках; нажатие — нитка отпускается, шарик улетает и тает */
-.letgo{position:relative;width:min(560px,100%);display:grid;gap:6px;justify-items:center;margin-bottom:6px;isolation:isolate}
+.letgo{position:relative;width:min(560px,100%);display:grid;gap:6px;justify-items:center;margin-bottom:0;isolation:isolate}
 /* небо (иллюстрация dawn) — от верха раздела до солнца; нарисованное солнце стоит ровно за нижним шариком,
    связка его закрывает, отпустили шарики — открываются солнце и небо. Положение и высоту задаёт скрипт.
    Края растворяются прозрачностью, запечённой в сам файл dawn.webp (верх, бока и сразу под солнцем):
@@ -668,7 +668,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .lg-sky .ill-ph{place-content:start center;padding-top:9%;font-size:.74rem}
 .lg-l{font-family:var(--font-display);font-size:var(--step-2);line-height:1.2}
 .lg-hint{font-size:.9rem;color:#6b4a45}
-.balloons{position:relative;width:100%;height:360px;margin-top:4px}
+.balloons{position:relative;width:100%;height:360px;margin-top:0}
 .bl{position:absolute;padding:0;border:0;background:none;cursor:pointer;width:var(--bw);height:var(--bh);transform-origin:var(--ox) var(--oy);animation:sway 3.6s ease-in-out infinite alternate}
 .bl .ball{position:absolute;inset:0;display:grid;place-items:center;padding:12px 8px;border-radius:50% 50% 48% 48%/56% 56% 44% 44%;
   background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.9) 0 7%,rgba(255,255,255,0) 24%),radial-gradient(circle at 48% 42%,var(--c1),var(--c2) 92%);
@@ -683,7 +683,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .bl.fly{animation:none;pointer-events:none}
 .bl.fly svg{opacity:0}
 .knot{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#b54a3a;box-shadow:0 0 0 3px rgba(255,255,255,.6);transition:opacity .4s ease}
-.lg-done{min-height:1.6em;font-family:var(--font-display);font-style:italic;font-size:var(--step-1);opacity:0;transition:opacity .6s ease}
+.lg-done{min-height:1.4em;margin-top:-4px;font-family:var(--font-display);font-style:italic;font-size:var(--step-1);opacity:0;transition:opacity .6s ease}
 .lg-done.on{opacity:1}
 @keyframes sway{from{transform:rotate(-2.2deg)}to{transform:rotate(2.2deg)}}
 @media (max-width:520px){.bl .lbl{font-size:.72rem}}
@@ -740,6 +740,18 @@ footer a{text-decoration:none}
   .route .rmap{max-width:300px;align-self:center;margin:0 0 6px}
   .myday{gap:4px}.md-part{margin-top:6px;font-size:.7rem}
   .md-step{gap:10px}.md-step i{width:22px;height:22px;font-size:.72rem}.md-step a{font-size:.98rem;line-height:1.25}
+}
+@media (max-width:960px){
+  .place .wrap{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .place .btns,.place .rt-side{align-self:flex-start}
+  .route-way{margin-top:0}
+  .place .wrap > div{display:contents}
+  .place .eyebrow,.place .addr,.place .addr + p{order:0}
+  .place-ill{order:1;margin:22px 0 4px}
+  .place .btns,.place .bring,.route-way{order:2}
+  .place .rt-card{order:3;margin-top:24px}
+  .place .rt-side{order:4}
+  .place-media{display:contents}
 }
 @media (max-width:960px){
   .nav{display:none}
