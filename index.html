@@ -564,17 +564,23 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 
 /* место */
 .place{background:var(--surface)}
-.place .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);align-items:start}
-@media (min-width:961px){.place .wrap > div:first-child{position:sticky;top:96px}}   /* только на компьютере: текст рядом, пока листаются картинка и схема */
-.place-media{display:grid;gap:22px}
-.place .btns{margin-bottom:30px}
+/* «Как добраться»: сверху адрес и памятка + иллюстрация; ниже тёмная полоса «Как пройти» — компактная схема и путь с видео */
+.place-top{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);align-items:center}
+.place-top .place-ill{margin:0}
+.route-band{display:grid;grid-template-columns:minmax(0,360px) 1fr;gap:28px clamp(28px,5vw,64px);align-items:center;margin-top:40px;padding:clamp(18px,3vw,32px);border-radius:22px;background:#3e2436;color:#fff0e4}
+.route-band .rt-card{margin:0}
+.rt-info .eyebrow{color:#f2c48a}
+.rt-info h3{font-size:var(--step-2);margin-top:8px;color:#fff0e4}
+.rt-info .route-way{margin-top:12px;color:rgba(255,240,228,.82);font-size:1rem;max-width:46ch}
+.rt-info .vbtn{color:#fff0e4}
+.rt-info .vbtn-txt{background-image:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.95) 50%,transparent 60%),linear-gradient(180deg,#ffd9b0 0%,#f2c48a 50%,#e6a86c 100%)}
+.rt-info .vbtn-note{color:rgba(255,240,228,.7)}
+.place .btns{margin-bottom:26px}
 .rt-side{margin-top:26px}
 .addr{font-family:var(--font-display);font-size:var(--step-2);margin-top:14px}
 .place .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 /* как пройти: схема (из сайта аренды, перекрашена в тона фестиваля) и вертикальное видео */
-.place-media figure{margin:0}
-.place-media figcaption{margin-top:8px;font-size:.88rem;color:var(--soft)}
-.rt-card .rt-svg{border-radius:var(--r);overflow:hidden;background:#3e2436}
+.rt-card .rt-svg{border-radius:14px;overflow:hidden;background:#3e2436}
 /* кнопка видео — по образцу сайта аренды, в тонах фестиваля: шлифованная розово-золотая, подпись с бегущим бликом */
 .vbtn{display:inline-flex;align-items:center;gap:12px;padding:0;border:0;background:none;cursor:pointer;color:var(--ink)}
 .vbtn-play{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;color:#7a2a20;
@@ -742,16 +748,17 @@ footer a{text-decoration:none}
   .md-step{gap:10px}.md-step i{width:22px;height:22px;font-size:.72rem}.md-step a{font-size:.98rem;line-height:1.25}
 }
 @media (max-width:960px){
-  .place .wrap{display:flex;flex-direction:column;align-items:stretch;gap:0}
-  .place .btns,.place .rt-side{align-self:flex-start}
-  .route-way{margin-top:0}
-  .place .wrap > div{display:contents}
-  .place .eyebrow,.place .addr,.place .addr + p{order:0}
-  .place-ill{order:1;margin:22px 0 4px}
-  .place .btns,.place .bring,.route-way{order:2}
-  .place .rt-card{order:3;margin-top:24px}
-  .place .rt-side{order:4}
-  .place-media{display:contents}
+  .place-top{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .place-txt{display:contents}
+  .place-top .place-ill{order:1;margin:22px 0 4px}
+  .place .btns,.place .bring{order:2}
+  .place .btns{align-self:flex-start}
+  .route-band{display:flex;flex-direction:column;align-items:stretch;gap:0;margin-top:28px;padding:18px}
+  .rt-info{display:contents}
+  .rt-info .eyebrow,.rt-info h3,.rt-info .route-way{order:0}
+  .rt-info h3{font-size:1.35rem}
+  .route-band .rt-card{order:1;margin:16px 0 18px}
+  .rt-info .rt-side{order:2;margin-top:0}
 }
 @media (max-width:960px){
   .nav{display:none}
@@ -759,7 +766,7 @@ footer a{text-decoration:none}
   .top .wrap{gap:12px}
   .burger{display:block}
   .mnav{display:flex;flex-direction:column}
-  .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast{grid-template-columns:1fr}
+  .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place-top,.cast{grid-template-columns:1fr}
   .hero-ill{width:min(330px,86%);order:-1}
   .faq-ill{width:min(260px,75%);margin-bottom:12px}
   .mks,.pick{grid-template-columns:1fr}
@@ -1240,8 +1247,8 @@ footer a{text-decoration:none}
 
 <!-- 10. Место -->
 <section class="block place" id="place">
-  <div class="wrap">
-    <div>
+  <div class="wrap place-top">
+    <div class="place-txt">
       <div class="eyebrow">Как добраться</div>
       <div class="addr">Санкт-Петербург,<br>Лиговский проспект, 44В</div>
       <p style="color:var(--soft);margin-top:10px">Психологический центр «МирРа»</p>
@@ -1251,14 +1258,11 @@ footer a{text-decoration:none}
       </div>
       <div class="bring"><b>Когда приходить</b><span>Регистрация — с 10:00. Приходите минут за 15 до начала: бейдж и брошюра ждут на стойке.</span><span>Полное расписание — <a href="#program" data-back>в программе</a>.</span></div>
       <div class="bring"><b>Возьмите с собой</b><span>удобную одежду · носки или сменную обувь · воду</span></div>
-      <p class="route-way">От метро «Площадь Восстания» (выход 3, к Московскому вокзалу) — по Лиговскому проспекту мимо ТЦ «Галерея», во двор дома 44. Вход в «МирРа» — ступеньки вниз сразу перед аркой.</p>
-      <div class="rt-side">
-      <button class="vbtn" type="button" id="vbtn" aria-haspopup="dialog"><span class="vbtn-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5Z"/></svg></span><span class="vbtn-txt">Видео: как пройти</span></button>
-      <p class="vbtn-note">Путь от двора до нашей двери · 0:23</p>
     </div>
-    </div>
-    <div class="place-media">
-      <figure class="ill place-ill" data-ill="place" data-ratio="3:2"></figure>
+    <figure class="ill place-ill" data-ill="place" data-ratio="3:2"></figure>
+  </div>
+  <div class="wrap">
+    <div class="route-band">
       <figure class="rt-card"><svg class="rt-svg" viewBox="0 0 360 460" role="img" aria-labelledby="rt-title"><title id="rt-title">Схема пути: от метро «Площадь Восстания» (выход 3, через Московский вокзал) по Лиговскому проспекту вдоль ТЦ «Галерея», налево в проход двора дома 44, через ворота к шайбе, обойти её слева и идти вдоль сквера к корпусу 44В; вход в «МирРа» — ступеньки вниз сразу перед аркой</title>
   <rect x="-20" y="-20" width="400" height="500" fill="#3e2436"/>
   <defs>
@@ -1330,7 +1334,16 @@ footer a{text-decoration:none}
   <text class="rt-label rt-label--accent" x="354" y="398" text-anchor="end">Вход — сразу перед аркой,</text>
   <text class="rt-label rt-label--accent" x="354" y="418" text-anchor="end">ступеньки вниз</text>
   </g>
-</svg><figcaption>Схема пути от метро</figcaption></figure>
+</svg></figure>
+      <div class="rt-info">
+        <div class="eyebrow">Как пройти</div>
+        <h3>7 минут пешком от метро</h3>
+        <p class="route-way">От метро «Площадь Восстания» (выход 3, к Московскому вокзалу) — по Лиговскому проспекту мимо ТЦ «Галерея», во двор дома 44. Вход в «МирРа» — ступеньки вниз сразу перед аркой.</p>
+        <div class="rt-side">
+      <button class="vbtn" type="button" id="vbtn" aria-haspopup="dialog"><span class="vbtn-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5Z"/></svg></span><span class="vbtn-txt">Видео: как пройти</span></button>
+      <p class="vbtn-note">Путь от двора до нашей двери · 0:23</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
