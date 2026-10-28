@@ -1,34 +1,47 @@
-# Приём заявок с сайта фестиваля «От Страха к Любви» → сообщение в рабочую группу Telegram и/или Max.
+# Приём заявок с сайта фестиваля «От Страха к Любви» → письмо на почту центра и сообщение в беседу ВКонтакте
+# (а также Telegram и Max, если они когда-нибудь станут доступны).
 # Облачная функция Yandex Cloud, Python 3.12, без сторонних библиотек. Точка входа: index.handler
 #
 # Переменные окружения (задаются в настройках функции, в код не вписываются).
-# Канал включается, когда задан его токен; заявка уходит во все включённые каналы.
-#   TG_TOKEN         токен бота Telegram (выдаёт @BotFather)
-#   TG_CHAT_ID       id группы Telegram, куда бот пишет заявки (как узнать — backend/README.md, шаг 4)
-#   TG_API           необязательно: другой адрес API Telegram, если прямой недоступен; по умолчанию https://api.telegram.org
-#   MAX_TOKEN        токен бота Max (business.max.ru → Чат-боты → ⋮ → Настройки)
-#   MAX_CHAT_ID      id группы Max
+# Канал включается, когда заданы его переменные; заявка уходит во все включённые каналы одновременно.
+#   MAIL_USER        ящик Яндекс Почты, с которого уходят письма, например zayavki@yandex.ru
+#   MAIL_PASSWORD    пароль приложения для этого ящика (id.yandex.ru → Безопасность → Пароли приложений)
+#   MAIL_TO          куда слать, через запятую; по умолчанию — на тот же MAIL_USER
+#   VK_TOKEN         ключ доступа сообщества ВКонтакте (Управление → Работа с API), с правом «сообщения сообщества»
+#   VK_PEER_ID       id беседы, куда пишет сообщество, вида 2000000001 (как узнать — backend/README.md)
+#   TG_TOKEN, TG_CHAT_ID, TG_API   Telegram — из Яндекс Облака сейчас недоступен, даже через посредника
+#   MAX_TOKEN, MAX_CHAT_ID         Max — нужен проверенный профиль организации
 #   ALLOWED_ORIGINS  с каких сайтов принимать заявки, через запятую; по умолчанию https://fest.mirra-spb.ru
 #
 # Сайт шлёт POST с JSON (Content-Type: text/plain — так браузер не делает лишний CORS-запрос).
-# Каждая заявка дополнительно пишется в журнал функции (Cloud Logging) — на случай, если мессенджер не ответит.
+# Каждая заявка дополнительно пишется в журнал функции (Cloud Logging) — на случай, если канал не ответит.
 
 import base64
 import datetime
 import html
 import json
 import os
+import random
 import re
+import smtplib
 import ssl
 import urllib.error
+import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
+from email.message import EmailMessage
+from email.utils import formataddr
 
-TG_TOKEN = os.environ.get('TG_TOKEN', '').strip()
-TG_CHAT_ID = os.environ.get('TG_CHAT_ID', '').strip()
-TG_API = os.environ.get('TG_API', 'https://api.telegram.org').strip().rstrip('/')
-MAX_TOKEN = os.environ.get('MAX_TOKEN', '').strip()
-MAX_CHAT_ID = os.environ.get('MAX_CHAT_ID', '').strip()
-ORIGINS = [o.strip().rstrip('/') for o in os.environ.get('ALLOWED_ORIGINS', 'https://fest.mirra-spb.ru').split(',') if o.strip()]
+env = lambda k, d='': os.environ.get(k, d).strip()
+MAIL_USER, MAIL_PASSWORD = env('MAIL_USER'), env('MAIL_PASSWORD')
+MAIL_TO = [a.strip() for a in env('MAIL_TO', MAIL_USER).split(',') if a.strip()]
+MAIL_HOST, MAIL_PORT = env('MAIL_HOST', 'smtp.yandex.ru'), int(env('MAIL_PORT', '465'))
+VK_TOKEN, VK_PEER_ID = env('VK_TOKEN'), env('VK_PEER_ID')
+TG_TOKEN, TG_CHAT_ID = env('TG_TOKEN'), env('TG_CHAT_ID')
+TG_API = env('TG_API', 'https://api.telegram.org').rstrip('/')
+MAX_TOKEN, MAX_CHAT_ID = env('MAX_TOKEN'), env('MAX_CHAT_ID')
+ORIGINS = [o.strip().rstrip('/') for o in env('ALLOWED_ORIGINS', 'https://fest.mirra-spb.ru').split(',') if o.strip()]
+TIMEOUT = 8   # секунд на один запрос к внешнему сервису; таймаут самой функции — 20 с
 
 # Основной адрес API Max подписан сертификатом Минцифры — его нет в стандартном списке доверенных,
 # поэтому кладём корневой и промежуточный сертификаты рядом с кодом. Если не выйдет — запасной адрес.
@@ -46,8 +59,72 @@ def _ctx(host):
 def _json_request(url, method, body, headers, host):
     data = json.dumps(body, ensure_ascii=False).encode('utf-8') if body is not None else None
     req = urllib.request.Request(url, data=data, method=method, headers=dict(headers, **{'Content-Type': 'application/json'}))
-    with urllib.request.urlopen(req, timeout=8, context=_ctx(host)) as r:
+    with urllib.request.urlopen(req, timeout=TIMEOUT, context=_ctx(host)) as r:
         return json.loads(r.read().decode('utf-8') or '{}')
+
+
+def _hide(text, *secrets):
+    """Убрать секреты из текста ошибки, прежде чем он попадёт в журнал или ответ."""
+    for s in secrets:
+        if s:
+            text = text.replace(s, '***')
+    return text
+
+
+# ---------- почта ----------
+
+def mail_send(req):
+    msg = EmailMessage()
+    msg['Subject'] = 'Заявка на фестиваль: %s, %s' % (req['name'], req['phone'])
+    msg['From'] = formataddr(('Сайт фестиваля «От Страха к Любви»', MAIL_USER))
+    msg['To'] = ', '.join(MAIL_TO)
+    msg.set_content(as_text(req))
+    msg.add_alternative('<div style="font:15px/1.5 Arial,sans-serif">%s</div>' % as_html(req).replace('\n', '<br>\n'), subtype='html')
+    try:
+        with smtplib.SMTP_SSL(MAIL_HOST, MAIL_PORT, timeout=TIMEOUT, context=ssl.create_default_context()) as s:
+            s.login(MAIL_USER, MAIL_PASSWORD)
+            s.send_message(msg)
+    except Exception as e:
+        raise RuntimeError(_hide('Почта: %r' % e, MAIL_PASSWORD))
+
+
+def mail_setup():
+    """Проверить вход в ящик, ничего не отправляя."""
+    try:
+        with smtplib.SMTP_SSL(MAIL_HOST, MAIL_PORT, timeout=TIMEOUT, context=ssl.create_default_context()) as s:
+            s.login(MAIL_USER, MAIL_PASSWORD)
+    except Exception as e:
+        raise RuntimeError(_hide('Почта: %r' % e, MAIL_PASSWORD))
+    return {'вход в ящик': 'выполнен', 'получателей': len(MAIL_TO)}   # адреса не показываем: ответ видит любой, кто вызовет настройку
+
+
+# ---------- ВКонтакте ----------
+
+def vk_api(name, **params):
+    """Метод API ВКонтакте с ключом сообщества. Возвращает поле response; при ошибке — исключение с текстом от ВК."""
+    data = urllib.parse.urlencode(dict(params, access_token=VK_TOKEN, v='5.199')).encode('utf-8')
+    try:
+        with urllib.request.urlopen('https://api.vk.com/method/' + name, data=data, timeout=TIMEOUT) as r:
+            res = json.loads(r.read().decode('utf-8'))
+    except Exception as e:
+        raise RuntimeError(_hide('ВКонтакте недоступен: %r' % e, VK_TOKEN))
+    if 'error' in res:
+        raise RuntimeError('ВКонтакте %s: %s %s' % (name, res['error'].get('error_code'), res['error'].get('error_msg')))
+    return res.get('response')
+
+
+def vk_send(req):
+    vk_api('messages.send', peer_id=VK_PEER_ID, random_id=random.randint(1, 2 ** 31 - 1),
+           message=as_text(req), dont_parse_links=1)
+
+
+def vk_setup():
+    res = vk_api('messages.getConversations', count=100, filter='all')
+    chats = [{'VK_PEER_ID': c['conversation']['peer']['id'],
+              'название': '«%s»' % (c['conversation'].get('chat_settings') or {}).get('title', '')}
+             for c in (res or {}).get('items', []) if c['conversation']['peer'].get('type') == 'chat']
+    return {'беседы': chats,
+            'подсказка': 'Если список пуст: проверьте, что сообщество добавлено в беседу, и напишите в беседе любое сообщение.'}
 
 
 # ---------- Telegram ----------
@@ -59,7 +136,7 @@ def tg_api(name, body=None):
     except urllib.error.HTTPError as e:
         res = json.loads(e.read().decode('utf-8', 'replace') or '{}')
     except Exception as e:
-        raise RuntimeError(('Telegram недоступен: %r' % e).replace(TG_TOKEN, '***'))   # токен — часть адреса, в журнал не пускаем
+        raise RuntimeError(_hide('Telegram недоступен: %r' % e, TG_TOKEN))   # токен — часть адреса, в журнал не пускаем
     if not res.get('ok'):
         err = RuntimeError('Telegram %s: %s %s' % (name, res.get('error_code'), res.get('description')))
         err.params = res.get('parameters') or {}
@@ -67,8 +144,8 @@ def tg_api(name, body=None):
     return res.get('result')
 
 
-def tg_send(text):
-    body = {'chat_id': TG_CHAT_ID, 'text': text, 'parse_mode': 'HTML', 'disable_web_page_preview': True}
+def tg_send(req):
+    body = {'chat_id': TG_CHAT_ID, 'text': as_html(req), 'parse_mode': 'HTML', 'disable_web_page_preview': True}
     try:
         tg_api('sendMessage', body)
     except RuntimeError as e:
@@ -109,8 +186,8 @@ def max_api(method, path, body=None):
     raise RuntimeError('Max недоступен: %r' % last)
 
 
-def max_send(text):
-    max_api('POST', '/messages?chat_id=%s&disable_link_preview=true' % MAX_CHAT_ID, {'text': text, 'format': 'html'})
+def max_send(req):
+    max_api('POST', '/messages?chat_id=%s&disable_link_preview=true' % MAX_CHAT_ID, {'text': as_html(req), 'format': 'html'})
 
 
 def max_setup():
@@ -138,13 +215,29 @@ def max_setup():
 # ---------- общее ----------
 
 def channels():
-    """Включённые каналы: (название, есть ли id группы, отправка, настройка)."""
+    """Включённые каналы: (название, задан ли адресат, отправка, настройка)."""
     out = []
+    if MAIL_USER and MAIL_PASSWORD:
+        out.append(('Почта', bool(MAIL_TO), mail_send, mail_setup))
+    if VK_TOKEN:
+        out.append(('ВКонтакте', bool(VK_PEER_ID), vk_send, vk_setup))
     if TG_TOKEN:
         out.append(('Telegram', bool(TG_CHAT_ID), tg_send, tg_setup))
     if MAX_TOKEN:
         out.append(('Max', bool(MAX_CHAT_ID), max_send, max_setup))
     return out
+
+
+def run_all(jobs):
+    """Выполнить задачи одновременно; вернуть {название: результат или исключение}."""
+    def safe(f):
+        try:
+            return f()
+        except Exception as e:
+            return e
+    with ThreadPoolExecutor(max_workers=max(1, len(jobs))) as pool:
+        futures = {name: pool.submit(safe, f) for name, f in jobs}
+        return {name: fut.result() for name, fut in futures.items()}
 
 
 def reply(code, obj, origin=None):
@@ -161,15 +254,28 @@ def clean(v, n):
     return v[:n]
 
 
-def format_request(d):
+def _rows(d):
     rows = [('Имя', d['name']), ('Телефон', d['phone']), ('Telegram / Max', d['messenger']),
             ('Когда придёт', d['plan']), ('Сколько человек', d['count']), ('Особенно хочет на', d['mk']),
             ('Рассказывать о мероприятиях центра', 'да' if d['news'] else 'нет')]
+    return [(k, v) for k, v in rows if v]
+
+
+def _stamp():
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3))).strftime('%d.%m.%Y %H:%M')
+    return '%s по Москве · с сайта fest.mirra-spb.ru' % now
+
+
+def as_html(d):
     lines = ['🌿 <b>Новая заявка на фестиваль</b>', '']
-    lines += ['<b>%s:</b> %s' % (k, html.escape(v)) for k, v in rows if v]
-    lines += ['', '<i>%s по Москве · с сайта fest.mirra-spb.ru</i>' % now]
-    return '\n'.join(lines)
+    lines += ['<b>%s:</b> %s' % (k, html.escape(v)) for k, v in _rows(d)]
+    return '\n'.join(lines + ['', '<i>%s</i>' % _stamp()])
+
+
+def as_text(d):
+    lines = ['🌿 Новая заявка на фестиваль', '']
+    lines += ['%s: %s' % (k, v) for k, v in _rows(d)]
+    return '\n'.join(lines + ['', _stamp()])
 
 
 def handler(event, context):
@@ -191,21 +297,17 @@ def handler(event, context):
 
     chs = channels()
     if not chs:
-        return reply(500, {'ok': False, 'error': 'не задан ни TG_TOKEN, ни MAX_TOKEN'}, allowed)
+        return reply(500, {'ok': False, 'error': 'не включён ни один канал: задайте переменные почты или ВКонтакте'}, allowed)
 
     # Настройка из консоли Yandex Cloud: тело запроса {"setup": true}.
-    # Показывает группы бота — только для каналов, у которых id группы ещё не задан.
+    # Проверяет каналы и показывает беседы/группы — пока хотя бы у одного мессенджера не задан адресат
+    # (или мессенджеров нет вовсе, только почта).
     if raw.get('setup') is True:
-        todo = [c for c in chs if not c[1]]
-        if not todo:
-            return reply(403, {'ok': False, 'error': 'id групп уже заданы — режим настройки выключен'})
-        res = {}
-        for name, _, _, setup in todo:
-            try:
-                res[name] = setup()
-            except Exception as e:
-                res[name] = {'ошибка': str(e)}
-        return reply(200, res)
+        messengers = [has for n, has, _, _ in chs if n != 'Почта']
+        if messengers and all(messengers):
+            return reply(403, {'ok': False, 'error': 'все адресаты уже заданы — режим настройки выключен; проверяйте тестовой заявкой с сайта'})
+        res = run_all([(n, setup) for n, _, _, setup in chs])
+        return reply(200, {n: ({'ошибка': str(r)} if isinstance(r, Exception) else r) for n, r in res.items()})
 
     if not allowed:
         return reply(403, {'ok': False, 'error': 'origin'})
@@ -225,15 +327,10 @@ def handler(event, context):
         return reply(400, {'ok': False, 'error': 'проверьте имя, телефон и согласие'}, allowed)
 
     print(json.dumps({'event': 'request', **d}, ensure_ascii=False))
-    text, delivered = format_request(d), []
-    for name, has_chat, send, _ in chs:
-        if not has_chat:
-            continue
-        try:
-            send(text)
-            delivered.append(name)
-        except Exception as e:
-            print(json.dumps({'event': 'send_failed', 'channel': name, 'error': str(e)}, ensure_ascii=False))
-    if not delivered:
+    res = run_all([(n, lambda send=send: send(d)) for n, has, send, _ in chs if has])
+    for n, r in res.items():
+        if isinstance(r, Exception):
+            print(json.dumps({'event': 'send_failed', 'channel': n, 'error': str(r)}, ensure_ascii=False))
+    if not any(not isinstance(r, Exception) for r in res.values()):
         return reply(502, {'ok': False, 'error': 'не удалось переслать заявку'}, allowed)
     return reply(200, {'ok': True}, allowed)
