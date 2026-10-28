@@ -163,7 +163,7 @@ html.menu-open{overflow:hidden}
 .mk .ill{margin:-24px -24px 4px;border-radius:calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0}
 .quiz-ill{margin-top:28px;max-width:420px}
 .faq-ill{margin-top:8px;width:min(340px,100%)}
-.place-ill{margin-top:32px}
+.place-ill{margin:0}
 @media (min-width:961px){.ill.wide{aspect-ratio:21/9}}
 
 /* восьмёрка */
@@ -346,16 +346,15 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .mk .note{font-size:.84rem;color:var(--soft);font-style:italic}
 
 /* маршрут */
-.route{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(24px,5vw,64px);align-items:start;margin-top:64px;padding-top:56px;border-top:1px solid var(--line)}
+.route{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(20px,5vw,64px);align-items:center;margin-top:64px;padding-top:56px;border-top:1px solid var(--line)}
 .route h3{font-size:var(--step-2)}
-.route p{color:var(--soft);margin-top:12px}
-.groups{display:flex;gap:10px;margin-top:22px}
-.groups button{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font:500 1.4rem var(--font-display);color:var(--ink);cursor:pointer}
+.route p{color:var(--soft);margin-top:10px;font-size:.95rem}
+.groups{display:flex;gap:10px;margin:18px 0 20px}
+.groups button{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font:500 1.2rem var(--font-display);color:var(--ink);cursor:pointer}
 .groups button[aria-pressed="true"]{background:linear-gradient(140deg,var(--accent),var(--accent-2));border-color:transparent;color:#fff}
 /* схема маршрута: от холла по залам в порядке группы */
-.rmap{margin:26px 0 0;max-width:380px}
+.rmap{margin:0;width:100%;max-width:520px;justify-self:center}
 .rmap svg{display:block;width:100%;height:auto}
-.rmap figcaption{font-size:.8rem;color:var(--soft);margin-top:6px}
 .rmap .hall rect{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
 .rmap .hall.on rect{stroke:var(--accent-2)}
 .rmap .hall text{font:500 13.5px var(--font-display);fill:var(--ink)}
@@ -371,12 +370,12 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 @keyframes rpop{to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.rmap .seg{animation:none;stroke-dashoffset:0}.rmap .num{animation:none;opacity:1}}
 /* порядок мастер-классов группы: номера — как кружки на схеме */
-.myday{display:grid;gap:10px;align-content:start}
-.md-part{font-size:var(--step--1);letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--soft);margin-top:14px}
+.myday{display:grid;gap:8px;align-content:start}
+.md-part{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--soft);margin-top:10px}
 .md-part:first-child{margin-top:0}
 .md-step{display:flex;align-items:center;gap:14px}
 .md-step i{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font:600 .8rem var(--font-body);font-style:normal}
-.md-step a{font:500 1.15rem/1.3 var(--font-display);color:var(--ink);text-decoration:underline;text-decoration-color:rgba(181,74,58,.35);text-underline-offset:4px}
+.md-step a{font:500 1.08rem/1.3 var(--font-display);color:var(--ink);text-decoration:underline;text-decoration-color:rgba(181,74,58,.35);text-underline-offset:4px}
 .md-step a:hover{color:var(--accent);text-decoration-color:currentColor}
 
 /* ведущие — анфилада арок: передняя арка по центру, остальные уходят по дуге к свету; с каждым шагом теплеет небо,
@@ -517,7 +516,8 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .opt .o-dot::after{content:"";width:10px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-1px) rotate(-45deg) scale(0);transition:transform .2s ease}
 .opt[aria-checked="true"] .o-dot{background:var(--accent);border-color:var(--accent)}
 .opt[aria-checked="true"] .o-dot::after{transform:translateY(-1px) rotate(-45deg) scale(1)}
-.pickbar{display:flex;align-items:center;gap:14px 26px;flex-wrap:wrap;margin-top:18px;padding:16px 18px 16px 24px;border-radius:var(--r);background:var(--surface-2);border:1px solid var(--line)}
+.pickbar{display:flex;align-items:center;gap:14px 26px;flex-wrap:wrap;margin-top:18px;padding:18px 20px 18px 26px;border-radius:20px;border:2px solid #c41230;
+  background:radial-gradient(120% 140% at 100% 0%,#ffe9e6 0%,#fff6f3 55%,#fff 100%);box-shadow:inset 0 0 0 5px #fff,inset 0 0 0 6px rgba(196,18,48,.28),0 22px 44px -34px rgba(196,18,48,.55)}
 .pickbar .pb-sel{display:grid;gap:2px;margin-right:auto}
 .pickbar .pb-sel small{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
 .pickbar .pb-sel b{font-family:var(--font-display);font-weight:500;font-size:1.3rem}
@@ -565,12 +565,15 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 /* место */
 .place{background:var(--surface)}
 .place .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);align-items:start}
+.place .wrap > div:first-child{position:sticky;top:96px}   /* текст остаётся рядом, пока листаются картинка и схема */
+.place-media{display:grid;gap:22px}
+.place .btns{margin-bottom:30px}
+.rt-side{margin-top:26px}
 .addr{font-family:var(--font-display);font-size:var(--step-2);margin-top:14px}
 .place .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 /* как пройти: схема (из сайта аренды, перекрашена в тона фестиваля) и вертикальное видео */
-.howto{display:grid;grid-template-columns:minmax(0,440px) 1fr;gap:28px 40px;align-items:center;margin-top:36px}
-.howto figure{margin:0}
-.howto figcaption{margin-top:8px;font-size:.88rem;color:var(--soft)}
+.place-media figure{margin:0}
+.place-media figcaption{margin-top:8px;font-size:.88rem;color:var(--soft)}
 .rt-card .rt-svg{border-radius:var(--r);overflow:hidden;background:#3e2436}
 /* кнопка видео — по образцу сайта аренды, в тонах фестиваля: шлифованная розово-золотая, подпись с бегущим бликом */
 .vbtn{display:inline-flex;align-items:center;gap:12px;padding:0;border:0;background:none;cursor:pointer;color:var(--ink)}
@@ -632,7 +635,8 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .rt-svg .rt-arch-sign{stroke:#fff0e4;stroke-width:1.4;fill:none}
 .rt-svg .rt-metro{fill:#3e2436;stroke:#E06A6A;stroke-width:1.6}
 .rt-svg .rt-metro-m{fill:#E06A6A;font:700 13px var(--font-body)}
-.rt-svg .rt-path{fill:none;stroke:#f2c48a;stroke-width:2;stroke-dasharray:4 5;stroke-linecap:round}
+.rt-svg .rt-path{fill:none;stroke:#f2c48a;stroke-width:2;stroke-dasharray:4 5;stroke-linecap:round;animation:rt-walk 9s linear infinite}
+@keyframes rt-walk{to{stroke-dashoffset:-90}}
 .rt-svg .rt-time{fill:#f2c48a;font:500 21px var(--font-display)}
 .rt-svg .rt-dest{fill:#E2574C}
 .rt-svg .rt-dest-halo{fill:rgba(226,87,76,.22);stroke:#E2574C;stroke-opacity:.8}
@@ -640,7 +644,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .rt-svg .rt-pulse{fill:none;stroke:#E2574C;stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center;animation:rt-pulse 2.4s cubic-bezier(.2,.6,.35,1) infinite}
 .rt-svg .rt-pulse--2{animation-delay:1.2s}
 @keyframes rt-pulse{0%{transform:scale(1);opacity:.85;stroke-width:2.4}100%{transform:scale(2.8);opacity:0;stroke-width:.6}}
-@media (prefers-reduced-motion:reduce){.rt-svg .rt-pulse{animation:none}}
+@media (prefers-reduced-motion:reduce){.rt-svg .rt-pulse,.rt-svg .rt-path{animation:none}}
 
 .bring{margin-bottom:22px;display:grid;gap:6px;color:var(--soft);font-size:.95rem}
 .bring a,.pick-note a,.qa .ans a{color:var(--accent);font-weight:600}
@@ -725,12 +729,25 @@ footer a{text-decoration:none}
 
 /* адаптив */
 @media (max-width:960px){
+  .route{display:flex;flex-direction:column;align-items:stretch;gap:0;margin-top:44px;padding-top:36px}
+  .route > div{display:contents}
+  .route .eyebrow,.route h3,.route p,.route .groups{order:0}
+  .route .rmap{order:1;margin:0 0 12px}
+  .route .myday{order:2}
+  .route h3{font-size:1.35rem}
+  .route p{font-size:.86rem;line-height:1.45;margin-top:6px}
+  .route .groups{margin:12px 0 10px}.groups button{width:40px;height:40px;font-size:1.1rem}
+  .route .rmap{max-width:300px;align-self:center;margin:0 0 6px}
+  .myday{gap:4px}.md-part{margin-top:6px;font-size:.7rem}
+  .md-step{gap:10px}.md-step i{width:22px;height:22px;font-size:.72rem}.md-step a{font-size:.98rem;line-height:1.25}
+}
+@media (max-width:960px){
   .nav{display:none}
   .top .btn{margin-left:auto}
   .top .wrap{gap:12px}
   .burger{display:block}
   .mnav{display:flex;flex-direction:column}
-  .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast,.howto{grid-template-columns:1fr}
+  .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast{grid-template-columns:1fr}
   .hero-ill{width:min(330px,86%);order:-1}
   .faq-ill{width:min(260px,75%);margin-bottom:12px}
   .mks,.pick{grid-template-columns:1fr}
@@ -1054,12 +1071,11 @@ footer a{text-decoration:none}
           <button type="button" data-g="1" aria-pressed="false">Б</button>
           <button type="button" data-g="2" aria-pressed="false">В</button>
         </div>
-        <figure class="rmap" aria-hidden="true">
-          <svg viewBox="0 0 320 230" id="rmap"></svg>
-          <figcaption>Схема условная: время начала — в первой и во второй части</figcaption>
-        </figure>
+        <div class="myday" id="myday" aria-live="polite"></div>
       </div>
-      <div class="myday" id="myday" aria-live="polite"></div>
+      <figure class="rmap" aria-hidden="true">
+        <svg viewBox="0 12 320 196" id="rmap"></svg>
+      </figure>
     </div>
   </div>
 </section>
@@ -1221,16 +1237,17 @@ footer a{text-decoration:none}
         <a class="btn btn-ink" href="https://yandex.ru/maps/?text=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3%2C%20%D0%9B%D0%B8%D0%B3%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BF%D1%80%D0%BE%D1%81%D0%BF%D0%B5%D0%BA%D1%82%2C%2044%D0%92" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>
         <a class="btn btn-soft" href="https://mirra-spb.ru" target="_blank" rel="noopener">Сайт центра</a>
       </div>
-      <figure class="ill place-ill" data-ill="place" data-ratio="3:2"></figure>
-    </div>
-    <div>
       <div class="bring"><b>Когда приходить</b><span>Регистрация — с 10:00. Приходите минут за 15 до начала: бейдж и брошюра ждут на стойке.</span><span>Полное расписание — <a href="#program" data-back>в программе</a>.</span></div>
       <div class="bring"><b>Возьмите с собой</b><span>удобную одежду · носки или сменную обувь · воду</span></div>
       <p class="route-way">От метро «Площадь Восстания» (выход 3, к Московскому вокзалу) — по Лиговскому проспекту мимо ТЦ «Галерея», во двор дома 44. Вход в «МирРа» — ступеньки вниз сразу перед аркой.</p>
+      <div class="rt-side">
+      <button class="vbtn" type="button" id="vbtn" aria-haspopup="dialog"><span class="vbtn-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5Z"/></svg></span><span class="vbtn-txt">Видео: как пройти</span></button>
+      <p class="vbtn-note">Путь от двора до нашей двери · 0:23</p>
     </div>
-  </div>
-  <div class="wrap howto">
-    <figure class="rt-card"><svg class="rt-svg" viewBox="0 0 360 460" role="img" aria-labelledby="rt-title"><title id="rt-title">Схема пути: от метро «Площадь Восстания» (выход 3, через Московский вокзал) по Лиговскому проспекту вдоль ТЦ «Галерея», налево в проход двора дома 44, через ворота к шайбе, обойти её слева и идти вдоль сквера к корпусу 44В; вход в «МирРа» — ступеньки вниз сразу перед аркой</title>
+    </div>
+    <div class="place-media">
+      <figure class="ill place-ill" data-ill="place" data-ratio="3:2"></figure>
+      <figure class="rt-card"><svg class="rt-svg" viewBox="0 0 360 460" role="img" aria-labelledby="rt-title"><title id="rt-title">Схема пути: от метро «Площадь Восстания» (выход 3, через Московский вокзал) по Лиговскому проспекту вдоль ТЦ «Галерея», налево в проход двора дома 44, через ворота к шайбе, обойти её слева и идти вдоль сквера к корпусу 44В; вход в «МирРа» — ступеньки вниз сразу перед аркой</title>
   <rect x="-20" y="-20" width="400" height="500" fill="#3e2436"/>
   <defs>
     <path id="rt-chev" d="M-4.5 -3 L0 1.5 L4.5 -3" fill="none" stroke="#f2c48a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1302,9 +1319,6 @@ footer a{text-decoration:none}
   <text class="rt-label rt-label--accent" x="354" y="418" text-anchor="end">ступеньки вниз</text>
   </g>
 </svg><figcaption>Схема пути от метро</figcaption></figure>
-    <div class="rt-side">
-      <button class="vbtn" type="button" id="vbtn" aria-haspopup="dialog"><span class="vbtn-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5Z"/></svg></span><span class="vbtn-txt">Видео: как пройти</span></button>
-      <p class="vbtn-note">Путь от двора до нашей двери · 0:23</p>
     </div>
   </div>
 </section>
