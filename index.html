@@ -183,7 +183,7 @@ html.menu-open{overflow:hidden}
 }
 
 /* карта дня: колода, карта переворачивается — страх → опора и практика */
-.cards{background:linear-gradient(180deg,var(--bg) 0%,#fcefe6 100%)}
+.cards{background:linear-gradient(180deg,var(--bg) 0%,#fcefe6 100%);overflow-x:clip}   /* повёрнутые карты колоды не дают горизонтальную прокрутку */
 .cards .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,80px);align-items:center}
 .cards .head{margin:0}
 .deckwrap{display:grid;justify-items:center;gap:22px}
@@ -612,6 +612,18 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 @keyframes sway{from{transform:rotate(-2.2deg)}to{transform:rotate(2.2deg)}}
 @media (max-width:520px){.bl .lbl{font-size:.72rem}}
 @media (prefers-reduced-motion:reduce){.bl{animation:none}}
+
+/* узкие телефоны (360 px): шапка в одну строку без выхода за край */
+@media (max-width:400px){
+  .top .wrap{gap:8px}
+  .brand{font-size:1rem}
+  .top .btn{padding:.65em .85em;font-size:.86rem}
+}
+@media (max-width:345px){
+  .brand{font-size:.9rem}
+  .top .btn{padding:.6em .7em;font-size:.8rem}
+  .burger{width:40px;height:40px}.burger i{left:11px;right:11px}.burger i:nth-child(1){top:13px}.burger i:nth-child(2){top:19px;right:15px}.burger i:nth-child(3){top:25px}
+}
 
 /* плавающая кнопка: «к началу предыдущего раздела»; после перехода по имени ведущего — «← Вернуться назад» */
 .upbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:45;display:inline-flex;align-items:center;gap:8px;height:48px;min-width:48px;padding:0 13px;border:0;border-radius:999px;cursor:pointer;
