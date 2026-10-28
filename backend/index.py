@@ -1,9 +1,10 @@
-# Приём заявок с сайта фестиваля «От Страха к Любви» → письмо на почту центра и сообщение в беседу ВКонтакте
+# Приём заявок с сайта фестиваля «От Страха к Любви» → сообщение в беседу ВКонтакте, а если не дошло — письмо на почту центра
 # (а также Telegram и Max, если они когда-нибудь станут доступны).
 # Облачная функция Yandex Cloud, Python 3.12, без сторонних библиотек. Точка входа: index.handler
 #
 # Переменные окружения (задаются в настройках функции, в код не вписываются).
-# Канал включается, когда заданы его переменные; заявка уходит во все включённые каналы одновременно.
+# Канал включается, когда заданы его переменные. Заявка уходит в первый по очереди (ВКонтакте),
+# а в следующий (почта) — только если предыдущий не доставил.
 #   MAIL_USER        ящик Яндекс Почты, с которого уходят письма, например zayavki@yandex.ru
 #   MAIL_PASSWORD    пароль приложения для этого ящика (id.yandex.ru → Безопасность → Пароли приложений)
 #   MAIL_TO          куда слать, через запятую; по умолчанию — на тот же MAIL_USER
@@ -215,12 +216,13 @@ def max_setup():
 # ---------- общее ----------
 
 def channels():
-    """Включённые каналы: (название, задан ли адресат, отправка, настройка)."""
+    """Включённые каналы в порядке очереди: (название, задан ли адресат, отправка, настройка).
+    Заявка уходит в первый; следующий пробуется, только если предыдущий не доставил."""
     out = []
-    if MAIL_USER and MAIL_PASSWORD:
-        out.append(('Почта', bool(MAIL_TO), mail_send, mail_setup))
     if VK_TOKEN:
         out.append(('ВКонтакте', bool(VK_PEER_ID), vk_send, vk_setup))
+    if MAIL_USER and MAIL_PASSWORD:
+        out.append(('Почта', bool(MAIL_TO), mail_send, mail_setup))
     if TG_TOKEN:
         out.append(('Telegram', bool(TG_CHAT_ID), tg_send, tg_setup))
     if MAX_TOKEN:
@@ -327,10 +329,13 @@ def handler(event, context):
         return reply(400, {'ok': False, 'error': 'проверьте имя, телефон и согласие'}, allowed)
 
     print(json.dumps({'event': 'request', **d}, ensure_ascii=False))
-    res = run_all([(n, lambda send=send: send(d)) for n, has, send, _ in chs if has])
-    for n, r in res.items():
-        if isinstance(r, Exception):
-            print(json.dumps({'event': 'send_failed', 'channel': n, 'error': str(r)}, ensure_ascii=False))
-    if not any(not isinstance(r, Exception) for r in res.values()):
-        return reply(502, {'ok': False, 'error': 'не удалось переслать заявку'}, allowed)
-    return reply(200, {'ok': True}, allowed)
+    for n, has, send, _ in chs:
+        if not has:
+            continue
+        try:
+            send(d)
+            print(json.dumps({'event': 'delivered', 'channel': n}, ensure_ascii=False))
+            return reply(200, {'ok': True}, allowed)
+        except Exception as e:
+            print(json.dumps({'event': 'send_failed', 'channel': n, 'error': str(e)}, ensure_ascii=False))
+    return reply(502, {'ok': False, 'error': 'не удалось переслать заявку'}, allowed)
