@@ -131,10 +131,14 @@ html.menu-open{overflow:hidden}
 @media (max-width:640px){.hero h1{width:100%;font-size:clamp(2.5rem,12.5vw,3.4rem);margin-top:10px}}   /* обе строки лесенкой во всю ширину: «к Любви» — у правого края */
 .hero h1 .to{font-style:italic;font-weight:400;font-size:.78em;color:var(--accent);margin-right:.42em}
 .hero .sub{font-family:var(--font-display);font-style:italic;font-size:var(--step-1);margin-top:20px;max-width:30ch;color:var(--soft)}
-.facts{display:flex;flex-wrap:wrap;gap:10px 30px;margin-top:28px}
-.facts div{display:flex;flex-direction:column}
-.facts b{font-family:var(--font-display);font-weight:600;font-size:1.22rem}
-.facts span{color:var(--soft);font-size:.95rem}
+/* дата и место — заметные плашки с иконкой, как «Когда приходить» */
+.facts{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.facts div{position:relative;display:flex;flex-direction:column;gap:2px;padding:12px 18px 12px 54px;border-radius:14px;background:rgba(255,255,255,.62);border:1px solid rgba(240,221,208,.9);box-shadow:0 14px 30px -24px rgba(110,84,134,.55)}
+.facts div::before{content:"";position:absolute;left:14px;top:50%;width:28px;height:28px;margin-top:-14px;border-radius:50%;background:var(--accent) center/16px no-repeat;background-image:var(--bi)}
+.facts .f-date{--bi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='15' rx='2'/%3E%3Cpath d='M8 3v4M16 3v4M4 10h16'/%3E%3C/svg%3E")}
+.facts .f-place{--bi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z'/%3E%3Ccircle cx='12' cy='9.5' r='2.5'/%3E%3C/svg%3E")}
+.facts b{font-family:var(--font-display);font-weight:600;font-size:1.22rem;color:var(--accent)}
+.facts span{color:var(--soft);font-size:.92rem}
 .hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
 
 /* таймер */
@@ -852,8 +856,8 @@ footer a{text-decoration:none}
       <h1><span>От Страха</span> <span class="l2"><i class="to">к</i>Любви</span></h1>
       <p class="sub">через доверие к миру, к себе, к своему телу и к своему роду</p>
       <div class="facts">
-        <div><b>21 ноября 2026</b><span>суббота · 11:00–18:45</span></div>
-        <div><b>Лиговский пр., 44В</b><span>психологический центр «МирРа»</span></div>
+        <div class="f-date"><b>21 ноября 2026</b><span>суббота · 11:00–18:45</span></div>
+        <div class="f-place"><b>Лиговский пр., 44В</b><span>психологический центр «МирРа»</span></div>
       </div>
       <div class="count" id="count" aria-live="off">
         <div class="cap" id="count-cap">До начала фестиваля</div>
