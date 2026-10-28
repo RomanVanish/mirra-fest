@@ -111,10 +111,11 @@ a{color:inherit}
 .mnav .m-foot p{color:var(--soft);font-size:.95rem;line-height:1.5}
 html.menu-open{overflow:hidden}
 /* пункты меню распределяются по высоте экрана: без пустоты внизу и без тесноты вверху */
-.mnav nav{flex:1 1 auto;display:flex;min-height:0}
-.mnav ol{flex:1;align-content:space-evenly;max-height:600px}
+.mnav{justify-content:safe center}   /* список с датой и кнопкой — одним блоком по центру: сверху и снизу запас для невысоких телефонов */
+.mnav nav{flex:0 0 auto}
+.mnav ol{gap:0}
 /* невысокие экраны: пункты и отступы компактнее, чтобы меню с кнопкой помещалось целиком */
-@media (max-height:760px){.mnav{padding-bottom:28px}.mnav ol{gap:0}.mnav ol a{font-size:1.95rem;padding:4px 0}.mnav .m-foot{margin-top:18px;gap:14px}.bf.b1{top:47%;width:108px}}
+@media (max-height:760px){.mnav{padding-bottom:30px}.mnav ol a{font-size:1.85rem;padding:7px 0}.mnav .m-foot{margin-top:22px;gap:14px}.bf.b1{top:44%;width:104px}}
 @media (max-height:600px){.mnav ol a{font-size:1.5rem;padding:3px 0}.mnav .m-foot{margin-top:14px}.mnav .m-foot p{font-size:.85rem}.bf.b1{top:80px;width:88px}}
 @media (prefers-reduced-motion:reduce){.burger::before{animation:none}.mnav,.mnav.open,.mnav li,.mnav.open li,.mnav .m-foot,.mnav.open .m-foot{transition:none!important;filter:none}.bf .fly,.bf .w{animation:none}}
 
@@ -1517,7 +1518,7 @@ footer a{text-decoration:none}
       {n:"Ирина Виноградова", r:"Лечебный педагог", mk:"мастер-класс 2", img:"img/people/vinogradova.webp",
        about:"Переводчик, преподаватель, заместитель директора Института лечебной педагогики и социальной терапии Санкт-Петербурга.",
        say:"Внутри вас есть тот,<br>кто умеет удивляться."},
-      {n:"Галина Власова", r:"Психолог, коуч, расстановщик, специалист по гармонизации семейных и бизнес-систем", mk:"мастер-класс 3 · мастер-класс 6",
+      {n:"Галина Власова", r:"Психолог, коуч, специалист по гармонизации семейных и бизнес-систем", mk:"мастер-класс 3 · мастер-класс 6",
        about:"Психоантрополог, системный терапевт. Училась у Берта Хеллингера и 13 лет — у Идриса Лаора; проводит расстановки для групп до 70 человек.",
        say:"За вашей спиной —<br>сила всего рода."},
       {n:"Инна Кочурова", r:"Специалист по эмоциональному процессу", mk:"мастер-класс 4",
