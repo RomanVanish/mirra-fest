@@ -1843,7 +1843,8 @@ footer a{text-decoration:none}
         if (!PEOPLE[i].end) el.firstChild.style.opacity = (el._pool * clamp(1 - Math.max(0, d - 0.15)*1.6)).toFixed(3);
         var who = el.querySelector('.a-person');
         if (who){
-          who.style.opacity = d < 0 ? clamp(1+d/0.3) : clamp(1-Math.max(0,d-1.6)*0.8);
+          /* фигуры в следующих арках едва видны и проявляются по мере приближения; силуэт-заглушка вдали не виден совсем */
+          who.style.opacity = d < 0 ? clamp(1+d/0.3) : clamp(1 - d*(who.classList.contains('sil') ? 1.4 : 0.75));
           who.style.filter = d > 0.02 ? 'brightness('+(1-Math.min(d,2)*0.28).toFixed(3)+') saturate('+(1-Math.min(d,2)*0.2).toFixed(3)+')' : '';
         }
       });
