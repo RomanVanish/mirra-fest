@@ -555,6 +555,8 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .f input:focus,.f select:focus{outline:none;border-color:var(--accent-2)}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;color:var(--soft);line-height:1.45}
 .check input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.check a{color:inherit}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}   /* ловушка для спам-ботов: людям не видна */
 .msg{grid-column:1/-1;font-size:.92rem;padding:12px 14px;border-radius:10px;background:var(--surface-2)}
 
 /* что важно знать */
@@ -1214,7 +1216,9 @@ footer a{text-decoration:none}
           </select>
         </div>
         <div class="f full"><label for="r-msg">Telegram или Max <small>— по желанию</small></label><input id="r-msg" name="messenger" placeholder="@имя"></div>
-        <div class="f full"><label class="check" for="r-ok"><input id="r-ok" type="checkbox" name="consent" required><span>Я согласен(а) на обработку моих персональных данных психологическим центром «МирРа» для связи со мной и рассказа о мероприятиях центра.</span></label></div>
+        <div class="f full"><label class="check" for="r-ok"><input id="r-ok" type="checkbox" name="consent" required><span>Согласен(а) на обработку моих персональных данных центром «МирРа» (ООО «ИРБИС») для записи на фестиваль и связи со мной — по <a href="privacy.html" target="_blank">политике конфиденциальности</a>.</span></label></div>
+        <div class="f full"><label class="check" for="r-news"><input id="r-news" type="checkbox" name="news"><span>Рассказывайте мне о других мероприятиях центра <small>— по желанию</small></span></label></div>
+        <div class="hp" aria-hidden="true"><label>Не заполняйте это поле <input name="website" tabindex="-1" autocomplete="off"></label></div>
         <div class="f full"><button class="btn btn-warm" type="submit" style="justify-self:start">Отправить заявку</button></div>
         <div class="msg" id="r-out" hidden></div>
       </form>
@@ -1386,15 +1390,15 @@ footer a{text-decoration:none}
 <footer>
   <div class="wrap">
     <div class="f-addr"><b>Центр «МирРа»</b><span>Лиговский пр., 44В</span><a href="https://mirra-spb.ru" target="_blank" rel="noopener">mirra-spb.ru</a></div>
-    <div class="f-meta"><span>Телефон <span class="tbd">уточняется</span></span><span>Последняя правка: 28.10.2026</span></div>
+    <div class="f-meta"><span>Телефон <span class="tbd">уточняется</span></span><a href="privacy.html">Политика конфиденциальности</a><span>Последняя правка: 28.10.2026</span></div>
   </div>
 </footer>
 
 <script>
 (function(){
   /* === Настройка заявок ===
-     Пока адрес пустой, форма только показывает сообщение и ничего не отправляет.
-     Когда выберем приём заявок, вписать сюда адрес обработчика. Отправляется JSON с полями формы. */
+     Адрес облачной функции Yandex Cloud, которая пересылает заявку в группу Max (код и инструкция — папка backend/).
+     Пока адрес пустой, форма только показывает сообщение и ничего не отправляет. */
   var FORM_ENDPOINT = "";
 
   /* === Таймер: 21.11.2026, 11:00 по Москве (UTC+3) === */
@@ -2221,22 +2225,26 @@ footer a{text-decoration:none}
   renderQ();
 
   /* заявка */
-  var form = document.getElementById('reqform'), out = document.getElementById('r-out');
+  var form = document.getElementById('reqform'), out = document.getElementById('r-out'), sendBtn = form.querySelector('[type=submit]'), shownAt = Date.now();
   form.addEventListener('submit', function(e){
     e.preventDefault();
     var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,'');
     var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : '';
     out.hidden = false;
     if (err){ out.textContent = err; return; }
-    var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value, sent:new Date().toISOString()};
+    var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
+      consent:true, news:form.news.checked, website:form.website.value, ms:Date.now() - shownAt};
     if (!FORM_ENDPOINT){
       out.textContent = 'Это черновик сайта: заявки пока не отправляются. Когда подключим приём, сюда придёт подтверждение.';
       return;
     }
-    out.textContent = 'Отправляем…';
-    fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)})
+    if (sendBtn.disabled) return;
+    out.textContent = 'Отправляем…'; sendBtn.disabled = true;
+    /* text/plain — «простой» запрос: браузер не шлёт предварительный OPTIONS */
+    fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:JSON.stringify(data)})
       .then(function(r){ if(!r.ok) throw 0; form.reset(); mark('Весь день'); syncMk(); out.textContent = 'Спасибо, '+name+'! Заявка принята — мы свяжемся с вами в ближайшее время.'; })
-      .catch(function(){ out.textContent = 'Не получилось отправить заявку. Проверьте интернет и попробуйте ещё раз.'; });
+      .catch(function(){ out.textContent = 'Не получилось отправить заявку. Попробуйте ещё раз через минуту — или позвоните в центр: +7 (900) 64-555-66.'; })
+      .then(function(){ sendBtn.disabled = false; });
   });
 })();
 </script>
