@@ -94,7 +94,7 @@ a{color:inherit}
 .bf .w{animation:bf-flap var(--fp,6s) ease-in-out infinite;animation-delay:var(--fd,0s)}
 /* крупная — справа от пунктов «Ведущие — Участие», маленькая — справа от кнопки «Забронировать место» */
 .mnav nav{position:relative}
-.bf.b1{width:clamp(104px,31vw,132px);right:-6px;top:132px;--d:.6s;--ft:10s}
+.bf.b1{width:clamp(104px,31vw,132px);right:-6px;top:47%;--d:.6s;--ft:10s}
 .mnav .m-cta{display:flex;align-items:center;gap:18px}
 .bf.b2{position:relative;flex:none;width:52px;--d:.95s;--ft:11s;--fp:7.4s;--fd:-2.6s;--rz:18deg;--rx:30deg}
 /* бабочка подолгу сидит с раскрытыми крыльями, потом два коротких живых взмаха (быстрее, но неглубоко) — и снова покой */
@@ -110,8 +110,11 @@ a{color:inherit}
 .mnav.open .m-foot{opacity:1;transform:none;transition:opacity .6s ease .75s,transform .7s cubic-bezier(.2,.8,.2,1) .75s}
 .mnav .m-foot p{color:var(--soft);font-size:.95rem;line-height:1.5}
 html.menu-open{overflow:hidden}
+/* пункты меню распределяются по высоте экрана: без пустоты внизу и без тесноты вверху */
+.mnav nav{flex:1 1 auto;display:flex;min-height:0}
+.mnav ol{flex:1;align-content:space-evenly;max-height:600px}
 /* невысокие экраны: пункты и отступы компактнее, чтобы меню с кнопкой помещалось целиком */
-@media (max-height:760px){.mnav{padding-bottom:20px}.mnav ol{gap:2px}.mnav ol a{font-size:1.9rem;padding:5px 0}.mnav .m-foot{margin-top:20px;gap:12px}.bf.b1{top:96px;width:104px}}
+@media (max-height:760px){.mnav{padding-bottom:28px}.mnav ol{gap:0}.mnav ol a{font-size:1.95rem;padding:4px 0}.mnav .m-foot{margin-top:18px;gap:14px}.bf.b1{top:47%;width:108px}}
 @media (max-height:600px){.mnav ol a{font-size:1.5rem;padding:3px 0}.mnav .m-foot{margin-top:14px}.mnav .m-foot p{font-size:.85rem}.bf.b1{top:80px;width:88px}}
 @media (prefers-reduced-motion:reduce){.burger::before{animation:none}.mnav,.mnav.open,.mnav li,.mnav.open li,.mnav .m-foot,.mnav.open .m-foot{transition:none!important;filter:none}.bf .fly,.bf .w{animation:none}}
 
@@ -469,17 +472,15 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-say.mid .tbd{margin:6px auto 0}
 @media (max-width:640px){.a-say{font-size:.95rem;padding:10px 14px 9px}}
 @media (prefers-reduced-motion:reduce){.a-say{transition:opacity .2s}}
-.a-ctrls{display:flex;gap:10px;align-items:center}
-.a-round{width:48px;height:48px;padding:0;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line);font-size:1.2rem}
-.a-ctrls .btn:disabled{opacity:.35;cursor:default}
-.a-dots{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+/* плашки ведущих — на месте прежних кнопок: справа от подписи на компьютере, сразу под ней на телефоне */
+.a-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-self:start;max-width:380px}
 .a-dots button{font:500 .85rem var(--font-body);border:1.5px solid var(--line);background:#fff;color:var(--soft);border-radius:999px;padding:.45em .9em;cursor:pointer}
 .a-dots button[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .a-hint{font-size:.85rem;color:var(--soft);margin-top:6px}
 @media (max-width:640px){
   .a-scene{height:auto;aspect-ratio:1/1;min-height:0;border-radius:16px}
   .a-below{grid-template-columns:1fr}
-  .a-ctrls .btn-warm{flex:1}
+  .a-dots{justify-content:flex-start;max-width:none}
 }
 @media (prefers-reduced-motion:reduce){.a-ml i{animation:none}.a-way.fwd::before{animation:none;opacity:0}}
 
@@ -653,7 +654,8 @@ footer a{text-decoration:none}
   .nav{display:none}
   .top .btn{margin-left:auto}
   .top .wrap{gap:12px}
-  .burger,.mnav{display:block}
+  .burger{display:block}
+  .mnav{display:flex;flex-direction:column}
   .hero .wrap,.idea .wrap,.cards .wrap,.quiz .wrap,.route,.formwrap,.faq .wrap,.place .wrap,.cast{grid-template-columns:1fr}
   .hero-ill{width:min(330px,86%);order:-1}
   .faq-ill{width:min(260px,75%);margin-bottom:12px}
@@ -897,10 +899,6 @@ footer a{text-decoration:none}
     </div>
     <div class="a-below">
       <div class="a-cap" aria-live="polite"></div>
-      <div class="a-ctrls">
-        <button class="btn a-round" type="button" aria-label="Назад">←</button>
-        <button class="btn btn-warm" type="button">Войти в арку</button>
-      </div>
       <div class="a-dots"></div>
     </div>
     <p class="a-hint">Нажмите на арку или стрелку, листайте свайпом влево и вправо.</p>
@@ -1510,22 +1508,22 @@ footer a{text-decoration:none}
     function q(sel){ return sec.querySelector(sel); }
     /* порядок — как в программе; img — вырезанное фото на прозрачном фоне (img/people/), без img рисуется силуэт */
     var PEOPLE = [
-      {n:"Светлана Савельева", r:"Психолог, основатель центра «МирРа»", mk:"«Как Волк научился любить» · «Внутренняя вертикаль»", img:"img/people/savelieva.webp",
+      {n:"Светлана Савельева", r:"Психолог, основатель центра «МирРа»", mk:"мастер-класс 1 · мастер-класс 5", img:"img/people/savelieva.webp",
        about:"Врач, акушер-гинеколог, клинический и перинатальный психолог, психоаналитик. Сопровождает родителей и малышей в первый, самый важный год жизни.",
        say:"Вы хороший.<br>И мир к вам добр."},
-      {n:"Татьяна Елисеева", r:"Арт-терапевт, педагог", mk:"«Источник» · мастер-класс 2",
+      {n:"Татьяна Елисеева", r:"Арт-терапевт, педагог", mk:"мастер-класс 2",
        about:"Педагог высшей категории, учитель изобразительного искусства, 32 года стажа. Работает с красками, играми, сказками и фольклором.",
        say:"Пусть рука ведёт —<br>а ум отдохнёт."},
-      {n:"Ирина Виноградова", r:"Лечебный педагог", mk:"«Источник» · мастер-класс 2", img:"img/people/vinogradova.webp",
+      {n:"Ирина Виноградова", r:"Лечебный педагог", mk:"мастер-класс 2", img:"img/people/vinogradova.webp",
        about:"Переводчик, преподаватель, заместитель директора Института лечебной педагогики и социальной терапии Санкт-Петербурга.",
        say:"Внутри вас есть тот,<br>кто умеет удивляться."},
-      {n:"Галина Власова", r:"Психолог, коуч, расстановщик, специалист по гармонизации семейных и бизнес-систем", mk:"«Как не бояться любить и жить счастливо?» · «Кто стоит за моим страхом?»",
+      {n:"Галина Власова", r:"Психолог, коуч, расстановщик, специалист по гармонизации семейных и бизнес-систем", mk:"мастер-класс 3 · мастер-класс 6",
        about:"Психоантрополог, системный терапевт. Училась у Берта Хеллингера и 13 лет — у Идриса Лаора; проводит расстановки для групп до 70 человек.",
        say:"За вашей спиной —<br>сила всего рода."},
-      {n:"Инна Кочурова", r:"Специалист по эмоциональному процессу", mk:"«Улыбка» · мастер-класс 4",
+      {n:"Инна Кочурова", r:"Специалист по эмоциональному процессу", mk:"мастер-класс 4",
        about:"Психоаналитик, транзактный аналитик, ведёт группы с элементами психодрамы. Больше 20 лет индивидуальной и групповой психотерапии.",
        say:"Тот, кто пугает, —<br>часто наше отражение."},
-      {n:"Виктория Трофимова", r:"Специалист по соединению с телом", mk:"«Улыбка» · мастер-класс 4", img:"img/people/trofimova.webp",
+      {n:"Виктория Трофимова", r:"Специалист по соединению с телом", mk:"мастер-класс 4", img:"img/people/trofimova.webp",
        about:"Врач, психоаналитик, транзактный аналитик, работает с телом. Президент Санкт-Петербургского объединения транзактного анализа.",
        say:"Улыбнитесь —<br>и мир улыбнётся в ответ."},
       {n:"Любовь", r:"Вы прошли мост — от страха к любви", mk:"21 ноября · центр «МирРа»", end:true,
@@ -1765,10 +1763,13 @@ footer a{text-decoration:none}
     }
 
     /* подпись, кнопки, имена */
-    var cap = q('.a-cap'), next = q('.a-ctrls .btn-warm'), prev = q('.a-round'), dots = q('.a-dots');
+    var cap = q('.a-cap'), dots = q('.a-dots');
     dots.innerHTML = PEOPLE.map(function(p,i){ return '<button type="button" data-i="'+i+'">'+(p.end ? 'Финал' : p.n.split(' ')[0])+'</button>'; }).join('');
-    dots.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ go(+b.dataset.i); }); });
+    /* плашка: прокрутка к верху арки и переход к ведущему */
+    dots.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ toArch(); go(+b.dataset.i); }); });
     var capTimer, sayTimer, say = q('.a-say');
+    /* верх арки (сцены) — сразу под шапкой */
+    function toArch(){ scrollTo({top: Math.max(0, scene.getBoundingClientRect().top + scrollY - document.querySelector('.top').getBoundingClientRect().height - 10), behavior: REDUCE ? 'auto' : 'smooth'}); }
     /* облачко-послание у передней арки: всплывает рядом с лицом, хвостик смотрит на ведущего; у финала — по центру над сиянием */
     function sayHide(){ say.classList.remove('on'); }
     function sayLater(i){ clearTimeout(sayTimer); sayTimer = setTimeout(function(){ sayShow(i); }, REDUCE ? 0 : 350); }
@@ -1788,17 +1789,10 @@ footer a{text-decoration:none}
         cap.innerHTML = '<div class="a-nm">'+p.n+'</div><div class="a-rl">'+p.r+'</div>'+(p.about ? '<p class="a-ab">'+p.about+'</p>' : '')+'<div class="a-mk">'+p.mk+'</div>';
         cap.classList.remove('out');
       }, REDUCE ? 0 : 450);
-      prev.disabled = i === 0;
       sayHide(); clearTimeout(sayTimer);
-      next.textContent = p.end ? 'Смотреть программу' : i === 0 ? 'Войти в арку' : 'Пройти дальше';
       dots.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-current', +b.dataset.i === i); });
       wayBack.hidden = i === 0; wayFwd.hidden = !!p.end;
     }
-    next.addEventListener('click', function(){
-      if (PEOPLE[target].end) goAnchor('program', true);
-      else go(target+1);
-    });
-    prev.addEventListener('click', function(){ go(target-1); });
     wayFwd.addEventListener('click', function(){ go(target+1); });
     wayBack.addEventListener('click', function(){ go(target-1); });
     /* клавиатура — только когда фокус на сцене; свайп — только горизонтальный, чтобы не мешать прокрутке страницы */
@@ -1824,6 +1818,7 @@ footer a{text-decoration:none}
     else fxRun(true);
     addEventListener('resize', function(){ measure(); render(); if (!anim) sayShow(target); });
     window.anfGo = function(i){ go(i); };
+    window.anfTop = toArch;
   })();
 
   /* бабочки меню: заострённые передние крылья, задние с «хвостиком», прожилки и тёмная кайма с точками по краю.
@@ -1862,8 +1857,8 @@ footer a{text-decoration:none}
   function anchorY(id){
     var t = document.getElementById(id); if (!t) return null;
     if (id === 'start') return 0;
-    var h = t.querySelector('.eyebrow') || t.querySelector('h2') || t, top = document.querySelector('.top');
-    return Math.max(0, h.getBoundingClientRect().top + scrollY - top.getBoundingClientRect().height - 22);
+    var h = (id === 'people' && t.querySelector('h2')) || t.querySelector('.eyebrow') || t.querySelector('h2') || t, top = document.querySelector('.top');
+    return Math.max(0, h.getBoundingClientRect().top + scrollY - top.getBoundingClientRect().height - (id === 'people' ? 14 : 22));   /* у «Ведущих» — сразу заголовок, чтобы арка уместилась */
   }
   function goAnchor(id, smooth){
     var y = anchorY(id); if (y === null) return false;
@@ -1900,7 +1895,7 @@ footer a{text-decoration:none}
     a.addEventListener('click', function(e){
       e.preventDefault(); e.stopPropagation();
       backY = scrollY; stage = 'up'; land();
-      goAnchor('people', true);
+      if (window.anfTop) window.anfTop(); else goAnchor('people', true);
       if (window.anfGo) window.anfGo(+a.dataset.person);
       syncUp();
     });
