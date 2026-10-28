@@ -1,13 +1,17 @@
-# Приём заявок с сайта фестиваля «От Страха к Любви» → сообщение в группу Max.
+# Приём заявок с сайта фестиваля «От Страха к Любви» → сообщение в рабочую группу Telegram и/или Max.
 # Облачная функция Yandex Cloud, Python 3.12, без сторонних библиотек. Точка входа: index.handler
 #
-# Переменные окружения (задаются в настройках функции, в код не вписываются):
+# Переменные окружения (задаются в настройках функции, в код не вписываются).
+# Канал включается, когда задан его токен; заявка уходит во все включённые каналы.
+#   TG_TOKEN         токен бота Telegram (выдаёт @BotFather)
+#   TG_CHAT_ID       id группы Telegram, куда бот пишет заявки (как узнать — backend/README.md, шаг 4)
+#   TG_API           необязательно: другой адрес API Telegram, если прямой недоступен; по умолчанию https://api.telegram.org
 #   MAX_TOKEN        токен бота Max (business.max.ru → Чат-боты → ⋮ → Настройки)
-#   MAX_CHAT_ID      id группы, куда бот пишет заявки (как узнать — backend/README.md, шаг 4)
+#   MAX_CHAT_ID      id группы Max
 #   ALLOWED_ORIGINS  с каких сайтов принимать заявки, через запятую; по умолчанию https://fest.mirra-spb.ru
 #
 # Сайт шлёт POST с JSON (Content-Type: text/plain — так браузер не делает лишний CORS-запрос).
-# Каждая заявка дополнительно пишется в журнал функции (Cloud Logging) — на случай, если Max не ответит.
+# Каждая заявка дополнительно пишется в журнал функции (Cloud Logging) — на случай, если мессенджер не ответит.
 
 import base64
 import datetime
@@ -19,33 +23,84 @@ import ssl
 import urllib.error
 import urllib.request
 
-TOKEN = os.environ.get('MAX_TOKEN', '').strip()
-CHAT_ID = os.environ.get('MAX_CHAT_ID', '').strip()
+TG_TOKEN = os.environ.get('TG_TOKEN', '').strip()
+TG_CHAT_ID = os.environ.get('TG_CHAT_ID', '').strip()
+TG_API = os.environ.get('TG_API', 'https://api.telegram.org').strip().rstrip('/')
+MAX_TOKEN = os.environ.get('MAX_TOKEN', '').strip()
+MAX_CHAT_ID = os.environ.get('MAX_CHAT_ID', '').strip()
 ORIGINS = [o.strip().rstrip('/') for o in os.environ.get('ALLOWED_ORIGINS', 'https://fest.mirra-spb.ru').split(',') if o.strip()]
 
 # Основной адрес API Max подписан сертификатом Минцифры — его нет в стандартном списке доверенных,
 # поэтому кладём корневой и промежуточный сертификаты рядом с кодом. Если не выйдет — запасной адрес.
-API_HOSTS = ['https://platform-api2.max.ru', 'https://platform-api.max.ru']
+MAX_HOSTS = ['https://platform-api2.max.ru', 'https://platform-api.max.ru']
 _CA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'russian_trusted_ca.pem')
 
 
 def _ctx(host):
     ctx = ssl.create_default_context()
-    if 'api2' in host and os.path.exists(_CA):
+    if 'api2.max.ru' in host and os.path.exists(_CA):
         ctx.load_verify_locations(_CA)
     return ctx
 
 
+def _json_request(url, method, body, headers, host):
+    data = json.dumps(body, ensure_ascii=False).encode('utf-8') if body is not None else None
+    req = urllib.request.Request(url, data=data, method=method, headers=dict(headers, **{'Content-Type': 'application/json'}))
+    with urllib.request.urlopen(req, timeout=8, context=_ctx(host)) as r:
+        return json.loads(r.read().decode('utf-8') or '{}')
+
+
+# ---------- Telegram ----------
+
+def tg_api(name, body=None):
+    """Метод Bot API Telegram. Возвращает поле result; при ошибке — исключение с описанием от Telegram."""
+    try:
+        res = _json_request('%s/bot%s/%s' % (TG_API, TG_TOKEN, name), 'POST', body or {}, {}, TG_API)
+    except urllib.error.HTTPError as e:
+        res = json.loads(e.read().decode('utf-8', 'replace') or '{}')
+    except Exception as e:
+        raise RuntimeError(('Telegram недоступен: %r' % e).replace(TG_TOKEN, '***'))   # токен — часть адреса, в журнал не пускаем
+    if not res.get('ok'):
+        err = RuntimeError('Telegram %s: %s %s' % (name, res.get('error_code'), res.get('description')))
+        err.params = res.get('parameters') or {}
+        raise err
+    return res.get('result')
+
+
+def tg_send(text):
+    body = {'chat_id': TG_CHAT_ID, 'text': text, 'parse_mode': 'HTML', 'disable_web_page_preview': True}
+    try:
+        tg_api('sendMessage', body)
+    except RuntimeError as e:
+        # группу превратили в супергруппу — у неё новый id; отправляем туда и подсказываем в журнале
+        new_id = getattr(e, 'params', {}).get('migrate_to_chat_id')
+        if not new_id:
+            raise
+        print(json.dumps({'event': 'tg_chat_migrated', 'new TG_CHAT_ID': new_id}, ensure_ascii=False))
+        tg_api('sendMessage', dict(body, chat_id=new_id))
+
+
+def tg_setup():
+    me = tg_api('getMe')
+    chats = {}
+    for u in tg_api('getUpdates', {'limit': 100, 'timeout': 0}) or []:
+        for key in ('my_chat_member', 'message', 'channel_post'):
+            chat = (u.get(key) or {}).get('chat')
+            if chat and chat.get('type') in ('group', 'supergroup'):
+                chats[chat['id']] = '«%s»' % chat.get('title', '')
+    return {'бот': '@' + (me.get('username') or '?'),
+            'группы': [{'TG_CHAT_ID': cid, 'название': t} for cid, t in chats.items()],
+            'подсказка': 'Если список пуст: добавьте бота в группу (или удалите и добавьте заново), напишите в группе /start@ник_бота и запустите тест ещё раз.'}
+
+
+# ---------- Max ----------
+
 def max_api(method, path, body=None):
     """Запрос к API Max; пробует основной адрес, потом запасной. Возвращает разобранный JSON."""
-    data = json.dumps(body, ensure_ascii=False).encode('utf-8') if body is not None else None
     last = None
-    for host in API_HOSTS:
-        req = urllib.request.Request(host + path, data=data, method=method,
-                                     headers={'Authorization': TOKEN, 'Content-Type': 'application/json'})
+    for host in MAX_HOSTS:
         try:
-            with urllib.request.urlopen(req, timeout=8, context=_ctx(host)) as r:
-                return json.loads(r.read().decode('utf-8') or '{}')
+            return _json_request(host + path, method, body, {'Authorization': MAX_TOKEN}, host)
         except urllib.error.HTTPError as e:
             # API ответил — дело не в адресе, второй пробовать бессмысленно
             raise RuntimeError('Max %s %s: HTTP %s %s' % (method, path, e.code, e.read()[:300].decode('utf-8', 'replace')))
@@ -54,22 +109,11 @@ def max_api(method, path, body=None):
     raise RuntimeError('Max недоступен: %r' % last)
 
 
-def reply(code, obj, origin=None):
-    headers = {'Content-Type': 'application/json; charset=utf-8'}
-    if origin:
-        headers.update({'Access-Control-Allow-Origin': origin, 'Vary': 'Origin',
-                        'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type'})
-    return {'statusCode': code, 'headers': headers, 'body': json.dumps(obj, ensure_ascii=False)}
+def max_send(text):
+    max_api('POST', '/messages?chat_id=%s&disable_link_preview=true' % MAX_CHAT_ID, {'text': text, 'format': 'html'})
 
 
-def clean(v, n):
-    """Строка без управляющих символов, не длиннее n."""
-    v = re.sub(r'[\x00-\x1f\x7f]+', ' ', str(v or '')).strip()
-    return v[:n]
-
-
-def setup():
-    """Режим настройки: показать, в какие чаты добавлен бот. Работает, только пока MAX_CHAT_ID не задан."""
+def max_setup():
     me = max_api('GET', '/me')
     upd = max_api('GET', '/updates?limit=100&timeout=0')
     chats = {}
@@ -89,6 +133,32 @@ def setup():
     return {'бот': me.get('first_name') or me.get('username'),
             'группы': [{'MAX_CHAT_ID': cid, 'что видно': info} for cid, info in chats.items()],
             'подсказка': 'Если список пуст: сделайте бота администратором группы, напишите в группе любое сообщение и запустите тест ещё раз.'}
+
+
+# ---------- общее ----------
+
+def channels():
+    """Включённые каналы: (название, есть ли id группы, отправка, настройка)."""
+    out = []
+    if TG_TOKEN:
+        out.append(('Telegram', bool(TG_CHAT_ID), tg_send, tg_setup))
+    if MAX_TOKEN:
+        out.append(('Max', bool(MAX_CHAT_ID), max_send, max_setup))
+    return out
+
+
+def reply(code, obj, origin=None):
+    headers = {'Content-Type': 'application/json; charset=utf-8'}
+    if origin:
+        headers.update({'Access-Control-Allow-Origin': origin, 'Vary': 'Origin',
+                        'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type'})
+    return {'statusCode': code, 'headers': headers, 'body': json.dumps(obj, ensure_ascii=False)}
+
+
+def clean(v, n):
+    """Строка без управляющих символов, не длиннее n."""
+    v = re.sub(r'[\x00-\x1f\x7f]+', ' ', str(v or '')).strip()
+    return v[:n]
 
 
 def format_request(d):
@@ -119,17 +189,23 @@ def handler(event, context):
     except ValueError:
         return reply(400, {'ok': False, 'error': 'bad json'}, allowed)
 
-    if not TOKEN:
-        return reply(500, {'ok': False, 'error': 'MAX_TOKEN не задан'}, allowed)
+    chs = channels()
+    if not chs:
+        return reply(500, {'ok': False, 'error': 'не задан ни TG_TOKEN, ни MAX_TOKEN'}, allowed)
 
-    # Настройка из консоли Yandex Cloud: тело запроса {"setup": true}
+    # Настройка из консоли Yandex Cloud: тело запроса {"setup": true}.
+    # Показывает группы бота — только для каналов, у которых id группы ещё не задан.
     if raw.get('setup') is True:
-        if CHAT_ID:
-            return reply(403, {'ok': False, 'error': 'MAX_CHAT_ID уже задан — режим настройки выключен'})
-        try:
-            return reply(200, setup())
-        except Exception as e:
-            return reply(502, {'ok': False, 'error': str(e)})
+        todo = [c for c in chs if not c[1]]
+        if not todo:
+            return reply(403, {'ok': False, 'error': 'id групп уже заданы — режим настройки выключен'})
+        res = {}
+        for name, _, _, setup in todo:
+            try:
+                res[name] = setup()
+            except Exception as e:
+                res[name] = {'ошибка': str(e)}
+        return reply(200, res)
 
     if not allowed:
         return reply(403, {'ok': False, 'error': 'origin'})
@@ -149,12 +225,15 @@ def handler(event, context):
         return reply(400, {'ok': False, 'error': 'проверьте имя, телефон и согласие'}, allowed)
 
     print(json.dumps({'event': 'request', **d}, ensure_ascii=False))
-    if not CHAT_ID:
-        return reply(500, {'ok': False, 'error': 'MAX_CHAT_ID не задан'}, allowed)
-    try:
-        max_api('POST', '/messages?chat_id=%s&disable_link_preview=true' % CHAT_ID,
-                {'text': format_request(d), 'format': 'html'})
-    except Exception as e:
-        print(json.dumps({'event': 'max_failed', 'error': str(e)}, ensure_ascii=False))
+    text, delivered = format_request(d), []
+    for name, has_chat, send, _ in chs:
+        if not has_chat:
+            continue
+        try:
+            send(text)
+            delivered.append(name)
+        except Exception as e:
+            print(json.dumps({'event': 'send_failed', 'channel': name, 'error': str(e)}, ensure_ascii=False))
+    if not delivered:
         return reply(502, {'ok': False, 'error': 'не удалось переслать заявку'}, allowed)
     return reply(200, {'ok': True}, allowed)
