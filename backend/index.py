@@ -15,8 +15,10 @@
 #   ALLOWED_ORIGINS  с каких сайтов принимать заявки, через запятую; по умолчанию https://fest.mirra-spb.ru
 #
 # Таблица заявок на Яндекс Диске центра (не канал: пишется всегда, после отправки в ВК или почту):
-#   DISK_TOKEN       OAuth-токен Яндекс Диска с доступом только к папке приложения (как получить — backend/README.md)
-#   DISK_PATH        файл таблицы; по умолчанию app:/Заявки на фестиваль.csv — это «Приложения/<имя приложения>/» на Диске
+#   DISK_TOKEN       OAuth-токен Яндекс Диска (как получить — backend/README.md)
+#   DISK_PATH        файл таблицы, например disk:/__Клиенты/Заявки фестиваля/Заявки на фестиваль Душа.csv
+#                    (токену нужен доступ ко всему Диску); по умолчанию app:/Заявки на фестиваль.csv —
+#                    папка «Приложения/<имя приложения>/», для неё хватает доступа только к папке приложения
 #
 # Сайт шлёт POST с JSON (Content-Type: text/plain — так браузер не делает лишний CORS-запрос).
 # Каждая заявка дополнительно пишется в журнал функции (Cloud Logging) — на случай, если канал не ответит.
@@ -229,19 +231,22 @@ TABLE_HEAD = ['Дата и время', 'Имя', 'Телефон', 'Telegram / 
 
 
 def _cell(v):
-    # Excel считает формулой ячейку, которая начинается с = + - @ — и в лучшем случае покажет ошибку
     v = str(v)
+    # телефон +79001234567 пишем как ="+79001234567": иначе Excel сделает из него число и потеряет плюс
+    if re.fullmatch(r'\+\d{10,15}', v):
+        return '="%s"' % v
+    # Excel считает формулой ячейку, которая начинается с = + - @ — и в лучшем случае покажет ошибку
     return "'" + v if v[:1] in ('=', '+', '-', '@') else v
 
 
 def _phone(p):
-    """Российский номер — в виде 8 (900) 123-45-67: так Excel не превратит его в число или формулу."""
+    """Номер в виде +79001234567; российский с 8 или без кода страны приводим к +7."""
     dg = re.sub(r'\D', '', p)
     if len(dg) == 10 and dg[0] == '9':
-        dg = '8' + dg
-    if len(dg) == 11 and dg[0] in '78':
-        return '8 (%s) %s-%s-%s' % (dg[1:4], dg[4:7], dg[7:9], dg[9:])
-    return p
+        dg = '7' + dg
+    elif len(dg) == 11 and dg[0] == '8':
+        dg = '7' + dg[1:]
+    return '+' + dg
 
 
 def table_row(d, where):
@@ -264,6 +269,17 @@ def disk_append(row, timeout):
         req = urllib.request.Request('%s/%s?path=%s%s' % (DISK_API, kind, urllib.parse.quote(DISK_PATH), extra), headers=auth)
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read().decode('utf-8'))['href']
+    def make_folder():
+        # папка таблицы, например «__Клиенты/Заявки фестиваля»; папку приложения (app:/) Диск создаёт сам
+        folder = DISK_PATH.rsplit('/', 1)[0]
+        if folder.endswith(':'):
+            return
+        req = urllib.request.Request('%s?path=%s' % (DISK_API, urllib.parse.quote(folder)), headers=auth, method='PUT')
+        try:
+            urllib.request.urlopen(req, timeout=timeout).close()
+        except urllib.error.HTTPError as e:
+            if e.code != 409:   # 409 — папка уже есть
+                raise
     try:
         try:
             with urllib.request.urlopen(link('download'), timeout=timeout) as r:
@@ -272,9 +288,10 @@ def disk_append(row, timeout):
             if e.code != 404:
                 raise
             old = _csv([TABLE_HEAD])                 # таблицы ещё нет — начинаем с заголовка
+            make_folder()
         if old and not old.endswith('\n'):
             old += '\r\n'
-        data = ('﻿' + old + _csv([row])).encode('utf-8')
+        data = ('\ufeff' + old + _csv([row])).encode('utf-8')
         req = urllib.request.Request(link('upload', '&overwrite=true'), data=data, method='PUT')
         with urllib.request.urlopen(req, timeout=timeout):
             pass
