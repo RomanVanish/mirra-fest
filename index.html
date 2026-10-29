@@ -140,9 +140,9 @@ html.menu-open{overflow:hidden}
 .facts b{font-family:var(--font-display);font-weight:600;font-size:1.22rem;color:var(--accent)}
 .facts span{color:var(--soft);font-size:.92rem}
 .hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
-/* тёмный фиолетовый первый экран: на широком экране — весь раздел, на телефоне — до надписи «фестиваль психологических практик»
+/* тёмный сливовый первый экран (#48243D): на широком экране — весь раздел, на телефоне — до надписи «фестиваль психологических практик»
    включительно (границу --dk ставит скрипт по низу надписи), дальше прежний рассвет. Надпись — жёлтая */
-.hero{background:radial-gradient(70% 90% at 92% 6%,rgba(255,196,140,.26) 0%,rgba(255,196,140,0) 60%),linear-gradient(165deg,#563a57 0%,#6a4b6a 48%,#7b5874 100%)}
+.hero{background:radial-gradient(70% 90% at 92% 6%,rgba(255,196,140,.22) 0%,rgba(255,196,140,0) 60%),linear-gradient(165deg,#381a2f 0%,#48243d 48%,#5a3150 100%)}
 .hero::before{opacity:.32}
 .hero .eyebrow{color:#f7cf57}
 @media (min-width:961px){
@@ -155,7 +155,7 @@ html.menu-open{overflow:hidden}
   .hero-ill{box-shadow:0 30px 70px -30px rgba(20,8,20,.75)}
 }
 @media (max-width:960px){
-  .hero{background:linear-gradient(180deg,#563a57 0px,#6a4b6a var(--dk,440px),#f6e6ef calc(var(--dk,440px) + 30px),#f9e0e1 calc(var(--dk,440px) + 140px),#fcd9c4 72%,#f9c79c 100%)}
+  .hero{background:linear-gradient(180deg,#381a2f 0px,#48243d var(--dk,440px),#f6e6ef calc(var(--dk,440px) + 30px),#f9e0e1 calc(var(--dk,440px) + 140px),#fcd9c4 72%,#f9c79c 100%)}
   .hero h1{margin-top:34px}
 }
 
@@ -726,7 +726,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .knot{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#b54a3a;box-shadow:0 0 0 3px rgba(255,255,255,.6);transition:opacity .4s ease}
 .lg-done{min-height:0;margin-top:-4px;font-family:var(--font-display);font-style:italic;font-size:var(--step-1);opacity:0;transition:opacity .6s ease}
 .lg-done.on{opacity:1}
-/* логотип центра — проявляется на месте связки, когда улетел последний шарик; середину по высоте ставит скрипт */
+/* логотип центра — проявляется внизу картинки неба, когда улетел последний шарик; положение по высоте ставит скрипт */
 .lg-logo{position:absolute;left:50%;top:50%;width:min(220px,50%);height:auto;opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.86);
   filter:drop-shadow(0 10px 24px rgba(180,90,40,.25));transition:opacity 1.8s ease,transform 2.4s cubic-bezier(.2,.8,.2,1)}
 .lg-logo.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
@@ -1292,7 +1292,7 @@ footer a{text-decoration:none}
       </details>
       <details>
         <summary>Где пообедать?</summary>
-        <div class="ans"><p>Между частями — полтора часа на обед (14:00–15:30). Подскажем, где в округе можно вкусно поесть. А у нас в обеденный перерыв будет свой <span class="nw">кофе-брейк</span>, общение со спикерами и небольшой подарок — «Ресурсная карта». Не переживайте, перерыв большой: успеете и пообедать, и пообщаться, и поделиться впечатлениями.</p></div>
+        <div class="ans"><p>Между частями — полтора часа на обед (14:00-15:30)- подскажем, где в округе можно вкусно поесть. И также и у нас в обеденный перерыв  будет свой кофе-брейк, общение со спикерами и небольшой подарок "Ресурсная карта". Не переживайте, перерыв большой - успеете и пообедать, и пообщаться, и поделиться впечатлениями.</p></div>
       </details>
       <details>
         <summary>А что с парковкой?</summary>
@@ -1613,7 +1613,6 @@ footer a{text-decoration:none}
   function buildBalloons(){
     var W0 = balloonsEl.clientWidth, bw = W0 < 420 ? 74 : 86, bh = Math.round(bw*1.18), kx = W0/2, ky = Math.round(3.12*bh + 34);
     balloonsEl.style.height = (ky + 12) + 'px';
-    lgLogo.style.top = Math.round(balloonsEl.offsetTop + (ky + 12)/2) + 'px';
     balloonsEl.innerHTML = ''; released = 0; lgDone.classList.remove('on'); lgLogo.classList.remove('on');
     LET.forEach(function(t, i){
       var cx = kx + SPOT[i][0]*bw, left = Math.round(cx - bw/2), top = Math.round(SPOT[i][1]*bh), ox = kx - left, oy = ky - top;
@@ -1636,6 +1635,11 @@ footer a{text-decoration:none}
       sky.style.top = Math.round(top) + 'px'; sky.style.height = Math.round(bottom - top) + 'px';
     }
   }
+  /* логотип — низом к низу фоновой картинки неба (там, где за связкой стояло солнце) */
+  function placeLogo(){
+    var sky = balloonsEl.parentNode.querySelector('.lg-sky');
+    lgLogo.style.top = Math.round(sky.offsetTop + sky.offsetHeight - lgLogo.offsetHeight/2) + 'px';
+  }
   function letGo(b){
     /* полёт от текущего положения (с учётом покачивания): немного вверх с лёгким дрейфом и плавное исчезновение */
     var from = getComputedStyle(b).transform;
@@ -1647,7 +1651,7 @@ footer a{text-decoration:none}
     if (released === LET.length){
       knot.style.opacity = 0;
       setTimeout(function(){ lgDone.textContent = 'Всё отпущено. Приходите 21 ноября — продолжим вместе.'; lgDone.classList.add('on'); }, REDUCE ? 0 : 900);
-      setTimeout(function(){ lgLogo.classList.add('on'); }, REDUCE ? 0 : 1500);
+      setTimeout(function(){ placeLogo(); lgLogo.classList.add('on'); }, REDUCE ? 0 : 1500);
     } else if (released === 1){
       lgDone.textContent = 'Отпущено. Пусть станет чуть легче.'; lgDone.classList.add('on');
     }
@@ -1707,7 +1711,7 @@ footer a{text-decoration:none}
     myday.innerHTML = h;
     drawMap(g);
   }
-  /* схема: холл и три зала; путь группы — стрелки по очереди, номер перехода — на стрелке (0 — старт в холле) */
+  /* схема: холл и три зала; путь группы — стрелки по очереди, номер перехода — на стрелке у её конца */
   var MAP = {"Лотос":[70,52], "Большой зал":[266,52], "Мастер-зал":[186,184]}, HALL0 = [46,136];
   /* иконки залов: сторона от рамки (-1 — слева, 1 — справа) и рисунок вокруг точки 0,0 */
   var SPIRAL = (function(){ var d = '', n = 64; for (var k=0;k<=n;k++){ var t = k/n, r = 8.6*(1-t) + .3, a = -Math.PI/2 + t*Math.PI*2*2.7;
@@ -1744,15 +1748,16 @@ footer a{text-decoration:none}
       t += 4/len;
       return [c[0] + dx*t, c[1] + dy*t];
     }
-    var segs = '', nums = '<g class="num"><circle cx="'+(HALL0[0]-18)+'" cy="'+(HALL0[1]-18)+'" r="10"/><text x="'+(HALL0[0]-18)+'" y="'+(HALL0[1]-14)+'" text-anchor="middle">0</text></g>';
+    var segs = '', nums = '';
     for (var i=1;i<pts.length;i++){
       var a = pts[i-1], b = pts[i], p1 = edge(a, b, i === 1), p2 = edge(b, a, false);
       segs += '<path class="seg" pathLength="1" style="animation-delay:'+((i-1)*.5)+'s" d="M'+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+' L'+p2[0].toFixed(1)+' '+p2[1].toFixed(1)+'"/>';
       /* кончик стрелки на конце отрезка — появляется, когда линия дорисована */
       var ang = Math.atan2(p2[1]-p1[1], p2[0]-p1[0]), L = 8, W8 = 0.5;
       segs += '<path class="ah" style="animation-delay:'+((i-1)*.5+.45)+'s" d="M'+(p2[0]-L*Math.cos(ang-W8)).toFixed(1)+' '+(p2[1]-L*Math.sin(ang-W8)).toFixed(1)+' L'+p2[0].toFixed(1)+' '+p2[1].toFixed(1)+' L'+(p2[0]-L*Math.cos(ang+W8)).toFixed(1)+' '+(p2[1]-L*Math.sin(ang+W8)).toFixed(1)+'"/>';
-      /* номер перехода — на стрелке, ближе к её началу: на пересечении стрелок номера не слипаются */
-      var mx = p1[0] + (p2[0]-p1[0])*.4, my = p1[1] + (p2[1]-p1[1])*.4;
+      /* номер перехода — на стрелке у её конца (у зала, куда идём): так ясно, к какой стрелке он относится */
+      var sl = Math.hypot(p2[0]-p1[0], p2[1]-p1[1]), back = Math.min(26, sl/2);
+      var mx = p2[0] - (p2[0]-p1[0])/sl*back, my = p2[1] - (p2[1]-p1[1])/sl*back;
       nums += '<g class="num" style="animation-delay:'+((i-1)*.5+.3)+'s"><circle cx="'+mx.toFixed(1)+'" cy="'+my.toFixed(1)+'" r="10"/><text x="'+mx.toFixed(1)+'" y="'+(my+4).toFixed(1)+'" text-anchor="middle">'+i+'</text></g>';
     }
     document.getElementById('rmap').innerHTML = s + segs + nums;
