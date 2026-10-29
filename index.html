@@ -133,8 +133,11 @@ html.menu-open{overflow:hidden}
 .hero .sub{font-family:var(--font-display);font-style:italic;font-size:var(--step-1);margin-top:20px;max-width:30ch;color:var(--soft)}
 /* дата и место — заметные плашки с иконкой, как «Когда приходить» */
 .facts{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
-.facts div{position:relative;display:flex;flex-direction:column;gap:2px;padding:12px 18px 12px 54px;border-radius:14px;background:rgba(255,255,255,.62);border:1px solid rgba(240,221,208,.9);box-shadow:0 14px 30px -24px rgba(110,84,134,.55)}
-.facts div::before{content:"";position:absolute;left:14px;top:50%;width:28px;height:28px;margin-top:-14px;border-radius:50%;background:var(--accent) center/16px no-repeat;background-image:var(--bi)}
+.facts > *{position:relative;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:2px;padding:12px 18px 12px 54px;border-radius:14px;background:rgba(255,255,255,.62);border:1px solid rgba(240,221,208,.9);box-shadow:0 14px 30px -24px rgba(110,84,134,.55)}
+.facts a{transition:transform .2s ease,box-shadow .2s ease}
+.facts a:hover{transform:translateY(-1px);box-shadow:0 18px 34px -22px rgba(110,84,134,.7)}
+.facts a b{text-decoration:underline;text-decoration-color:rgba(181,74,58,.35);text-underline-offset:4px}
+.facts > *::before{content:"";position:absolute;left:14px;top:50%;width:28px;height:28px;margin-top:-14px;border-radius:50%;background:var(--accent) center/16px no-repeat;background-image:var(--bi)}
 .facts .f-date{--bi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='15' rx='2'/%3E%3Cpath d='M8 3v4M16 3v4M4 10h16'/%3E%3C/svg%3E")}
 .facts .f-place{--bi:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z'/%3E%3Ccircle cx='12' cy='9.5' r='2.5'/%3E%3C/svg%3E")}
 .facts b{font-family:var(--font-display);font-weight:600;font-size:1.22rem;color:var(--accent)}
@@ -149,7 +152,7 @@ html.menu-open{overflow:hidden}
   .hero h1{color:#fff5ec}
   .hero h1 .to{color:#f7cf57}
   .hero .sub{color:#e9d6e6}
-  .hero .facts div{background:rgba(255,250,245,.94);border-color:rgba(255,255,255,.4)}
+  .hero .facts > *{background:rgba(255,250,245,.94);border-color:rgba(255,255,255,.4)}
   .hero .count{background:rgba(255,250,245,.92)}
   .hero .btn-ghost{background:rgba(255,255,255,.08);color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
   .hero-ill{box-shadow:0 30px 70px -30px rgba(20,8,20,.75)}
@@ -373,7 +376,10 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .route{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(20px,5vw,64px);align-items:center;margin-top:64px;padding-top:56px;border-top:1px solid var(--line)}
 .route h3{font-size:var(--step-2)}
 .route p{color:var(--soft);margin-top:10px;font-size:.95rem}
-.groups{display:flex;gap:10px;margin:18px 0 20px}
+/* подпись «Группа» — по центру над кружками */
+.gpick{display:inline-grid;justify-items:center;gap:6px;margin:18px 0 20px}
+.gpick-cap{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--soft)}
+.groups{display:flex;gap:10px}
 /* группы — цветные кружки, как на бейджах: А — красный, Б — жёлтый, В — зелёный; выбранная — крупнее и с кольцом */
 .groups button{--gb:#d6403a;--gt:#fff;width:46px;height:46px;border-radius:50%;border:0;background:var(--gb);font:500 1.2rem var(--font-display);color:var(--gt);cursor:pointer;opacity:.6;transform:scale(.9);transition:opacity .2s ease,transform .2s ease,box-shadow .2s ease}
 .groups button[data-g="1"]{--gb:#f2bf2a;--gt:#4a3410}
@@ -776,12 +782,12 @@ footer a{text-decoration:none}
 @media (max-width:960px){
   .route{display:flex;flex-direction:column;align-items:stretch;gap:0;margin-top:44px;padding-top:36px}
   .route > div{display:contents}
-  .route .eyebrow,.route h3,.route p,.route .groups{order:0}
+  .route .eyebrow,.route h3,.route p,.route .gpick{order:0}
   .route .rmap{order:1;margin:0 0 12px}
   .route .myday{order:2}
   .route h3{font-size:1.35rem}
   .route p{font-size:.86rem;line-height:1.45;margin-top:6px}
-  .route .groups{margin:12px 0 10px}.groups button{width:40px;height:40px;font-size:1.1rem}
+  .route .gpick{margin:12px 0 10px;align-self:flex-start}.groups button{width:40px;height:40px;font-size:1.1rem}
   .route .rmap{max-width:300px;align-self:center;margin:0 0 6px}
   .myday{gap:4px}.md-part{margin-top:6px;font-size:.7rem}
   .md-step{gap:10px}.md-step i{width:22px;height:22px;font-size:.72rem}.md-step a{font-size:.98rem;line-height:1.25}
@@ -886,7 +892,7 @@ footer a{text-decoration:none}
       <p class="sub">через доверие к миру, к себе, к своему телу и к своему роду</p>
       <div class="facts">
         <div class="f-date"><b>21 ноября 2026</b><span>суббота · 11:00–18:45</span></div>
-        <div class="f-place"><b>Лиговский пр., 44В</b><span>психологический центр «МирРа»</span></div>
+        <a class="f-place" href="#place" data-back><b>Лиговский пр., 44В</b><span>психологический центр «МирРа»</span></a>
       </div>
       <div class="count" id="count" aria-live="off">
         <div class="cap" id="count-cap">До начала фестиваля</div>
@@ -1130,10 +1136,13 @@ footer a{text-decoration:none}
         <div class="eyebrow">Ваш маршрут</div>
         <h3>Выберите группу — покажем ваш день</h3>
         <p>Номер группы будет на бейдже. Если вы придёте только на вторую часть или на один <span class="nw">мастер-класс</span>, всё подскажут на регистрации.</p>
+        <div class="gpick">
+        <div class="gpick-cap" aria-hidden="true">Группа</div>
         <div class="groups" role="group" aria-label="Группа">
           <button type="button" data-g="0" aria-pressed="true">А</button>
           <button type="button" data-g="1" aria-pressed="false">Б</button>
           <button type="button" data-g="2" aria-pressed="false">В</button>
+        </div>
         </div>
         <div class="myday" id="myday" aria-live="polite"></div>
       </div>
@@ -1635,10 +1644,10 @@ footer a{text-decoration:none}
       sky.style.top = Math.round(top) + 'px'; sky.style.height = Math.round(bottom - top) + 'px';
     }
   }
-  /* логотип — низом к низу фоновой картинки неба (там, где за связкой стояло солнце) */
+  /* логотип — у низа фоновой картинки неба (там, где за связкой стояло солнце); нижние 10% выходят за картинку */
   function placeLogo(){
     var sky = balloonsEl.parentNode.querySelector('.lg-sky');
-    lgLogo.style.top = Math.round(sky.offsetTop + sky.offsetHeight - lgLogo.offsetHeight/2) + 'px';
+    lgLogo.style.top = Math.round(sky.offsetTop + sky.offsetHeight - lgLogo.offsetHeight*.4) + 'px';
   }
   function letGo(b){
     /* полёт от текущего положения (с учётом покачивания): немного вверх с лёгким дрейфом и плавное исчезновение */
