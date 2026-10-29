@@ -702,7 +702,12 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .dawn .wrap{position:relative;z-index:1;padding-block:clamp(56px,7vw,96px) clamp(56px,7vw,96px);display:grid;justify-items:center;gap:16px}
 .dawn blockquote{margin:-6px 0 0;font-family:var(--font-display);font-style:italic;font-size:clamp(1.6rem,1.3rem + 1.4vw,2.4rem);line-height:1.2;max-width:30ch;text-wrap:balance}
 @media (max-width:640px){.dawn .wrap > .btn{display:none}}
-.dawn cite{font-style:normal;color:#6b4a45}
+/* «До встречи…» — прощание: мельче цитаты, поэтому выделено цветом и жирным */
+.dawn cite{font:700 clamp(1.05rem,1rem + .3vw,1.2rem)/1.35 var(--font-body);font-style:normal;color:var(--accent);letter-spacing:.01em}
+/* финал по шагам: после последнего шарика — логотип, потом цитата, потом «До встречи…».
+   Пока шарики не отпущены, цитата и прощание скрыты (класс wait ставит скрипт — без скрипта всё видно сразу) */
+.dawn blockquote.on,.dawn cite.on{transition:opacity 1.3s ease,transform 1.5s cubic-bezier(.2,.8,.2,1)}   /* плавно — только появление; скрываются при загрузке сразу */
+.dawn.wait blockquote:not(.on),.dawn.wait cite:not(.on){opacity:0;transform:translateY(14px)}
 /* «отпустить»: связка шариков с подписями на нитках; нажатие — нитка отпускается, шарик улетает и тает */
 .letgo{position:relative;width:min(560px,100%);display:grid;gap:6px;justify-items:center;margin-bottom:0;isolation:isolate}
 /* небо (иллюстрация dawn) — от верха раздела до солнца; нарисованное солнце стоит ровно за нижним шариком,
@@ -1618,6 +1623,8 @@ footer a{text-decoration:none}
   /* плотная связка: смещение центра шарика от середины (в ширинах шарика) и верх (в высотах шарика) — ряды 2-3-2-1, соседние слегка перекрываются */
   var SPOT = [[-.55,0],[.55,0],[-1.1,.72],[0,.72],[1.1,.72],[-.55,1.44],[.55,1.44],[0,2.12]];
   var balloonsEl = document.getElementById('balloons'), lgDone = document.getElementById('lg-done'), lgLogo = document.getElementById('lg-logo'), knot, released = 0;
+  var dawn = document.querySelector('.dawn'), lgQuote = dawn.querySelector('blockquote'), lgBye = dawn.querySelector('cite');
+  dawn.classList.add('wait');
   function rnd(a, b){ return a + Math.random()*(b-a); }
   function buildBalloons(){
     var W0 = balloonsEl.clientWidth, bw = W0 < 420 ? 74 : 86, bh = Math.round(bw*1.18), kx = W0/2, ky = Math.round(3.12*bh + 34);
@@ -1662,6 +1669,8 @@ footer a{text-decoration:none}
       knot.style.opacity = 0;
       setTimeout(function(){ lgDone.textContent = 'Всё отпущено. Приходите 21 ноября — продолжим вместе.'; lgDone.classList.add('on'); }, REDUCE ? 0 : 900);
       setTimeout(function(){ placeLogo(); lgLogo.classList.add('on'); }, REDUCE ? 0 : 1500);
+      setTimeout(function(){ lgQuote.classList.add('on'); }, REDUCE ? 0 : 3000);
+      setTimeout(function(){ lgBye.classList.add('on'); }, REDUCE ? 0 : 4300);
     } else if (released === 1){
       lgDone.textContent = 'Отпущено. Пусть станет чуть легче.'; lgDone.classList.add('on');
     }
