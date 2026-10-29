@@ -2084,7 +2084,9 @@ footer a{text-decoration:none}
       say.innerHTML = p.say + '<span class="tbd">черновик</span>';
       var ah = A0*R, narrow = W < 640;
       say.classList.toggle('mid', narrow || !!p.end);
-      if (narrow || p.end){ say.style.left = (W/2)+'px'; say.style.top = (FLOOR - ah*(p.end ? .72 : .2))+'px'; }
+      /* у финала облачко — внизу картинки, у дороги: небо и фигура остаются открытыми */
+      if (p.end){ say.style.left = (W/2)+'px'; say.style.top = Math.min(FLOOR - ah*.12, H - 14 - say.offsetHeight/2)+'px'; }
+      else if (narrow){ say.style.left = (W/2)+'px'; say.style.top = (FLOOR - ah*.2)+'px'; }
       else { say.style.left = (W/2 + A0*0.5 + 18)+'px'; say.style.top = (FLOOR - ah*0.34)+'px'; }
       say.classList.add('on');
     }
@@ -2197,10 +2199,17 @@ footer a{text-decoration:none}
     SECS.forEach(function(sct, j){ if (sct.getBoundingClientRect().top <= y) k = j; }); return k; }
   function smoothTo(y){ scrollTo({top: y, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
   function land(){ landing = true; clearTimeout(land.t); land.t = setTimeout(function(){ landing = false; }, 1500); }
+  /* плавающая кнопка не лезет на арку и плашки с именами ведущих: пока она их накрывает — прячется */
+  var aScene = document.querySelector('.a-scene'), aDots = document.querySelector('.a-dots');
+  function overArch(){
+    var b = upbtn.getBoundingClientRect();
+    return [aScene, aDots].some(function(el){ var r = el.getBoundingClientRect();
+      return r.left < b.right + 10 && r.right > b.left - 10 && r.top < b.bottom + 10 && r.bottom > b.top - 10; });
+  }
   function syncUp(){
     var k = curSec(), mode = backY !== null ? 'back' : stage === 'prog' ? 'prog' : stage === 'ppl' ? 'ppl' : 'up';
     upbtn.hidden = false;
-    upbtn.classList.toggle('gone', mode === 'prog' ? k < 0 : mode === 'up' && k < 0);
+    upbtn.classList.toggle('gone', (mode === 'prog' ? k < 0 : mode === 'up' && k < 0) || overArch());
     ['back','prog','ppl'].forEach(function(m){ upbtn.classList.toggle(m, mode === m); });
     upTxt.innerHTML = mode === 'back' ? 'Вернуться назад' : mode === 'prog' ? 'Смотреть<br>программу' : mode === 'ppl' ? 'Ведущие' : '';
     upbtn.setAttribute('aria-label', mode === 'back' ? 'Вернуться назад' : mode === 'prog' ? 'Смотреть программу' : mode === 'ppl' ? 'К ведущим' : 'К предыдущему разделу');
