@@ -299,6 +299,31 @@ def disk_append(row, timeout):
         raise RuntimeError(_hide('Диск: %r' % e, DISK_TOKEN))
 
 
+def disk_check():
+    """Проверка Диска из консоли: {"check": "disk"}. Ничего не записывает, показывает шаги и ошибки Яндекса.
+    Нужна, потому что раздел «Логи» в облаке бывает недоступен."""
+    if not DISK_TOKEN:
+        return {'DISK_TOKEN': 'не задан — функция не видит переменную; сохраните изменения в Редакторе'}
+    auth = {'Authorization': 'OAuth ' + DISK_TOKEN}
+    folder = DISK_PATH.rsplit('/', 1)[0]
+    out = {'DISK_PATH': DISK_PATH}
+    for step, url in (('токен', 'https://cloud-api.yandex.net/v1/disk/'),
+                      ('папка «%s»' % folder, '%s?path=%s&limit=0' % (DISK_API, urllib.parse.quote(folder))),
+                      ('чтение файла', '%s/download?path=%s' % (DISK_API, urllib.parse.quote(DISK_PATH))),
+                      ('запись файла', '%s/upload?path=%s&overwrite=true' % (DISK_API, urllib.parse.quote(DISK_PATH)))):
+        try:
+            urllib.request.urlopen(urllib.request.Request(url, headers=auth), timeout=TIMEOUT).close()
+            out[step] = 'можно'
+        except urllib.error.HTTPError as e:
+            msg = (json.loads(e.read().decode('utf-8', 'replace') or '{}') or {}).get('message', '')
+            out[step] = 'HTTP %s %s' % (e.code, msg)
+        except Exception as e:
+            out[step] = _hide('ошибка: %r' % e, DISK_TOKEN)
+    if out.get('чтение файла', '').startswith('HTTP 404'):
+        out['чтение файла'] += ' (файла ещё нет — это нормально до первой заявки)'
+    return out
+
+
 # ---------- общее ----------
 
 def channels():
@@ -382,6 +407,9 @@ def handler(event, context):
         raw = json.loads(body) if body else {}
     except ValueError:
         return reply(400, {'ok': False, 'error': 'bad json'}, allowed)
+
+    if raw.get('check') == 'disk':
+        return reply(200, disk_check())
 
     chs = channels()
     if not chs:
