@@ -719,7 +719,8 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .lg-sky::before{display:none}
 .lg-sky .ill-ph{place-content:start center;padding-top:9%;font-size:.74rem}
 .lg-l{font-family:var(--font-display);font-size:var(--step-2);line-height:1.2}
-.lg-hint{font-size:.9rem;color:#6b4a45}
+.lg-hint{font-size:.9rem;color:#6b4a45;transition:opacity .6s ease}
+.lg-hint.off{opacity:0}   /* после первого шарика подсказка не нужна */
 .balloons{position:relative;width:100%;height:360px;margin-top:0}
 .bl{position:absolute;padding:0;border:0;background:none;cursor:pointer;width:var(--bw);height:var(--bh);transform-origin:var(--ox) var(--oy);animation:sway 3.6s ease-in-out infinite alternate}
 .bl .ball{position:absolute;inset:0;display:grid;place-items:center;padding:12px 8px;border-radius:50% 50% 48% 48%/56% 56% 44% 44%;
@@ -1625,11 +1626,12 @@ footer a{text-decoration:none}
   var balloonsEl = document.getElementById('balloons'), lgDone = document.getElementById('lg-done'), lgLogo = document.getElementById('lg-logo'), knot, released = 0;
   var dawn = document.querySelector('.dawn'), lgQuote = dawn.querySelector('blockquote'), lgBye = dawn.querySelector('cite');
   dawn.classList.add('wait');
+  var lgHint = dawn.querySelector('.lg-hint');
   function rnd(a, b){ return a + Math.random()*(b-a); }
   function buildBalloons(){
     var W0 = balloonsEl.clientWidth, bw = W0 < 420 ? 74 : 86, bh = Math.round(bw*1.18), kx = W0/2, ky = Math.round(3.12*bh + 34);
     balloonsEl.style.height = (ky + 12) + 'px';
-    balloonsEl.innerHTML = ''; released = 0; lgDone.classList.remove('on'); lgLogo.classList.remove('on');
+    balloonsEl.innerHTML = ''; released = 0; lgDone.classList.remove('on'); lgLogo.classList.remove('on'); lgHint.classList.remove('off');
     LET.forEach(function(t, i){
       var cx = kx + SPOT[i][0]*bw, left = Math.round(cx - bw/2), top = Math.round(SPOT[i][1]*bh), ox = kx - left, oy = ky - top;
       var b = document.createElement('button');
@@ -1676,6 +1678,7 @@ footer a{text-decoration:none}
     b.animate([{transform: from === 'none' ? 'none' : from, opacity:1}, {opacity:1, offset:.45}, {transform: to, opacity:0}],
       {duration: REDUCE ? 300 : 2200, easing:'cubic-bezier(.3,.1,.5,1)', fill:'forwards'});
     released++;
+    lgHint.classList.add('off');
     if (released === LET.length){
       knot.style.opacity = 0;
       setTimeout(function(){ lgDone.textContent = 'Всё отпущено. Приходите 21 ноября — продолжим вместе.'; lgDone.classList.add('on'); }, REDUCE ? 0 : 900);
