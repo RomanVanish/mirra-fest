@@ -702,8 +702,8 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .dawn .wrap{position:relative;z-index:1;padding-block:clamp(56px,7vw,96px) clamp(56px,7vw,96px);display:grid;justify-items:center;gap:16px}
 .dawn blockquote{margin:-6px 0 0;font-family:var(--font-display);font-style:italic;font-size:clamp(1.6rem,1.3rem + 1.4vw,2.4rem);line-height:1.2;max-width:30ch;text-wrap:balance}
 @media (max-width:640px){.dawn .wrap > .btn{display:none}}
-/* «До встречи…» — прощание: мельче цитаты, поэтому выделено цветом и жирным */
-.dawn cite{font:700 clamp(1.05rem,1rem + .3vw,1.2rem)/1.35 var(--font-body);font-style:normal;color:var(--accent);letter-spacing:.01em}
+/* «До встречи…» — прощание: мельче цитаты, поэтому выделено жирным и переливом красного, как «Подарок гостям» (класс shine) */
+.dawn cite{font:700 clamp(1.1rem,1rem + .4vw,1.3rem)/1.35 var(--font-body);font-style:normal;letter-spacing:.01em}
 /* финал по шагам: после последнего шарика — логотип, потом цитата, потом «До встречи…».
    Пока шарики не отпущены, цитата и прощание скрыты (класс wait ставит скрипт — без скрипта всё видно сразу) */
 .dawn blockquote.on,.dawn cite.on{transition:opacity 1.3s ease,transform 1.5s cubic-bezier(.2,.8,.2,1)}   /* плавно — только появление; скрываются при загрузке сразу */
@@ -1431,7 +1431,7 @@ footer a{text-decoration:none}
       <p class="lg-done" id="lg-done" aria-live="polite"></p>
     </div>
     <blockquote>Пусть в вашей жизни будет чуть меньше страха и чуть больше любви</blockquote>
-    <cite>До встречи 21 ноября в ПЦ «МирРа»</cite>
+    <cite class="shine">До встречи 21 ноября в ПЦ «МирРа»</cite>
     <a class="btn btn-ink" href="#tickets">Забронировать место</a>
   </div>
 </section>
@@ -1655,7 +1655,9 @@ footer a{text-decoration:none}
      Высота — из ширины и пропорций файла: пока картинка не загрузилась, offsetHeight неверный */
   function placeLogo(){
     var sky = balloonsEl.parentNode.querySelector('.lg-sky');
-    lgLogo.style.top = Math.round(sky.offsetTop + sky.offsetHeight - lgLogo.offsetWidth*403/400*.25) + 'px';
+    var h = lgLogo.offsetWidth*403/400;
+    /* но не ниже строки «Всё отпущено…»: на текст логотип не наезжает */
+    lgLogo.style.top = Math.round(Math.min(sky.offsetTop + sky.offsetHeight - h*.25, lgDone.offsetTop + 8 - h/2)) + 'px';
   }
   function letGo(b){
     /* полёт от текущего положения (с учётом покачивания): немного вверх с лёгким дрейфом и плавное исчезновение */
