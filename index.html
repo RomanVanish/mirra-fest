@@ -1659,6 +1659,15 @@ footer a{text-decoration:none}
     /* но не ниже строки «Всё отпущено…»: на текст логотип не наезжает */
     lgLogo.style.top = Math.round(Math.min(sky.offsetTop + sky.offsetHeight - h*.25, lgDone.offsetTop + 8 - h/2)) + 'px';
   }
+  /* после последнего шарика страница мягко опускается: логотип, надписи и кнопка «Забронировать» — в кадре.
+     Только вниз и не дальше, чем нужно, чтобы логотип остался под шапкой */
+  function toFinale(){
+    var btn = dawn.querySelector('.wrap > .btn'), last = btn && btn.offsetParent ? btn : lgBye;
+    var head = document.querySelector('.top').getBoundingClientRect().height;
+    var y = Math.min(last.getBoundingClientRect().bottom + scrollY + 28 - innerHeight,
+                     lgLogo.getBoundingClientRect().top + scrollY - head - 16);
+    if (y > scrollY + 4) scrollTo({top: y, behavior: REDUCE ? 'auto' : 'smooth'});
+  }
   function letGo(b){
     /* полёт от текущего положения (с учётом покачивания): немного вверх с лёгким дрейфом и плавное исчезновение */
     var from = getComputedStyle(b).transform;
@@ -1670,7 +1679,7 @@ footer a{text-decoration:none}
     if (released === LET.length){
       knot.style.opacity = 0;
       setTimeout(function(){ lgDone.textContent = 'Всё отпущено. Приходите 21 ноября — продолжим вместе.'; lgDone.classList.add('on'); }, REDUCE ? 0 : 900);
-      setTimeout(function(){ placeLogo(); lgLogo.classList.add('on'); }, REDUCE ? 0 : 1500);
+      setTimeout(function(){ placeLogo(); lgLogo.classList.add('on'); toFinale(); }, REDUCE ? 0 : 1500);
       setTimeout(function(){ lgQuote.classList.add('on'); }, REDUCE ? 0 : 3000);
       setTimeout(function(){ lgBye.classList.add('on'); }, REDUCE ? 0 : 4300);
     } else if (released === 1){
