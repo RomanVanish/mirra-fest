@@ -444,7 +444,10 @@ section.block{padding-block:clamp(64px,8vw,112px)}
   background:radial-gradient(ellipse 48% 54% at 50% 62%,rgb(var(--pl) / .96) 0%,rgb(var(--pl) / .88) 48%,rgb(var(--pl) / .48) 68%,rgb(var(--pl) / 0) 84%)}
 .a-person{isolation:isolate}
 .a-person.sil::before{display:none}
-.a-person img{filter:drop-shadow(0 0 3px rgba(255,238,205,.9)) drop-shadow(0 0 9px rgba(255,214,150,.75)) drop-shadow(0 0 20px rgba(255,196,120,.55)) drop-shadow(0 0 34px rgba(255,186,110,.35));
+/* золотая аура — на обёртке .a-fig, а не на самой картинке: маска картинки обрезала бы свечение по краю её прямоугольника
+   (была видна вертикальная граница рядом с фигурой); на обёртке аура обводит уже растворённую маской фигуру */
+.a-fig{display:block;height:100%;filter:drop-shadow(0 0 3px rgba(255,238,205,.9)) drop-shadow(0 0 9px rgba(255,214,150,.75)) drop-shadow(0 0 20px rgba(255,196,120,.55)) drop-shadow(0 0 34px rgba(255,186,110,.35))}
+.a-person img{
   /* фигура «вписана» в арку: края кадра (обрезанные руки, низ) мягко растворяются, голова и плечи нетронуты */
   -webkit-mask-image:radial-gradient(ellipse 66% 88% at 50% 26%,#000 64%,transparent 100%),linear-gradient(180deg,#000 74%,transparent 98%);
   -webkit-mask-composite:source-in;
@@ -1900,7 +1903,7 @@ footer a{text-decoration:none}
       el._pool = 0.35 + 0.6*lit; el.style.setProperty('--pool', el._pool.toFixed(3));
       el.style.setProperty('--pl', mix([150,98,122],[238,190,164],lit).join(' '));   /* подложка под фигурой — в тон своей арки: сумеречная → рассветная */
       el.innerHTML = '<div class="a-pool"></div><div class="a-frame"></div>' +
-        (p.end ? '<div class="a-glow"></div><div class="a-love"><span class="a-love-ph">иллюстрация<br><small>love · 2:3</small></span></div>' : '<div class="a-person'+(p.img ? '' : ' sil')+'">'+(p.img ? '<img src="'+p.img+'" alt="'+p.n+'" draggable="false">' : SIL)+'</div>');
+        (p.end ? '<div class="a-glow"></div><div class="a-love"><span class="a-love-ph">иллюстрация<br><small>love · 2:3</small></span></div>' : '<div class="a-person'+(p.img ? '' : ' sil')+'">'+(p.img ? '<span class="a-fig"><img src="'+p.img+'" alt="'+p.n+'" draggable="false"></span>' : SIL)+'</div>');
       el.addEventListener('click', function(){ if (swiped) return; if (Math.round(cam) === i) go(i+1); else go(i); });
       world.appendChild(el);
       return el;
