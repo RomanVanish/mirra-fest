@@ -140,9 +140,9 @@ html.menu-open{overflow:hidden}
 .facts b{font-family:var(--font-display);font-weight:600;font-size:1.22rem;color:var(--accent)}
 .facts span{color:var(--soft);font-size:.92rem}
 .hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
-/* тёмный сливовый первый экран (#48243D): на широком экране — весь раздел, на телефоне — до надписи «фестиваль психологических практик»
+/* тёмный сливовый первый экран (#2F1728, к низу плавно светлеет): на широком экране — весь раздел, на телефоне — до надписи «фестиваль психологических практик»
    включительно (границу --dk ставит скрипт по низу надписи), дальше прежний рассвет. Надпись — жёлтая */
-.hero{background:radial-gradient(70% 90% at 92% 6%,rgba(255,196,140,.22) 0%,rgba(255,196,140,0) 60%),linear-gradient(165deg,#381a2f 0%,#48243d 48%,#5a3150 100%)}
+.hero{background:radial-gradient(70% 90% at 92% 6%,rgba(255,196,140,.22) 0%,rgba(255,196,140,0) 60%),linear-gradient(175deg,#2f1728 0%,#2f1728 22%,#45233b 58%,#62344f 86%,#74405c 100%)}
 .hero::before{opacity:.32}
 .hero .eyebrow{color:#f7cf57}
 @media (min-width:961px){
@@ -155,7 +155,7 @@ html.menu-open{overflow:hidden}
   .hero-ill{box-shadow:0 30px 70px -30px rgba(20,8,20,.75)}
 }
 @media (max-width:960px){
-  .hero{background:linear-gradient(180deg,#381a2f 0px,#48243d var(--dk,440px),#f6e6ef calc(var(--dk,440px) + 30px),#f9e0e1 calc(var(--dk,440px) + 140px),#fcd9c4 72%,#f9c79c 100%)}
+  .hero{background:linear-gradient(180deg,#2f1728 0px,#2f1728 25%,#55304a var(--dk,440px),#f6e6ef calc(var(--dk,440px) + 30px),#f9e0e1 calc(var(--dk,440px) + 140px),#fcd9c4 72%,#f9c79c 100%)}
   .hero h1{margin-top:34px}
 }
 
