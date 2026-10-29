@@ -1422,7 +1422,7 @@ footer a{text-decoration:none}
       <p class="lg-l">Отпустите то, что тяжело нести</p>
       <p class="lg-hint">Нажмите на шарик — и он улетит</p>
       <div class="balloons" id="balloons"></div>
-      <img class="lg-logo" id="lg-logo" src="img/logo.webp" alt="Логотип психологического центра «МирРа»" width="400" height="403" loading="lazy">
+      <img class="lg-logo" id="lg-logo" src="img/logo.webp" alt="Логотип психологического центра «МирРа»" width="400" height="403">
       <p class="lg-done" id="lg-done" aria-live="polite"></p>
     </div>
     <blockquote>Пусть в вашей жизни будет чуть меньше страха и чуть больше любви</blockquote>
@@ -1644,10 +1644,11 @@ footer a{text-decoration:none}
       sky.style.top = Math.round(top) + 'px'; sky.style.height = Math.round(bottom - top) + 'px';
     }
   }
-  /* логотип — у низа фоновой картинки неба (там, где за связкой стояло солнце); нижние 10% выходят за картинку */
+  /* логотип — у низа фоновой картинки неба (там, где за связкой стояло солнце); нижние 25% выходят за картинку.
+     Высота — из ширины и пропорций файла: пока картинка не загрузилась, offsetHeight неверный */
   function placeLogo(){
     var sky = balloonsEl.parentNode.querySelector('.lg-sky');
-    lgLogo.style.top = Math.round(sky.offsetTop + sky.offsetHeight - lgLogo.offsetHeight*.4) + 'px';
+    lgLogo.style.top = Math.round(sky.offsetTop + sky.offsetHeight - lgLogo.offsetWidth*403/400*.25) + 'px';
   }
   function letGo(b){
     /* полёт от текущего положения (с учётом покачивания): немного вверх с лёгким дрейфом и плавное исчезновение */
@@ -1668,6 +1669,7 @@ footer a{text-decoration:none}
   buildBalloons();
   var lgW = balloonsEl.clientWidth;
   addEventListener('resize', function(){ if (released === 0 && balloonsEl.clientWidth !== lgW){ lgW = balloonsEl.clientWidth; buildBalloons(); } });
+  addEventListener('resize', function(){ if (lgLogo.classList.contains('on')) placeLogo(); });   /* логотип уже виден — держим его у низа неба */
 
   /* вкладки программы */
   var tabs = document.querySelectorAll('[role="tab"]');
