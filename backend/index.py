@@ -14,11 +14,17 @@
 #   MAX_TOKEN, MAX_CHAT_ID         Max — нужен проверенный профиль организации
 #   ALLOWED_ORIGINS  с каких сайтов принимать заявки, через запятую; по умолчанию https://fest.mirra-spb.ru
 #
+# Таблица заявок на Яндекс Диске центра (не канал: пишется всегда, после отправки в ВК или почту):
+#   DISK_TOKEN       OAuth-токен Яндекс Диска с доступом только к папке приложения (как получить — backend/README.md)
+#   DISK_PATH        файл таблицы; по умолчанию app:/Заявки на фестиваль.csv — это «Приложения/<имя приложения>/» на Диске
+#
 # Сайт шлёт POST с JSON (Content-Type: text/plain — так браузер не делает лишний CORS-запрос).
 # Каждая заявка дополнительно пишется в журнал функции (Cloud Logging) — на случай, если канал не ответит.
 
 import base64
+import csv
 import datetime
+import io
 import html
 import json
 import os
@@ -26,6 +32,7 @@ import random
 import re
 import smtplib
 import ssl
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -41,6 +48,7 @@ VK_TOKEN, VK_PEER_ID = env('VK_TOKEN'), env('VK_PEER_ID')
 TG_TOKEN, TG_CHAT_ID = env('TG_TOKEN'), env('TG_CHAT_ID')
 TG_API = env('TG_API', 'https://api.telegram.org').rstrip('/')
 MAX_TOKEN, MAX_CHAT_ID = env('MAX_TOKEN'), env('MAX_CHAT_ID')
+DISK_TOKEN, DISK_PATH = env('DISK_TOKEN'), env('DISK_PATH', 'app:/Заявки на фестиваль.csv')
 ORIGINS = [o.strip().rstrip('/') for o in env('ALLOWED_ORIGINS', 'https://fest.mirra-spb.ru').split(',') if o.strip()]
 TIMEOUT = 8   # секунд на один запрос к внешнему сервису; таймаут самой функции — 20 с
 
@@ -213,6 +221,67 @@ def max_setup():
             'подсказка': 'Если список пуст: сделайте бота администратором группы, напишите в группе любое сообщение и запустите тест ещё раз.'}
 
 
+# ---------- таблица на Яндекс Диске ----------
+
+DISK_API = 'https://cloud-api.yandex.net/v1/disk/resources'
+TABLE_HEAD = ['Дата и время', 'Имя', 'Телефон', 'Telegram / Max', 'Когда придёт', 'Сколько человек',
+              'Особенно хочет на', 'Рассказывать о мероприятиях', 'Куда пришла заявка']
+
+
+def _cell(v):
+    # Excel считает формулой ячейку, которая начинается с = + - @ — и в лучшем случае покажет ошибку
+    v = str(v)
+    return "'" + v if v[:1] in ('=', '+', '-', '@') else v
+
+
+def _phone(p):
+    """Российский номер — в виде 8 (900) 123-45-67: так Excel не превратит его в число или формулу."""
+    dg = re.sub(r'\D', '', p)
+    if len(dg) == 10 and dg[0] == '9':
+        dg = '8' + dg
+    if len(dg) == 11 and dg[0] in '78':
+        return '8 (%s) %s-%s-%s' % (dg[1:4], dg[4:7], dg[7:9], dg[9:])
+    return p
+
+
+def table_row(d, where):
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3))).strftime('%d.%m.%Y %H:%M')
+    return [now, d['name'], _phone(d['phone']), d['messenger'], d['plan'], d['count'], d['mk'],
+            'да' if d['news'] else 'нет', where]
+
+
+def _csv(rows):
+    buf = io.StringIO()
+    csv.writer(buf, delimiter=';', lineterminator='\r\n').writerows([[_cell(v) for v in r] for r in rows])
+    return buf.getvalue()
+
+
+def disk_append(row, timeout):
+    """Дописать строку в CSV на Диске: скачать, добавить, загрузить обратно.
+    CSV в UTF-8 с BOM и разделителем «;» — так его сразу правильно открывает русский Excel."""
+    auth = {'Authorization': 'OAuth ' + DISK_TOKEN}
+    def link(kind, extra=''):
+        req = urllib.request.Request('%s/%s?path=%s%s' % (DISK_API, kind, urllib.parse.quote(DISK_PATH), extra), headers=auth)
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return json.loads(r.read().decode('utf-8'))['href']
+    try:
+        try:
+            with urllib.request.urlopen(link('download'), timeout=timeout) as r:
+                old = r.read().decode('utf-8-sig')   # не UTF-8 — ошибка, и файл не перезаписываем
+        except urllib.error.HTTPError as e:
+            if e.code != 404:
+                raise
+            old = _csv([TABLE_HEAD])                 # таблицы ещё нет — начинаем с заголовка
+        if old and not old.endswith('\n'):
+            old += '\r\n'
+        data = ('﻿' + old + _csv([row])).encode('utf-8')
+        req = urllib.request.Request(link('upload', '&overwrite=true'), data=data, method='PUT')
+        with urllib.request.urlopen(req, timeout=timeout):
+            pass
+    except Exception as e:
+        raise RuntimeError(_hide('Диск: %r' % e, DISK_TOKEN))
+
+
 # ---------- общее ----------
 
 def channels():
@@ -328,14 +397,30 @@ def handler(event, context):
     if not d['name'] or not 10 <= len(digits) <= 15 or raw.get('consent') is not True:
         return reply(400, {'ok': False, 'error': 'проверьте имя, телефон и согласие'}, allowed)
 
+    started = time.monotonic()
     print(json.dumps({'event': 'request', **d}, ensure_ascii=False))
+    where = None
     for n, has, send, _ in chs:
         if not has:
             continue
         try:
             send(d)
+            where = n
             print(json.dumps({'event': 'delivered', 'channel': n}, ensure_ascii=False))
-            return reply(200, {'ok': True}, allowed)
+            break
         except Exception as e:
             print(json.dumps({'event': 'send_failed', 'channel': n, 'error': str(e)}, ensure_ascii=False))
+
+    # Таблица — после отправки и только в остаток времени: функцию обрывают на 20-й секунде,
+    # а заявка уже доставлена, и гость не должен увидеть ошибку из-за Диска.
+    left = 18 - (time.monotonic() - started)
+    if DISK_TOKEN and left > 2:
+        try:
+            disk_append(table_row(d, where or 'не доставлена'), timeout=min(5, left / 4))
+            print(json.dumps({'event': 'table_saved'}, ensure_ascii=False))
+        except Exception as e:
+            print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
+
+    if where:
+        return reply(200, {'ok': True}, allowed)
     return reply(502, {'ok': False, 'error': 'не удалось переслать заявку'}, allowed)
