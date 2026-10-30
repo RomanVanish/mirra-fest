@@ -499,6 +499,10 @@ section.block{padding-block:clamp(64px,8vw,112px)}
   opacity:0;transform:translate(0,-50%) translateY(10px) scale(.92);transform-origin:0 100%;transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1)}
 .a-say::before{content:"";position:absolute;left:-9px;bottom:10px;width:18px;height:14px;background:inherit;clip-path:polygon(100% 0,100% 100%,0 70%)}
 .a-say.on{opacity:1;transform:translate(0,-50%)}
+/* облачко слева от арки (sayLeft), над стрелкой «назад»: ведущий на фото развёрнут влево — облачко там, куда он смотрит */
+.a-say.left{border-radius:20px 20px 6px 20px;transform:translate(-100%,-50%) translateY(10px) scale(.92);transform-origin:100% 100%}
+.a-say.left.on{transform:translate(-100%,-50%)}
+.a-say.left::before{left:auto;right:-9px;clip-path:polygon(0 0,0 100%,100% 70%)}
 .a-say.mid{width:max-content;max-width:min(270px,84%);border-radius:20px;text-align:center;transform:translate(-50%,-50%) translateY(10px) scale(.92);transform-origin:50% 0}
 .a-say.mid.on{transform:translate(-50%,-50%)}
 .a-say.mid::before{left:50%;top:-10px;bottom:auto;width:20px;height:12px;transform:translateX(-50%);clip-path:polygon(50% 0,100% 100%,0 100%)}
@@ -1819,7 +1823,7 @@ footer a{text-decoration:none}
       {n:"Инна Кочурова", r:"Психолог, специалист по эмоциональному процессу", mk:"мастер-класс 4", img:"img/people/kochurova.webp",
        about:"Психоаналитик, Транзактный Аналитик, ведёт группы с элементами Психодрамы. Больше 20 лет индивидуальной и групповой работы. Член СОТА.",
        say:"Тот, кто пугает, —<br>часто наше отражение."},
-      {n:"Виктория Трофимова", r:"Психолог, специалист по соединению с телом", mk:"мастер-класс 4", img:"img/people/trofimova.webp",
+      {n:"Виктория Трофимова", r:"Психолог, специалист по соединению с телом", mk:"мастер-класс 4", img:"img/people/trofimova.webp", sayLeft:true,
        about:"Психолог в модальности Транзактного анализа, Телесно-ориентированный терапевт, врач, президент СОТА",
        say:"Улыбнитесь —<br>и мир улыбнётся в ответ."},
       {n:"Любовь", r:"Вы прошли мост — от страха к любви", mk:"21 ноября · центр «МирРа»", end:true,
@@ -2074,11 +2078,17 @@ footer a{text-decoration:none}
       var p = PEOPLE[i]; if (!p.say || Math.abs(cam - i) > .05) return;
       say.innerHTML = p.say;
       var ah = A0*R, narrow = W < 640;
+      /* смена стороны — без перехода, иначе облачко проезжает через арку; плавно только появление */
+      say.style.transition = 'none';
       say.classList.toggle('mid', narrow || !!p.end);
+      say.classList.toggle('left', !narrow && !!p.sayLeft);
       /* у финала облачко — внизу картинки, у дороги: небо и фигура остаются открытыми */
       if (p.end){ say.style.left = (W/2)+'px'; say.style.top = Math.min(FLOOR - ah*.12, H - 14 - say.offsetHeight/2)+'px'; }
       else if (narrow){ say.style.left = (W/2)+'px'; say.style.top = (FLOOR - ah*.2)+'px'; }
+      /* слева — низом над стрелкой «назад» (её верх — на FLOOR - ah*0.3) */
+      else if (p.sayLeft){ say.style.left = (W/2 - A0*0.5 - 18)+'px'; say.style.top = (FLOOR - ah*0.3 - 12 - say.offsetHeight/2)+'px'; }
       else { say.style.left = (W/2 + A0*0.5 + 18)+'px'; say.style.top = (FLOOR - ah*0.34)+'px'; }
+      void say.offsetWidth; say.style.transition = '';
       say.classList.add('on');
     }
     function caption(i){
