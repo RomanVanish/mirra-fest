@@ -436,7 +436,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-frame::after{content:"";position:absolute;inset:0;border:2px solid rgba(255,255,255,.6);border-bottom:0;border-radius:inherit}
 .a-pool{position:absolute;left:-18%;right:-18%;bottom:-8%;height:16%;border-radius:50%;pointer-events:none;opacity:var(--pool);
   background:radial-gradient(ellipse at 50% 50%,rgba(255,222,176,.75) 0%,rgba(255,186,130,.3) 42%,rgba(255,186,130,0) 70%)}
-.a-person{position:absolute;left:50%;bottom:0;height:84%;transform:translateX(-50%);pointer-events:none}
+.a-person{position:absolute;left:50%;bottom:0;height:84%;transform:translateX(-50%);pointer-events:none;will-change:opacity,filter}   /* свой слой: смена яркости при проходе не пересчитывает маску и свечение */
 .a-person img,.a-person svg{display:block;height:100%;width:auto;max-width:none}
 /* тёплая подложка под фигурой: там, где края фигуры растворяются, видно ровное свечение, а не столбы и кромки дальних арок */
 .a-person::before{content:"";position:absolute;left:-12%;right:-12%;top:36%;bottom:0;z-index:-1;pointer-events:none;
@@ -1942,8 +1942,16 @@ footer a{text-decoration:none}
     function render(){
       portals.forEach(function(el,i){
         var d = i - cam;
-        if (d < -0.6 || d > 8){ el.style.visibility = 'hidden'; return; }
+        if (d < -1.5 || d > 8){ el.style.visibility = 'hidden'; return; }
         el.style.visibility = 'visible';
+        /* только что пройденная арка невидима (при d = -0.5 прозрачность уже 0), но ждёт в обычном размере: при шаге назад
+           браузер не отрисовывает её с фото и свечением заново в шестикратном увеличении — от этого телефон и замирал */
+        el.style.pointerEvents = d < -0.5 ? 'none' : '';
+        if (d < -0.5){
+          el.style.opacity = 0;
+          el.style.transform = 'translate('+(W/2 - A0/2)+'px,'+(FLOOR - A0*R)+'px)';
+          return;
+        }
         var p = place(d), w = A0*p.s;
         el.style.transform = 'translate('+(p.x-w/2)+'px,'+(p.y-w*R)+'px) scale('+p.s+')';
         el.style.opacity = d < 0 ? clamp(1+d/0.5) : clamp(1-Math.max(0,d-4.5)*0.3);
@@ -1954,6 +1962,7 @@ footer a{text-decoration:none}
         if (who){
           /* фигуры в следующих арках едва видны и проявляются по мере приближения; силуэт-заглушка вдали не виден совсем */
           who.style.opacity = d < 0 ? clamp(1+d/0.3) : clamp(1 - d*(who.classList.contains('sil') ? 1.4 : 0.75));
+          who.style.visibility = d > 2 ? 'hidden' : '';   /* дальние фигуры невидимы — не держим их слои */
           who.style.filter = d > 0.02 ? 'brightness('+(1-Math.min(d,2)*0.28).toFixed(3)+') saturate('+(1-Math.min(d,2)*0.2).toFixed(3)+')' : '';
         }
       });
