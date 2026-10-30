@@ -427,7 +427,9 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 /* пыльца и лепестки — за арками и фигурами (у арок z-index от 100 и ниже), но над небом и деревьями */
 .a-fx{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
 .a-trees{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.a-light{position:absolute;left:0;top:0;width:10px;height:10px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen;
+/* меняются в каждом кадре прохода — на своих слоях, чтобы не перерисовывать сцену */
+.a-dawn,.a-dusk,.a-bloom,.a-pool{will-change:opacity}
+.a-light{position:absolute;left:0;top:0;width:10px;height:10px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen;will-change:transform,opacity;
   background:radial-gradient(circle,rgba(255,253,245,1) 0%,rgba(255,244,220,1) 4%,rgba(255,220,170,.8) 11%,rgba(250,180,120,.42) 24%,rgba(220,140,120,.16) 42%,rgba(220,140,120,0) 64%)}
 .a-portal{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform,opacity;cursor:pointer}
 .a-frame{position:absolute;inset:0;border:var(--t) solid var(--c);border-bottom:0;border-radius:50% 50% 0 0/42% 42% 0 0;
@@ -476,7 +478,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-way span::before{content:"";position:absolute;left:12%;right:12%;top:5%;height:44%;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0));pointer-events:none}
 .a-way svg{position:relative;width:22px;height:22px}
 .a-way:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.a-way.fwd span{color:var(--accent);background:radial-gradient(circle at 35% 30%,#fff 0%,#fff 40%,#fdeee6 100%);box-shadow:0 0 0 3px rgba(181,74,58,.28),0 8px 18px -6px rgba(60,20,30,.6)}
+.a-way.fwd span{-webkit-backdrop-filter:none;backdrop-filter:none;color:var(--accent);background:radial-gradient(circle at 35% 30%,#fff 0%,#fff 40%,#fdeee6 100%);box-shadow:0 0 0 3px rgba(181,74,58,.28),0 8px 18px -6px rgba(60,20,30,.6)}
 .a-way.fwd::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(255,255,255,.8);pointer-events:none;animation:a-ring 2.2s ease-out infinite}
 .a-way.back{width:38px;height:38px}
 .a-way.back span{color:rgba(255,255,255,.85);background:linear-gradient(160deg,rgba(150,140,146,.5),rgba(110,100,106,.42));border-color:rgba(255,255,255,.4);box-shadow:0 6px 14px -8px rgba(30,10,24,.5)}
@@ -494,7 +496,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .a-cap .a-ab{font-size:.95rem;line-height:1.5;margin:6px 0 4px;max-width:62ch}
 /* облачко-послание ведущего */
 .a-say{position:absolute;left:0;top:0;z-index:155;max-width:260px;padding:14px 18px 12px;border-radius:20px 20px 20px 6px;
-  background:rgba(255,250,244,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 14px 30px -14px rgba(60,20,40,.55),0 0 0 1px rgba(255,255,255,.8) inset;
+  background:rgba(255,250,244,.93);box-shadow:0 14px 30px -14px rgba(60,20,40,.55),0 0 0 1px rgba(255,255,255,.8) inset;
   font:italic 400 1.08rem/1.35 var(--font-display);color:var(--ink);pointer-events:none;
   opacity:0;transform:translate(0,-50%) translateY(10px) scale(.92);transform-origin:0 100%;transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1)}
 .a-say::before{content:"";position:absolute;left:-9px;bottom:10px;width:18px;height:14px;background:inherit;clip-path:polygon(100% 0,100% 100%,0 70%)}
@@ -1968,9 +1970,11 @@ footer a{text-decoration:none}
       });
       var e = place(PEOPLE.length - cam + 0.6), lw = A0*e.s;
       LX = e.x; LY = e.y - lw*R*0.45;
-      light.style.left = LX+'px'; light.style.top = LY+'px';
       var size = Math.max(W, H) * (0.9 + 0.5*clamp(1 - (PEOPLE.length-1-cam)/3));
-      light.style.width = light.style.height = size+'px';
+      /* свет — один раз в наибольшем размере, дальше только трансформация: без пересчёта раскладки и перерисовки градиента в каждом кадре */
+      var maxSize = Math.max(W, H) * 1.4;
+      if (light._size !== maxSize){ light._size = maxSize; light.style.width = light.style.height = maxSize+'px'; }
+      light.style.transform = 'translate('+LX+'px,'+LY+'px) translate(-50%,-50%) scale('+(size/maxSize).toFixed(4)+')';
       PROG = cam/(PEOPLE.length-1);
       dawn.style.opacity = PROG.toFixed(3);
       dusk.style.opacity = (1 - 0.8*PROG).toFixed(3);
