@@ -226,6 +226,15 @@ def max_setup():
 # ---------- таблица на Яндекс Диске ----------
 
 DISK_API = 'https://cloud-api.yandex.net/v1/disk/resources'
+
+
+def _disk_fetch(href, timeout):
+    """Скачать файл по временной ссылке Диска. В ссылке может быть кириллица в имени файла, а urllib принимает только ASCII;
+    сервер скачивания может отказать клиенту без обычного User-Agent."""
+    url = urllib.parse.quote(href, safe="%/:=&?~#+!$,;'@()*[]")
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (fest-zayavki)'})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read()
 TABLE_HEAD = ['Дата и время', 'Имя', 'Телефон', 'Telegram / Max', 'Когда придёт', 'Сколько человек',
               'Особенно хочет на', 'Рассказывать о мероприятиях', 'Куда пришла заявка']
 
@@ -280,10 +289,10 @@ def disk_append(row, timeout):
         except urllib.error.HTTPError as e:
             if e.code != 409:   # 409 — папка уже есть
                 raise
+    step = 'чтение таблицы'
     try:
         try:
-            with urllib.request.urlopen(link('download'), timeout=timeout) as r:
-                old = r.read().decode('utf-8-sig')   # не UTF-8 — ошибка, и файл не перезаписываем
+            old = _disk_fetch(link('download'), timeout).decode('utf-8-sig')   # не UTF-8 — ошибка, и файл не перезаписываем
         except urllib.error.HTTPError as e:
             if e.code != 404:
                 raise
@@ -292,11 +301,12 @@ def disk_append(row, timeout):
         if old and not old.endswith('\n'):
             old += '\r\n'
         data = ('\ufeff' + old + _csv([row])).encode('utf-8')
+        step = 'запись таблицы'
         req = urllib.request.Request(link('upload', '&overwrite=true'), data=data, method='PUT')
         with urllib.request.urlopen(req, timeout=timeout):
             pass
     except Exception as e:
-        raise RuntimeError(_hide('Диск: %r' % e, DISK_TOKEN))
+        raise RuntimeError(_hide('Диск, %s: %r' % (step, e), DISK_TOKEN))
 
 
 def disk_check():
@@ -321,6 +331,17 @@ def disk_check():
             out[step] = _hide('ошибка: %r' % e, DISK_TOKEN)
     if out.get('чтение файла', '').startswith('HTTP 404'):
         out['чтение файла'] += ' (файла ещё нет — это нормально до первой заявки)'
+    elif out.get('чтение файла') == 'можно':
+        # ссылку получить мало: скачиваем сам файл так же, как при записи заявки (содержимое в ответ не попадает)
+        try:
+            req = urllib.request.Request('%s/download?path=%s' % (DISK_API, urllib.parse.quote(DISK_PATH)), headers=auth)
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                href = json.loads(r.read().decode('utf-8'))['href']
+            raw = _disk_fetch(href, TIMEOUT)
+            raw.decode('utf-8-sig')
+            out['скачивание файла'] = 'можно, %d байт, кодировка UTF-8' % len(raw)
+        except Exception as e:
+            out['скачивание файла'] = _hide('ошибка: %r' % e, DISK_TOKEN)
     return out
 
 
@@ -465,6 +486,13 @@ def handler(event, context):
             print(json.dumps({'event': 'table_saved'}, ensure_ascii=False))
         except Exception as e:
             print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
+            # логи в облаке бывают недоступны — о сбое должны узнать сотрудники, заявка в таблицу не попала
+            if VK_TOKEN and VK_PEER_ID and time.monotonic() - started < 16:
+                try:
+                    vk_api('messages.send', peer_id=VK_PEER_ID, random_id=random.randint(1, 2 ** 31 - 1), dont_parse_links=1,
+                           message='⚠ Заявка «%s» не записалась в таблицу на Диске. Причина: %s' % (d['name'], e))
+                except Exception as e2:
+                    print(json.dumps({'event': 'table_notice_failed', 'error': str(e2)}, ensure_ascii=False))
 
     if where:
         return reply(200, {'ok': True}, allowed)
