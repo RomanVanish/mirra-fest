@@ -560,6 +560,13 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .pickbar .pb-sel{display:grid;gap:2px;min-width:150px}
 .pickbar .pb-sel small{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
 .pickbar .pb-sel b{font-family:var(--font-display);font-weight:500;font-size:1.3rem}
+.pickbar .pb-price b{color:var(--accent);font-weight:600;font-size:1.5rem}
+/* «оплата не возвращается» — заметно, но спокойно: тёплая плашка с восклицательным знаком, как у «Когда приходить» */
+.norefund{position:relative;max-width:640px;margin:18px auto 0;padding:14px 18px 14px 58px;border-radius:14px;background:#fff1e6;border:1.5px solid rgba(196,18,48,.45);color:var(--ink);font-size:.95rem;line-height:1.5}
+.norefund::before{content:"!";position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:50%;background:#c41230;color:#fff;display:grid;place-items:center;font:700 1rem/1 var(--font-body)}
+.norefund b{display:block;color:#c41230;font:600 1.12rem var(--font-display);margin-bottom:2px}
+.check.strong{color:var(--ink)}
+.check.strong b{color:#c41230}
 .gift-sec .gift{margin-top:12px}
 .pick-note{margin:14px auto 0;max-width:640px;text-align:center;font-size:.92rem;color:var(--soft)}
 
@@ -1168,7 +1175,7 @@ footer a{text-decoration:none}
       <div class="eyebrow">Участие</div>
       <h2>Один билет — вход на целый день</h2>
       <p class="head-sub">А сколько пройти, решаете вы</p>
-      <p class="lead">Цена одна: хоть на один <span class="nw">мастер-класс</span>, хоть на весь фестиваль. Подскажите только, когда вас ждать, — так мы подготовим места в залах.</p>
+      <p class="lead">Цена одна — <b class="nw">2 888 ₽</b>: хоть на один <span class="nw">мастер-класс</span>, хоть на весь фестиваль. Подскажите только, когда вас ждать, — так мы подготовим места в залах.</p>
     </div>
     <div class="pick" role="radiogroup" aria-label="Когда вы придёте">
       <button class="opt" type="button" role="radio" aria-checked="false" data-plan="Первая часть" data-short="первая часть">
@@ -1195,9 +1202,11 @@ footer a{text-decoration:none}
     </div>
     <div class="pickbar">
       <div class="pb-sel" aria-live="polite"><small>Ваш выбор</small><b id="pick-name">весь день</b></div>
+      <div class="pb-sel pb-price"><small>Билет</small><b>2 888 ₽</b></div>
       <button class="btn btn-warm" type="button" id="pick-go">Забронировать место</button>
     </div>
-    <p class="pick-note">Хотите на один <span class="nw">мастер-класс</span>? Выберите часть, в которой он идёт, а в заявке отметьте, какой именно, — билет тот же. Время частей и <span class="nw">мастер-классов</span> — <a href="#program" data-back>в программе</a>.</p>
+    <p class="norefund"><b>Оплата не возвращается</b>Если планы изменятся, деньги за оплаченный билет не возвращаются. Пожалуйста, бронируйте место, когда уверены, что придёте.</p>
+    <p class="pick-note">Хотите на один <span class="nw">мастер-класс</span>? Выберите часть, в которой он идёт, а в заявке отметьте, какой именно, — билет тот же. Время частей и <span class="nw">мастер-классов</span> — <a href="#program" data-back>в программе</a>.</p>
 
   </div>
 </section>
@@ -1265,6 +1274,7 @@ footer a{text-decoration:none}
         </div>
         <div class="f full"><label for="r-msg">Telegram или Max <small>— по желанию</small></label><input id="r-msg" name="messenger" placeholder="@имя"></div>
         <div class="f full"><label class="check" for="r-ok"><input id="r-ok" type="checkbox" name="consent" required><span>Согласен(а) на обработку моих персональных данных центром «МирРа» (ООО «ИРБИС») для записи на фестиваль и связи со мной — по <a href="privacy.html" target="_blank">политике конфиденциальности</a>.</span></label></div>
+        <div class="f full"><label class="check strong" for="r-norefund"><input id="r-norefund" type="checkbox" name="norefund" required><span>Понимаю, что <b>деньги за оплаченный билет не возвращаются</b>.</span></label></div>
         <div class="f full"><label class="check" for="r-news"><input id="r-news" type="checkbox" name="news"><span>Рассказывайте мне о других мероприятиях центра <small>— по желанию</small></span></label></div>
         <div class="hp" aria-hidden="true"><label>Не заполняйте это поле <input name="website" tabindex="-1" autocomplete="off"></label></div>
         <div class="f full"><button class="btn btn-warm" type="submit" style="justify-self:start">Отправить заявку</button></div>
@@ -1290,7 +1300,11 @@ footer a{text-decoration:none}
         <div class="ans"><p>Нет. Практики простые и рассчитаны на любой опыт.</p></div>
       </details>
       <details>
-        <summary>Можно ли прийти на одну часть или на один <span class="nw">мастер-класс</span>?</summary>
+        <summary>Можно ли вернуть деньги за билет?</summary>
+        <div class="ans"><p>Нет. Деньги за оплаченный билет не возвращаются, даже если планы изменятся. Поэтому бронируйте место, когда уверены, что придёте.</p></div>
+      </details>
+      <details>
+        <summary>Можно ли прийти на одну часть или на один <span class="nw">мастер-класс</span>?</summary>
         <div class="ans"><p>Да, билет один для любого варианта: можно прийти на утро, на вечер или к началу любого <span class="nw">мастер-класса</span> — каждый идёт три раза за часть. Время смотрите <a href="#program" data-back>в программе</a>.</p></div>
       </details>
       <details>
@@ -2362,7 +2376,7 @@ footer a{text-decoration:none}
   form.addEventListener('submit', function(e){
     e.preventDefault();
     var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,'');
-    var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : '';
+    var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : !form.norefund.checked ? 'Отметьте, пожалуйста, что знаете: деньги за оплаченный билет не возвращаются.' : '';
     out.hidden = false;
     if (err){ out.textContent = err; return; }
     var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
