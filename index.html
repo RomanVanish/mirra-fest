@@ -394,11 +394,11 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .rmap .hall .tm{font:600 10px var(--font-body);fill:var(--soft)}
 .rmap .start circle{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
 .rmap .start text{font:600 9.5px var(--font-body);letter-spacing:.1em;fill:var(--soft)}
-.rmap .seg{fill:none;stroke:var(--accent-2);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:rseg .55s ease forwards}
-.rmap .ah{fill:none;stroke:var(--accent-2);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0;animation:rpop .25s ease forwards}
+.rmap .seg{fill:none;stroke:var(--gc,var(--accent-2));stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:rseg .55s ease forwards}
+.rmap .ah{fill:none;stroke:var(--gc,var(--accent-2));stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0;animation:rpop .25s ease forwards}
 .rmap .num{opacity:0;animation:rpop .3s ease forwards}
-.rmap .num circle{fill:var(--accent);stroke:#fff;stroke-width:2}
-.rmap .num text{fill:#fff;font:600 11px var(--font-body)}
+.rmap .num circle{fill:var(--gc,var(--accent));stroke:#fff;stroke-width:2}
+.rmap .num text{fill:var(--gt,#fff);font:600 11px var(--font-body)}
 @keyframes rseg{to{stroke-dashoffset:0}}
 @keyframes rpop{to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.rmap .seg{animation:none;stroke-dashoffset:0}.rmap .num{animation:none;opacity:1}}
@@ -1121,7 +1121,7 @@ footer a{text-decoration:none}
       </article>
       <article class="mk" id="mk-5">
         <figure class="ill" data-ill="mk5" data-ratio="3:2"></figure>
-        <div class="meta"><span class="hall">Большой зал</span><span class="num"><span class="nw">мастер-класс</span> 5</span></div>
+        <div class="meta"><span class="hall"><span class="nw">Мастер-зал</span></span><span class="num"><span class="nw">мастер-класс</span> 5</span></div>
         <h3>«Внутренняя вертикаль»</h3>
         <p class="tag">Как опора внутри становится опорой в теле</p>
         <p class="txt">Человек — единственное существо, которое ходит прямо. Наша вертикаль — это сила духа, которая помогает выпрямиться и пройти через страх. Простые телесные практики, доступные в любом возрасте: почувствовать опору под ногами, отпустить сжатие страха и найти свою внутреннюю вертикаль.</p>
@@ -1130,7 +1130,7 @@ footer a{text-decoration:none}
       </article>
       <article class="mk" id="mk-6">
         <figure class="ill" data-ill="mk6" data-ratio="3:2"></figure>
-        <div class="meta"><span class="hall"><span class="nw">Мастер-зал</span></span><span class="num"><span class="nw">мастер-класс</span> 6</span></div>
+        <div class="meta"><span class="hall">Большой зал</span><span class="num"><span class="nw">мастер-класс</span> 6</span></div>
         <h3>«Кто стоит за моим страхом?»</h3>
         <p class="tag">От страха к силе</p>
         <p class="txt">Бывает, что ситуации и трудности в жизни мы считаем своей судьбой, однако они приходят от предков, которые были до нас и передали нам жизнь. На <span class="nw">мастер-классе</span> мы можем восстановить контакт с биологической силой наших предков и с источником силы нашего рода. Цель — избавиться от страхов и страданий и наполниться жизненной силой.</p>
@@ -1263,8 +1263,8 @@ footer a{text-decoration:none}
             <option>«Источник» · часть 1, Мастер-зал</option>
             <option>«Как не бояться любить и жить счастливо?» · часть 1, Большой зал</option>
             <option>«Улыбка» · часть 2, Лотос</option>
-            <option>«Внутренняя вертикаль» · часть 2, Большой зал</option>
-            <option>«Кто стоит за моим страхом?» · часть 2, Мастер-зал</option>
+            <option>«Внутренняя вертикаль» · часть 2, Мастер-зал</option>
+            <option>«Кто стоит за моим страхом?» · часть 2, Большой зал</option>
           </select>
         </div>
         <div class="f full"><label for="r-msg">Telegram или Max <small>— по желанию</small></label><input id="r-msg" name="messenger" placeholder="@имя"></div>
@@ -1735,10 +1735,10 @@ footer a{text-decoration:none}
   /* маршрут группы */
   var HALLS = {
     "Лотос":["«Как Волк научился любить»","«Улыбка»"],
-    "Большой зал":["«Как не бояться любить и жить счастливо?»","«Внутренняя вертикаль»"],
-    "Мастер-зал":["«Источник»","«Кто стоит за моим страхом?»"]
+    "Большой зал":["«Как не бояться любить и жить счастливо?»","«Кто стоит за моим страхом?»"],
+    "Мастер-зал":["«Источник»","«Внутренняя вертикаль»"]
   };
-  var MKID = {"Лотос":["mk-1","mk-4"], "Большой зал":["mk-3","mk-5"], "Мастер-зал":["mk-2","mk-6"]};   /* карточка мастер-класса в программе */
+  var MKID = {"Лотос":["mk-1","mk-4"], "Большой зал":["mk-3","mk-6"], "Мастер-зал":["mk-2","mk-5"]};   /* карточка мастер-класса в программе */
   var ORDER = [["Лотос","Большой зал","Мастер-зал"],["Большой зал","Мастер-зал","Лотос"],["Мастер-зал","Лотос","Большой зал"]];
   var T1 = ["11:15–12:00","12:15–13:00","13:15–14:00"], T2 = ["16:00–16:45","17:00–17:45","18:00–18:45"];
   var myday = document.getElementById('myday');
@@ -1773,7 +1773,11 @@ footer a{text-decoration:none}
       '<path d="M5 15L13.6-4" stroke="#8a5a2c" stroke-width="2.6" stroke-linecap="round"/><path d="M13.6-4L14.9-7" stroke="#b9b4ae" stroke-width="3.2"/>' +
       '<path d="M14.9-7C14-9 14.6-12.5 17-15.5C17.9-12.4 17.6-9 16.6-6.6Z" fill="#f0953f" stroke="#b85f1c" stroke-width=".7" stroke-linejoin="round"/>']
   };
+  /* цвет пути группы: А — бордовый, Б — тёмно-оранжевый (жёлтый на светлом фоне бледный), В — зелёный; цифра на кружке — контрастная */
+  var GROUP_COLOR = [['#9e1b32','#fff'], ['#e07b00','#fff'], ['#2f8a4a','#fff']];
   function drawMap(g){
+    var rm = document.getElementById('rmap');
+    rm.style.setProperty('--gc', GROUP_COLOR[g][0]); rm.style.setProperty('--gt', GROUP_COLOR[g][1]);
     var pts = [HALL0], s = '<defs><radialGradient id="rm-deep" cx="0" cy="3" r="13" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#b996cc"/><stop offset=".6" stop-color="#ead6ea"/><stop offset="1" stop-color="#fff4ea"/></radialGradient></defs>';
     Object.keys(MAP).forEach(function(n){
       var p = MAP[n], k = ORDER.map(function(o){ return o[g]; }).indexOf(n), ic = ICON[n];
