@@ -379,10 +379,10 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .gpick{display:inline-grid;justify-items:center;gap:6px;margin:18px 0 20px}
 .gpick-cap{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--soft)}
 .groups{display:flex;gap:10px}
-/* группы — цветные кружки, как на бейджах: А — красный, Б — жёлтый, В — зелёный; выбранная — крупнее и с кольцом */
-.groups button{--gb:#d6403a;--gt:#fff;width:46px;height:46px;border-radius:50%;border:0;background:var(--gb);font:500 1.2rem var(--font-display);color:var(--gt);cursor:pointer;opacity:.6;transform:scale(.9);transition:opacity .2s ease,transform .2s ease,box-shadow .2s ease}
-.groups button[data-g="1"]{--gb:#f2bf2a;--gt:#4a3410}
-.groups button[data-g="2"]{--gb:#3f9b55}
+/* группы — цветные кружки тех же оттенков, что стрелки маршрута (GROUP_COLOR в скрипте): А — бордовый, Б — тёмно-оранжевый, В — зелёный; выбранная — крупнее и с кольцом */
+.groups button{--gb:#9e1b32;--gt:#fff;width:46px;height:46px;border-radius:50%;border:0;background:var(--gb);font:500 1.2rem var(--font-display);color:var(--gt);cursor:pointer;opacity:.6;transform:scale(.9);transition:opacity .2s ease,transform .2s ease,box-shadow .2s ease}
+.groups button[data-g="1"]{--gb:#e07b00}
+.groups button[data-g="2"]{--gb:#2f8a4a}
 .groups button:hover{opacity:.85}
 .groups button[aria-pressed="true"]{opacity:1;transform:none;box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--gb)}
 /* схема маршрута: от холла по залам в порядке группы */
@@ -407,7 +407,7 @@ section.block{padding-block:clamp(64px,8vw,112px)}
 .md-part{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--soft);margin-top:10px}
 .md-part:first-child{margin-top:0}
 .md-step{display:flex;align-items:center;gap:14px}
-.md-step i{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font:600 .8rem var(--font-body);font-style:normal}
+.md-step i{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gc,var(--accent));color:var(--gt,#fff);font:600 .8rem var(--font-body);font-style:normal}
 .md-step a{font:500 1.08rem/1.3 var(--font-display);color:var(--ink);text-decoration:underline;text-decoration-color:rgba(181,74,58,.35);text-underline-offset:4px}
 .md-step a:hover{color:var(--accent);text-decoration-color:currentColor}
 
@@ -1776,8 +1776,9 @@ footer a{text-decoration:none}
   /* цвет пути группы: А — бордовый, Б — тёмно-оранжевый (жёлтый на светлом фоне бледный), В — зелёный; цифра на кружке — контрастная */
   var GROUP_COLOR = [['#9e1b32','#fff'], ['#e07b00','#fff'], ['#2f8a4a','#fff']];
   function drawMap(g){
-    var rm = document.getElementById('rmap');
-    rm.style.setProperty('--gc', GROUP_COLOR[g][0]); rm.style.setProperty('--gt', GROUP_COLOR[g][1]);
+    /* цвет — на весь блок маршрута: стрелки и номера на схеме и номера в списке под ней */
+    var route = document.getElementById('route');
+    route.style.setProperty('--gc', GROUP_COLOR[g][0]); route.style.setProperty('--gt', GROUP_COLOR[g][1]);
     var pts = [HALL0], s = '<defs><radialGradient id="rm-deep" cx="0" cy="3" r="13" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#b996cc"/><stop offset=".6" stop-color="#ead6ea"/><stop offset="1" stop-color="#fff4ea"/></radialGradient></defs>';
     Object.keys(MAP).forEach(function(n){
       var p = MAP[n], k = ORDER.map(function(o){ return o[g]; }).indexOf(n), ic = ICON[n];
