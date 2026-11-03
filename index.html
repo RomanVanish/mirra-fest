@@ -641,6 +641,19 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .vdlg{padding:0;border:0;border-radius:18px;background:#1c1018;max-width:min(420px,92vw);overflow:visible}
 .vdlg::backdrop{background:rgba(40,18,30,.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .vdlg video{display:block;width:100%;max-height:86vh;border-radius:18px}
+/* «Спасибо» после отправки заявки — всплывающее окно в тон сайту */
+.tydlg{width:min(420px,92vw);padding:34px 28px 26px;border:0;border-radius:22px;text-align:center;color:var(--ink);overflow:visible;
+  background:radial-gradient(120% 90% at 50% 0%,#fff3e6 0%,#fffaf5 60%,#fff 100%);box-shadow:0 30px 70px -30px rgba(60,20,40,.6)}
+.tydlg::backdrop{background:rgba(40,18,30,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.tydlg[open]{animation:ty-in .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes ty-in{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.ty-ic{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,var(--accent),var(--accent-2));box-shadow:0 12px 26px -12px rgba(181,74,58,.8)}
+.ty-ic svg{width:30px;height:30px}
+.tydlg h3{font-size:var(--step-2);margin-bottom:10px}
+.tydlg p{color:var(--soft);line-height:1.55}
+.tydlg .ty-date{margin-top:12px;font:italic 400 1.05rem var(--font-display);color:var(--accent)}
+.tydlg .btn{margin-top:22px;min-width:160px}
+@media (prefers-reduced-motion:reduce){.tydlg[open]{animation:none}}
 .vdlg-x{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:1.5rem;line-height:1;cursor:pointer;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
 @media (prefers-reduced-motion:reduce){.vbtn-txt{animation:none}}
 .route-way{margin-top:22px;color:var(--soft);font-size:.95rem}
@@ -1446,6 +1459,7 @@ footer a{text-decoration:none}
   </div>
 </section>
 </main>
+<dialog class="tydlg" id="tydlg" aria-labelledby="ty-h"><div class="ty-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div><h3 id="ty-h">Спасибо!</h3><p>Заявка принята. Мы перезвоним или напишем в ближайшее время, расскажем об оплате и ответим на вопросы.</p><p class="ty-date">До встречи 21 ноября в «МирРа»</p><button class="btn btn-warm" type="button" id="ty-ok">Хорошо</button></dialog>
 <dialog class="vdlg" id="vdlg" aria-label="Видео: как пройти"><button class="vdlg-x" type="button" aria-label="Закрыть">×</button><video controls playsinline preload="none" poster="img/place/route-poster.webp" src="img/place/route.mp4"></video></dialog>
 <button class="upbtn" id="upbtn" type="button" aria-label="К предыдущему разделу" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span class="u-t">Вернуться назад</span></button>
 
@@ -2373,6 +2387,15 @@ footer a{text-decoration:none}
 
   /* заявка */
   var form = document.getElementById('reqform'), out = document.getElementById('r-out'), sendBtn = form.querySelector('[type=submit]'), shownAt = Date.now();
+  /* «Спасибо» — всплывающим окном; где окна не поддерживаются — прежней строкой под формой */
+  var tydlg = document.getElementById('tydlg');
+  function thanks(name){
+    tydlg.querySelector('#ty-h').textContent = 'Спасибо, ' + name + '!';
+    if (tydlg.showModal){ out.hidden = true; tydlg.showModal(); }
+    else out.textContent = 'Спасибо, ' + name + '! Заявка принята — мы свяжемся с вами в ближайшее время.';
+  }
+  document.getElementById('ty-ok').addEventListener('click', function(){ tydlg.close(); });
+  tydlg.addEventListener('click', function(e){ if (e.target === tydlg) tydlg.close(); });   /* щелчок мимо окна */
   form.addEventListener('submit', function(e){
     e.preventDefault();
     var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,'');
@@ -2389,7 +2412,7 @@ footer a{text-decoration:none}
     out.textContent = 'Отправляем…'; sendBtn.disabled = true;
     /* text/plain — «простой» запрос: браузер не шлёт предварительный OPTIONS */
     fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:JSON.stringify(data)})
-      .then(function(r){ if(!r.ok) throw 0; form.reset(); mark('Весь день'); syncMk(); out.textContent = 'Спасибо, '+name+'! Заявка принята — мы свяжемся с вами в ближайшее время.'; })
+      .then(function(r){ if(!r.ok) throw 0; form.reset(); mark('Весь день'); syncMk(); thanks(name); })
       .catch(function(){ out.textContent = 'Не получилось отправить заявку. Попробуйте ещё раз через минуту — или позвоните в центр: +7 (900) 64-555-66.'; })
       .then(function(){ sendBtn.disabled = false; });
   });
