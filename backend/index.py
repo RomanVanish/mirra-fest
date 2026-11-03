@@ -270,14 +270,31 @@ def _csv(rows):
     return buf.getvalue()
 
 
-def disk_append(row, timeout):
+def disk_append(row, deadline):
     """Дописать строку в CSV на Диске: скачать, добавить, загрузить обратно.
-    CSV в UTF-8 с BOM и разделителем «;» — так его сразу правильно открывает русский Excel."""
+    CSV в UTF-8 с BOM и разделителем «;» — так его сразу правильно открывает русский Excel.
+    deadline — момент (time.monotonic), к которому всё должно закончиться: каждый запрос ждёт до 8 с,
+    но не дольше этого срока; если Диск не отдал таблицу вовремя, скачивание повторяется ещё раз."""
     auth = {'Authorization': 'OAuth ' + DISK_TOKEN}
+    def tmo():
+        left = deadline - time.monotonic()
+        if left < 1:
+            raise TimeoutError('не хватило времени')
+        return min(8, left)
     def link(kind, extra=''):
         req = urllib.request.Request('%s/%s?path=%s%s' % (DISK_API, kind, urllib.parse.quote(DISK_PATH), extra), headers=auth)
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with urllib.request.urlopen(req, timeout=tmo()) as r:
             return json.loads(r.read().decode('utf-8'))['href']
+    def fetch_table():
+        for attempt in (1, 2):
+            try:
+                return _disk_fetch(link('download'), tmo())
+            except urllib.error.HTTPError:
+                raise
+            except (urllib.error.URLError, TimeoutError, OSError):
+                # Диск иногда отвечает с задержкой (например, сразу после прошлой записи) — пробуем ещё раз
+                if attempt == 2 or deadline - time.monotonic() < 3:
+                    raise
     def make_folder():
         # папка таблицы, например «__Клиенты/Заявки фестиваля»; папку приложения (app:/) Диск создаёт сам
         folder = DISK_PATH.rsplit('/', 1)[0]
@@ -285,14 +302,14 @@ def disk_append(row, timeout):
             return
         req = urllib.request.Request('%s?path=%s' % (DISK_API, urllib.parse.quote(folder)), headers=auth, method='PUT')
         try:
-            urllib.request.urlopen(req, timeout=timeout).close()
+            urllib.request.urlopen(req, timeout=tmo()).close()
         except urllib.error.HTTPError as e:
             if e.code != 409:   # 409 — папка уже есть
                 raise
     step = 'чтение таблицы'
     try:
         try:
-            old = _disk_fetch(link('download'), timeout).decode('utf-8-sig')   # не UTF-8 — ошибка, и файл не перезаписываем
+            old = fetch_table().decode('utf-8-sig')   # не UTF-8 — ошибка, и файл не перезаписываем
         except urllib.error.HTTPError as e:
             if e.code != 404:
                 raise
@@ -303,7 +320,7 @@ def disk_append(row, timeout):
         data = ('\ufeff' + old + _csv([row])).encode('utf-8')
         step = 'запись таблицы'
         req = urllib.request.Request(link('upload', '&overwrite=true'), data=data, method='PUT')
-        with urllib.request.urlopen(req, timeout=timeout):
+        with urllib.request.urlopen(req, timeout=tmo()):
             pass
     except Exception as e:
         raise RuntimeError(_hide('Диск, %s: %r' % (step, e), DISK_TOKEN))
@@ -477,12 +494,11 @@ def handler(event, context):
         except Exception as e:
             print(json.dumps({'event': 'send_failed', 'channel': n, 'error': str(e)}, ensure_ascii=False))
 
-    # Таблица — после отправки и только в остаток времени: функцию обрывают на 20-й секунде,
-    # а заявка уже доставлена, и гость не должен увидеть ошибку из-за Диска.
-    left = 18 - (time.monotonic() - started)
-    if DISK_TOKEN and left > 2:
+    # Таблица — после отправки и не дольше 15 с от начала: функцию обрывают на 20-й секунде,
+    # а заявка уже доставлена, и гость не должен увидеть ошибку из-за Диска; остаток — на сообщение о сбое в ВК.
+    if DISK_TOKEN and time.monotonic() - started < 13:
         try:
-            disk_append(table_row(d, where or 'не доставлена'), timeout=min(5, left / 4))
+            disk_append(table_row(d, where or 'не доставлена'), deadline=started + 15)
             print(json.dumps({'event': 'table_saved'}, ensure_ascii=False))
         except Exception as e:
             print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
