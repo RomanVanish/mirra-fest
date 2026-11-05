@@ -30,7 +30,8 @@
 #   TICKET_PRICE     цена билета в рублях, по умолчанию 2888
 #   TBANK_TAXATION   система налогообложения для чека (usn_income или usn_income_outcome) — задать, когда к магазину
 #                    подключена онлайн-касса: тогда в каждый платёж добавляется чек. TBANK_TAX — НДС (по умолчанию none),
-#                    TBANK_PAYMENT_METHOD — признак расчёта (по умолчанию full_payment)
+#                    TBANK_PAYMENT_METHOD — признак расчёта (по умолчанию full_payment), TBANK_FFD — версия формата
+#                    чека, как у кассы в кабинете: 1.05 (по умолчанию) или 1.2
 #   TBANK_NOTIFY_URL адрес этой функции для уведомлений банка, по умолчанию — нынешний адрес функции
 # Гость заполняет форму → функция создаёт платёж и отдаёт сайту ссылку на страницу банка → после оплаты банк присылает
 # уведомление сюда же → «✅ Оплачено» в ВК и отметка в таблице. Таблица служит и списком оплат: по одному телефону
@@ -74,6 +75,7 @@ TBANK_TERMINAL, TBANK_PASSWORD = env('TBANK_TERMINAL'), env('TBANK_PASSWORD')
 TBANK_NOTIFY_URL = env('TBANK_NOTIFY_URL', 'https://functions.yandexcloud.net/d4eoevfjg5c2b9e13dq3')
 TBANK_TAXATION, TBANK_TAX = env('TBANK_TAXATION'), env('TBANK_TAX', 'none')
 TBANK_PAYMENT_METHOD = env('TBANK_PAYMENT_METHOD', 'full_payment')
+TBANK_FFD = env('TBANK_FFD', '1.05')
 PRICE = int(env('TICKET_PRICE', '2888'))
 # Кодовое слово сравниваем латиницей: в ссылке спикера оно латинское (?kod=opora), чтобы ссылка
 # не превращалась в %D0%9A…, а гость может вписать его и по-русски — «Опора» и «opora» совпадут
@@ -500,6 +502,8 @@ def tb_init(d, deadline):
                              'Items': [{'Name': 'Билет на фестиваль От Страха к Любви, 21.11.2026', 'Price': PRICE * 100,
                                         'Quantity': n, 'Amount': PRICE * 100 * n, 'Tax': TBANK_TAX,
                                         'PaymentMethod': TBANK_PAYMENT_METHOD, 'PaymentObject': 'service'}]}
+        if TBANK_FFD == '1.2':   # версия формата чека — как у кассы в кабинете; в 1.2 у позиции обязательна единица измерения
+            params['Receipt']['Items'][0]['MeasurementUnit'] = 'шт'
     return tb_api('Init', deadline, **params)['PaymentURL']
 
 
