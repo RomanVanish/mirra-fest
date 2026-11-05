@@ -543,10 +543,12 @@ def tb_notification(raw, started):
     print(json.dumps({'event': 'tb_notification', 'order': order, 'status': status, 'amount': amount}, ensure_ascii=False))
     if status != 'CONFIRMED' and status not in TB_REFUND:
         return reply_text(200, 'OK')
-    deadline = started + 8.5                     # банк ждёт ответа 10 секунд
+    # Банк ждёт ответа 10 секунд. Диск бывает медленным (особенно сразу после прошлой записи), поэтому сначала
+    # таблица — ей почти всё время, а сообщение в ВК — после, одно: быстрое и с пометкой, если таблица не успела.
+    deadline = started + 9
     rows = row = None
     try:
-        rows = disk_read(started + 5)
+        rows = disk_read(started + 4.5)
         row = next((r for r in rows[1:] if col(r, 'Номер заказа') == order), None)
     except Exception as e:
         print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
@@ -566,13 +568,14 @@ def tb_notification(raw, started):
         text = paid_text(row, order, amount, '↩ Возврат: %s' % rub(amount))
         if row:
             set_col(row, 'Оплата', 'возврат %s · %s' % (stamp, rub(amount)))
-    notify(text)
     if row:
         try:
             disk_write(rows, deadline)
         except Exception as e:
             print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
-            notify('⚠ Отметка по заказу %s не записалась в таблицу. Причина: %s' % (order, e))
+            body, tail = text.rsplit('\n\n', 1)   # пометку — перед строкой со временем
+            text = '%s\n⚠ В таблицу не записалось — отметьте вручную. Причина: %s\n\n%s' % (body, e, tail)
+    notify(text)
     return reply_text(200, 'OK')
 
 
