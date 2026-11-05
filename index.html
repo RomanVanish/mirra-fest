@@ -601,6 +601,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .check a{color:inherit}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}   /* ловушка для спам-ботов: людям не видна */
 .msg{grid-column:1/-1;font-size:.92rem;padding:12px 14px;border-radius:10px;background:var(--surface-2)}
+.msg .more{display:block;margin-top:10px}
 
 /* что важно знать */
 .faq .wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(24px,5vw,64px)}
@@ -2465,23 +2466,34 @@ footer a{text-decoration:none}
       out.textContent = 'Заявки с сайта сейчас не принимаются. Позвоните в центр: +7 (900) 64-555-66.';
       return;
     }
+    send(data, name);
+  });
+  function tk(n){ var a = n % 10, b = n % 100; return n + (a === 1 && b !== 11 ? ' билет' : a >= 2 && a <= 4 && (b < 12 || b > 14) ? ' билета' : ' билетов'); }
+  function send(data, name){
     if (sendBtn.disabled) return;
     out.textContent = payMode ? 'Готовим оплату…' : 'Отправляем…'; sendBtn.disabled = true;
     /* text/plain — «простой» запрос: браузер не шлёт предварительный OPTIONS */
     fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:JSON.stringify(data)})
       .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {st:r.status, j:j}; }); })
       .then(function(x){
-        /* 409 — по этому телефону уже оплачено или оплата идёт прямо сейчас: второй платёж не создаём */
-        if (x.st === 409){ out.textContent = x.j.error === 'busy'
-          ? 'Оплата по этому номеру сейчас проходит. Подождите пару минут — или позвоните: +7 (900) 64-555-66.'
-          : 'По этому номеру билет уже оплачен. Если нужно ещё место или что-то изменить — позвоните: +7 (900) 64-555-66.'; return; }
+        /* 409 — оплата по этому телефону идёт прямо сейчас или уже прошла. Уже оплачено — второй платёж
+           только после «Да, купить ещё»: так случайно не заплатят дважды, а чужой номер вводить незачем */
+        if (x.st === 409 && x.j.error === 'busy'){ out.textContent = 'Оплата по этому номеру сейчас проходит. Подождите пару минут — или позвоните: +7 (900) 64-555-66.'; return; }
+        if (x.st === 409){
+          out.textContent = 'По этому номеру уже оплачено: ' + (x.j.tickets ? tk(x.j.tickets) : 'билет') + '. Купить ещё ' + tk(+data.count) + '?';
+          var more = document.createElement('button');
+          more.type = 'button'; more.className = 'btn btn-warm more'; more.textContent = 'Да, купить ещё';
+          more.addEventListener('click', function(){ data.more = true; send(data, name); });
+          out.appendChild(more);
+          return;
+        }
         if (x.st !== 200) throw 0;
         if (x.j.pay){ out.textContent = 'Открываем страницу оплаты…'; location.href = x.j.pay; return; }
         form.reset(); mark('Весь день'); syncMk(); kodFill(); if (payMode) syncSum(); thanks(name);
       })
-      .catch(function(){ out.textContent = 'Не получилось отправить заявку. Попробуйте ещё раз через минуту — или позвоните в центр: +7 (900) 64-555-66.'; })
+      .catch(function(){ out.textContent = 'Не получилось отправить заявку. Попробуйте ещё раз через минуту — или позвоните в центр: +7 (900) 64-555-66.'; })
       .then(function(){ sendBtn.disabled = false; });
-  });
+  }
 })();
 </script>
 </body>

@@ -482,7 +482,8 @@ def rub(kop):
 
 
 def tickets(n):
-    return '%d %s' % (n, 'билет' if n == 1 else 'билета' if n < 5 else 'билетов')
+    m10, m100 = n % 10, n % 100
+    return '%d %s' % (n, 'билет' if m10 == 1 and m100 != 11 else 'билета' if 2 <= m10 <= 4 and not 12 <= m100 <= 14 else 'билетов')
 
 
 def tb_init(d, deadline):
@@ -571,21 +572,22 @@ def tb_notification(raw, started):
     return reply_text(200, 'OK')
 
 
-def apply_with_payment(d, chs, origin, started):
+def apply_with_payment(d, chs, origin, started, more=False):
     """Заявка с оплатой: проверить, не оплачено ли уже по этому телефону, создать платёж,
-    отправить заявку в чат, записать или обновить строку в таблице, отдать сайту ссылку на оплату."""
+    отправить заявку в чат, записать или обновить строку в таблице, отдать сайту ссылку на оплату.
+    По оплаченному телефону новый платёж — только когда гость подтвердил «купить ещё» (more):
+    так случайная вторая оплата не пройдёт, а выдумывать номер ради второго билета незачем."""
     phone, n = _phone(d['phone']), int(d['count'])
-    rows = prev = None
-    notes = []
+    rows, mine, notes = None, [], []
+    is_paid = lambda r: col(r, 'Оплата').startswith('оплачено')
     try:
         rows = disk_read(started + 6)
-        prev = next((r for r in reversed(rows[1:]) if col(r, 'Телефон') == phone and col(r, 'Номер заказа')), None)
+        mine = [r for r in rows[1:] if col(r, 'Телефон') == phone and col(r, 'Номер заказа')]
     except Exception as e:
         notes.append('⚠ Таблица не прочиталась, повторную оплату по этому телефону проверить не удалось: %s' % e)
-    attempt = 1
-    if prev:
-        if col(prev, 'Оплата').startswith('оплачено'):
-            return reply(409, {'ok': False, 'error': 'paid'}, origin)
+    prev = mine[-1] if mine else None
+    replace = marked = None
+    if prev and not is_paid(prev):
         order0 = col(prev, 'Номер заказа')
         try:
             pays = tb_api('CheckOrder', started + 9, OrderId=order0).get('Payments') or []
@@ -598,25 +600,30 @@ def apply_with_payment(d, chs, origin, started):
             amount = int(done.get('Amount') or 0)
             set_col(prev, 'Оплата', 'оплачено %s · %s' % (_now().strftime('%d.%m %H:%M'), rub(amount)))
             notify(paid_text(prev, order0, amount, '✅ Оплачено: %s' % rub(amount)))
+            marked = order0
+        elif any(p.get('Status') in TB_BUSY for p in pays):
+            return reply(409, {'ok': False, 'error': 'busy'}, origin)
+        else:
+            for p in pays:
+                if p.get('Status') in TB_OPEN:
+                    try:
+                        tb_api('Cancel', started + 10, PaymentId=p['PaymentId'])
+                    except Exception as e:
+                        print(json.dumps({'event': 'tb_cancel_failed', 'error': str(e)}, ensure_ascii=False))
+            replace = prev
+            if col(prev, 'Имя').strip().lower() != d['name'].strip().lower():
+                notes.append('⚠ Этот телефон уже был в неоплаченной заявке «%s» — заявка заменена этой' % col(prev, 'Имя'))
+    paid_n = sum(int(col(r, 'Сколько человек')) for r in mine if is_paid(r) and col(r, 'Сколько человек').isdigit())
+    if paid_n and not more:
+        if marked:
             try:
                 disk_write(rows, started + 15)
             except Exception as e:
-                notify('⚠ Отметка по заказу %s не записалась в таблицу. Причина: %s' % (order0, e))
-            return reply(409, {'ok': False, 'error': 'paid'}, origin)
-        if any(p.get('Status') in TB_BUSY for p in pays):
-            return reply(409, {'ok': False, 'error': 'busy'}, origin)
-        for p in pays:
-            if p.get('Status') in TB_OPEN:
-                try:
-                    tb_api('Cancel', started + 10, PaymentId=p['PaymentId'])
-                except Exception as e:
-                    print(json.dumps({'event': 'tb_cancel_failed', 'error': str(e)}, ensure_ascii=False))
-        m = re.search(r'-(\d+)$', order0)
-        attempt = int(m.group(1)) + 1 if m else 2
-        if col(prev, 'Имя').strip().lower() != d['name'].strip().lower():
-            notes.append('⚠ Этот телефон уже был в неоплаченной заявке «%s» — заявка заменена этой' % col(prev, 'Имя'))
+                notify('⚠ Отметка по заказу %s не записалась в таблицу. Причина: %s' % (marked, e))
+        return reply(409, {'ok': False, 'error': 'paid', 'tickets': paid_n}, origin)
     # номер заказа: телефон и номер попытки; если таблицы не видно — время, чтобы номер не повторился
-    d['order'] = '%s-%d' % (phone[1:], attempt) if rows is not None else '%s-t%d' % (phone[1:], int(time.time()))
+    nums = [int(m.group(1)) for m in (re.search(r'-(\d+)$', col(r, 'Номер заказа')) for r in mine) if m]
+    d['order'] = '%s-%d' % (phone[1:], max(nums, default=0) + 1) if rows is not None else '%s-t%d' % (phone[1:], int(time.time()))
     d['sum'] = '%s (%s × %s)' % (rub(PRICE * 100 * n), n, rub(PRICE * 100)) if n > 1 else rub(PRICE * 100)
     pay_url = None
     try:
@@ -626,7 +633,8 @@ def apply_with_payment(d, chs, origin, started):
         print(json.dumps({'event': 'tb_init_failed', 'error': str(e)}, ensure_ascii=False))
         notes.append('⚠ Ссылка на оплату не создалась — свяжитесь с гостем. Причина: %s' % e)
         d['paid'] = 'ссылка на оплату не создалась'
-    d['title'] = '🌿 Заявка обновлена — новая попытка оплаты' if prev else '🌿 Новая заявка на фестиваль'
+    d['title'] = ('🌿 Докупка: по этому телефону уже оплачено %s' % tickets(paid_n) if paid_n
+                  else '🌿 Заявка обновлена — новая попытка оплаты' if replace else '🌿 Новая заявка на фестиваль')
     d['notes'] = notes
     where = deliver(d, chs)
     row = table_row(d, where or 'не доставлена')
@@ -634,8 +642,8 @@ def apply_with_payment(d, chs, origin, started):
         if rows is None:
             disk_append(row, started + 17)
         else:
-            if prev:
-                rows[rows.index(prev)] = row
+            if replace:
+                rows[rows.index(replace)] = row
             else:
                 rows.append(row)
             disk_write(rows, started + 17)
@@ -824,7 +832,7 @@ def handler(event, context):
     if raw.get('pay') is True and TBANK_TERMINAL and TBANK_PASSWORD:
         if d['count'] not in ('1', '2', '3', '4', '5'):
             return reply(400, {'ok': False, 'error': 'число гостей — от 1 до 5'}, allowed)
-        return apply_with_payment(d, chs, allowed, started)
+        return apply_with_payment(d, chs, allowed, started, more=raw.get('more') is True)
     where = deliver(d, chs)
 
     # Таблица — после отправки и не дольше 15 с от начала: функцию обрывают на 20-й секунде,
