@@ -2249,11 +2249,11 @@ footer a{text-decoration:none}
     SECS.forEach(function(sct, j){ if (sct.getBoundingClientRect().top <= y) k = j; }); return k; }
   function smoothTo(y){ scrollTo({top: y, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
   function land(){ landing = true; clearTimeout(land.t); land.t = setTimeout(function(){ landing = false; }, 1500); }
-  /* плавающая кнопка не лезет на арку и плашки с именами ведущих: пока она их накрывает — прячется */
-  var aScene = document.querySelector('.a-scene'), aDots = document.querySelector('.a-dots');
+  /* плавающая кнопка не лезет на арку, плашки с именами ведущих и поля заявки: пока она их накрывает — прячется */
+  var aScene = document.querySelector('.a-scene'), aDots = document.querySelector('.a-dots'), reqForm = document.getElementById('reqform');
   function overArch(){
     var b = upbtn.getBoundingClientRect();
-    return [aScene, aDots].some(function(el){ var r = el.getBoundingClientRect();
+    return [aScene, aDots, reqForm].some(function(el){ var r = el.getBoundingClientRect();
       return r.left < b.right + 10 && r.right > b.left - 10 && r.top < b.bottom + 10 && r.bottom > b.top - 10; });
   }
   function syncUp(){
