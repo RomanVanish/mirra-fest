@@ -13,6 +13,9 @@
 #   TG_TOKEN, TG_CHAT_ID, TG_API   Telegram — из Яндекс Облака сейчас недоступен, даже через посредника
 #   MAX_TOKEN, MAX_CHAT_ID         Max — нужен проверенный профиль организации
 #   ALLOWED_ORIGINS  с каких сайтов принимать заявки, через запятую; по умолчанию https://fest.mirra-spb.ru
+#   REF_CODES        кодовые слова спикеров для поля «Кто пригласил»: слово=имя через точку с запятой,
+#                    например «Лотос=Галина Власова; Роза=Инна Кочурова». Регистр, «ё» и пробелы не важны.
+#                    Слово из списка в заявке и таблице заменяется именем спикера, остальное пишется как есть
 #
 # Таблица заявок на Яндекс Диске центра (не канал: пишется всегда, после отправки в ВК или почту):
 #   DISK_TOKEN       OAuth-токен Яндекс Диска (как получить — backend/README.md)
@@ -52,6 +55,8 @@ TG_API = env('TG_API', 'https://api.telegram.org').rstrip('/')
 MAX_TOKEN, MAX_CHAT_ID = env('MAX_TOKEN'), env('MAX_CHAT_ID')
 DISK_TOKEN, DISK_PATH = env('DISK_TOKEN'), env('DISK_PATH', 'app:/Заявки на фестиваль.csv')
 ORIGINS = [o.strip().rstrip('/') for o in env('ALLOWED_ORIGINS', 'https://fest.mirra-spb.ru').split(',') if o.strip()]
+_kod = lambda s: re.sub(r'[^0-9a-zа-я]', '', s.lower().replace('ё', 'е'))
+REF_CODES = {_kod(k): v.strip() for k, _, v in (p.partition('=') for p in env('REF_CODES').split(';')) if _kod(k) and v.strip()}
 TIMEOUT = 8   # секунд на один запрос к внешнему сервису; таймаут самой функции — 20 с
 
 # Основной адрес API Max подписан сертификатом Минцифры — его нет в стандартном списке доверенных,
@@ -236,7 +241,9 @@ def _disk_fetch(href, timeout):
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
 TABLE_HEAD = ['Дата и время', 'Имя', 'Телефон', 'Telegram / Max', 'Когда придёт', 'Сколько человек',
-              'Особенно хочет на', 'Рассказывать о мероприятиях', 'Куда пришла заявка']
+              'Особенно хочет на', 'Рассказывать о мероприятиях', 'Куда пришла заявка', 'Кто пригласил']
+# «Кто пригласил» добавлен 05.11 в конец, чтобы не сдвигать прежние строки; старый заголовок заменяется новым
+TABLE_HEAD_OLD = TABLE_HEAD[:-1]
 
 
 def _cell(v):
@@ -261,7 +268,13 @@ def _phone(p):
 def table_row(d, where):
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3))).strftime('%d.%m.%Y %H:%M')
     return [now, d['name'], _phone(d['phone']), d['messenger'], d['plan'], d['count'], d['mk'],
-            'да' if d['news'] else 'нет', where]
+            'да' if d['news'] else 'нет', where, REF_CODES.get(_kod(d['ref']), d['ref'])]
+
+
+def ref_text(ref):
+    """Строка «Кто пригласил» для сообщения: имя спикера и его слово, или то, что вписал гость."""
+    who = REF_CODES.get(_kod(ref))
+    return '%s (слово «%s»)' % (who, ref) if who else '%s (не из списка слов)' % ref if ref else ''
 
 
 def _csv(rows):
@@ -315,6 +328,9 @@ def disk_append(row, deadline):
                 raise
             old = _csv([TABLE_HEAD])                 # таблицы ещё нет — начинаем с заголовка
             make_folder()
+        head_old = _csv([TABLE_HEAD_OLD])
+        if old.startswith(head_old):                 # таблица со старым заголовком — дописываем столбец «Кто пригласил»
+            old = _csv([TABLE_HEAD]) + old[len(head_old):]
         if old and not old.endswith('\n'):
             old += '\r\n'
         data = ('\ufeff' + old + _csv([row])).encode('utf-8')
@@ -408,7 +424,7 @@ def clean(v, n):
 def _rows(d):
     rows = [('Имя', d['name']), ('Телефон', d['phone']), ('Telegram / Max', d['messenger']),
             ('Когда придёт', d['plan']), ('Сколько человек', d['count']), ('Особенно хочет на', d['mk']),
-            ('Рассказывать о мероприятиях центра', 'да' if d['news'] else 'нет')]
+            ('Рассказывать о мероприятиях центра', 'да' if d['news'] else 'нет'), ('Кто пригласил', ref_text(d['ref']))]
     return [(k, v) for k, v in rows if v]
 
 
@@ -475,7 +491,7 @@ def handler(event, context):
     d = {'name': clean(raw.get('name'), 80), 'phone': clean(raw.get('phone'), 20),
          'messenger': clean(raw.get('messenger'), 64), 'plan': clean(raw.get('plan'), 40),
          'count': clean(raw.get('count'), 20), 'mk': clean(raw.get('mk'), 120),
-         'news': raw.get('news') is True}
+         'ref': clean(raw.get('ref'), 40), 'news': raw.get('news') is True}
     digits = re.sub(r'\D', '', d['phone'])
     if not d['name'] or not 10 <= len(digits) <= 15 or raw.get('consent') is not True:
         return reply(400, {'ok': False, 'error': 'проверьте имя, телефон и согласие'}, allowed)

@@ -1287,6 +1287,7 @@ footer a{text-decoration:none}
           </select>
         </div>
         <div class="f full"><label for="r-msg">Telegram или Max <small>— по желанию</small></label><input id="r-msg" name="messenger" placeholder="@имя"></div>
+        <div class="f full"><label for="r-ref">Кто пригласил <small>— по желанию</small></label><input id="r-ref" name="ref" placeholder="Кодовое слово, если есть" autocomplete="off" maxlength="40"></div>
         <div class="f full"><label class="check" for="r-ok"><input id="r-ok" type="checkbox" name="consent" required><span>Согласен(а) на обработку моих персональных данных центром «МирРа» (ООО «ИРБИС») для записи на фестиваль и связи со мной — по <a href="privacy.html" target="_blank">политике конфиденциальности</a>.</span></label></div>
         <div class="f full"><label class="check strong" for="r-norefund"><input id="r-norefund" type="checkbox" name="norefund" required><span>Понимаю, что <b>деньги за оплаченный билет не возвращаются</b>.</span></label></div>
         <div class="f full"><label class="check" for="r-news"><input id="r-news" type="checkbox" name="news"><span>Рассказывайте мне о других мероприятиях центра <small>— по желанию</small></span></label></div>
@@ -2401,6 +2402,17 @@ footer a{text-decoration:none}
     if (tydlg.showModal){ out.hidden = true; tydlg.showModal(); }
     else out.textContent = 'Спасибо, ' + name + '! Заявка принята — мы свяжемся с вами в ближайшее время.';
   }
+  /* «Кто пригласил»: у каждого спикера своя ссылка с кодовым словом — fest.mirra-spb.ru/?kod=слово#request.
+     Слово вписывается в поле и запоминается на 60 дней: вернётся гость позже на том же устройстве — поле снова заполнено.
+     Чьё это слово, знает функция заявок (переменная REF_CODES), на сайте имён нет */
+  var kod = '';
+  try { kod = (new URLSearchParams(location.search).get('kod') || '').trim().slice(0, 40); } catch(e){}
+  try {
+    if (kod) localStorage.setItem('fest-kod', JSON.stringify({k:kod, t:Date.now()}));
+    else { var ks = JSON.parse(localStorage.getItem('fest-kod') || 'null'); if (ks && Date.now() - ks.t < 60*864e5) kod = ks.k; }
+  } catch(e){}
+  function kodFill(){ if (kod && !form.ref.value) form.ref.value = kod; }
+  kodFill();
   document.getElementById('ty-ok').addEventListener('click', function(){ tydlg.close(); });
   tydlg.addEventListener('click', function(e){ if (e.target === tydlg) tydlg.close(); });   /* щелчок мимо окна */
   form.addEventListener('submit', function(e){
@@ -2410,7 +2422,7 @@ footer a{text-decoration:none}
     out.hidden = false;
     if (err){ out.textContent = err; return; }
     var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
-      consent:true, news:form.news.checked, website:form.website.value, ms:Date.now() - shownAt};
+      ref:form.ref.value.trim(), consent:true, news:form.news.checked, website:form.website.value, ms:Date.now() - shownAt};
     if (!FORM_ENDPOINT){
       out.textContent = 'Заявки с сайта сейчас не принимаются. Позвоните в центр: +7 (900) 64-555-66.';
       return;
@@ -2419,7 +2431,7 @@ footer a{text-decoration:none}
     out.textContent = 'Отправляем…'; sendBtn.disabled = true;
     /* text/plain — «простой» запрос: браузер не шлёт предварительный OPTIONS */
     fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:JSON.stringify(data)})
-      .then(function(r){ if(!r.ok) throw 0; form.reset(); mark('Весь день'); syncMk(); thanks(name); })
+      .then(function(r){ if(!r.ok) throw 0; form.reset(); mark('Весь день'); syncMk(); kodFill(); thanks(name); })
       .catch(function(){ out.textContent = 'Не получилось отправить заявку. Попробуйте ещё раз через минуту — или позвоните в центр: +7 (900) 64-555-66.'; })
       .then(function(){ sendBtn.disabled = false; });
   });
