@@ -14,7 +14,8 @@
 #   MAX_TOKEN, MAX_CHAT_ID         Max — нужен проверенный профиль организации
 #   ALLOWED_ORIGINS  с каких сайтов принимать заявки, через запятую; по умолчанию https://fest.mirra-spb.ru
 #   REF_CODES        кодовые слова спикеров для поля «Кто пригласил»: слово=имя через точку с запятой,
-#                    например «Лотос=Галина Власова; Роза=Инна Кочурова». Регистр, «ё» и пробелы не важны.
+#                    например «Лотос=Галина Власова; Роза=Инна Кочурова». Регистр, «ё» и пробелы не важны,
+#                    русское слово совпадает со своей латинской записью: Лотос = lotos, Жар-птица = zharptitsa.
 #                    Слово из списка в заявке и таблице заменяется именем спикера, остальное пишется как есть
 #
 # Таблица заявок на Яндекс Диске центра (не канал: пишется всегда, после отправки в ВК или почту):
@@ -55,7 +56,11 @@ TG_API = env('TG_API', 'https://api.telegram.org').rstrip('/')
 MAX_TOKEN, MAX_CHAT_ID = env('MAX_TOKEN'), env('MAX_CHAT_ID')
 DISK_TOKEN, DISK_PATH = env('DISK_TOKEN'), env('DISK_PATH', 'app:/Заявки на фестиваль.csv')
 ORIGINS = [o.strip().rstrip('/') for o in env('ALLOWED_ORIGINS', 'https://fest.mirra-spb.ru').split(',') if o.strip()]
-_kod = lambda s: re.sub(r'[^0-9a-zа-я]', '', s.lower().replace('ё', 'е'))
+# Кодовое слово сравниваем латиницей: в ссылке спикера оно латинское (?kod=lotos), чтобы ссылка
+# не превращалась в %D0%9B…, а гость может вписать его и по-русски — «Лотос» и «lotos» совпадут
+_LAT = dict(zip('абвгдеёжзийклмнопрстуфхцчшщъыьэюя',
+                'a b v g d e e zh z i i k l m n o p r s t u f kh ts ch sh shch _ y _ e iu ia'.split()))
+_kod = lambda s: re.sub(r'[^0-9a-z]', '', ''.join(_LAT.get(c, c) for c in s.lower()))
 REF_CODES = {_kod(k): v.strip() for k, _, v in (p.partition('=') for p in env('REF_CODES').split(';')) if _kod(k) and v.strip()}
 TIMEOUT = 8   # секунд на один запрос к внешнему сервису; таймаут самой функции — 20 с
 
