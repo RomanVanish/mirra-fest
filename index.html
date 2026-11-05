@@ -591,6 +591,11 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .f label small{color:var(--soft);font-weight:400}
 .f input,.f select{font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;width:100%;min-width:0}
 .f input:focus,.f select:focus{outline:none;border-color:var(--accent-2)}
+.f-note{font-size:.8rem;color:var(--soft)}
+.f-note a{color:var(--accent);text-decoration:none;white-space:nowrap}
+.paysum{display:block;font-size:.95rem;color:var(--soft)}
+.paysum[hidden]{display:none}
+.paysum b{font:500 1.35rem var(--font-display);color:var(--ink);margin-left:4px}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;color:var(--soft);line-height:1.45}
 .check input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex:none}
 .check a{color:inherit}
@@ -654,6 +659,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .tydlg p{color:var(--soft);line-height:1.55}
 .tydlg .ty-date{margin-top:12px;font:italic 400 1.05rem var(--font-display);color:var(--accent)}
 .tydlg .btn{margin-top:22px;min-width:160px}
+.tydlg.fail .ty-ic,.tydlg.fail .ty-date{display:none}
 @media (prefers-reduced-motion:reduce){.tydlg[open]{animation:none}}
 .vdlg-x{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:1.5rem;line-height:1;cursor:pointer;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
 @media (prefers-reduced-motion:reduce){.vbtn-txt{animation:none}}
@@ -1279,7 +1285,8 @@ footer a{text-decoration:none}
           </select>
         </div>
         <div class="f"><label for="r-count">Сколько человек</label>
-          <select id="r-count" name="count"><option>1</option><option>2</option><option>3</option><option>4</option><option>5 и больше</option></select>
+          <select id="r-count" name="count"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          <small class="f-note">Больше 5 — <a href="tel:+79006455566">позвоните нам</a></small>
         </div>
         <div class="f full" id="r-mk-wrap"><label for="r-mk">Особенно хочется на… <small>— по желанию</small></label>
           <select id="r-mk" name="mk">
@@ -1298,6 +1305,7 @@ footer a{text-decoration:none}
         <div class="f full"><label class="check strong" for="r-norefund"><input id="r-norefund" type="checkbox" name="norefund" required><span>Понимаю, что <b>деньги за оплаченный билет не возвращаются</b>, и принимаю условия <a href="offer.html" target="_blank">оферты</a>.</span></label></div>
         <div class="f full"><label class="check" for="r-news"><input id="r-news" type="checkbox" name="news"><span>Рассказывайте мне о других мероприятиях центра <small>— по желанию</small></span></label></div>
         <div class="hp" aria-hidden="true"><label>Не заполняйте это поле <input name="website" tabindex="-1" autocomplete="off"></label></div>
+        <div class="f full paysum" id="r-sum" hidden>К оплате: <b>2 888 ₽</b></div>
         <div class="f full"><button class="btn btn-warm" type="submit" style="justify-self:start">Отправить заявку</button></div>
         <div class="msg" id="r-out" hidden></div>
       </form>
@@ -1472,7 +1480,7 @@ footer a{text-decoration:none}
   </div>
 </section>
 </main>
-<dialog class="tydlg" id="tydlg" aria-labelledby="ty-h"><div class="ty-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div><h3 id="ty-h">Спасибо!</h3><p>Заявка принята. Мы перезвоним или напишем в ближайшее время, расскажем об оплате и ответим на вопросы.</p><p class="ty-date">Приходите 21 ноября в «МирРа»</p><button class="btn btn-warm" type="button" id="ty-ok">Хорошо</button></dialog>
+<dialog class="tydlg" id="tydlg" aria-labelledby="ty-h"><div class="ty-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div><h3 id="ty-h">Спасибо!</h3><p id="ty-p">Заявка принята. Мы перезвоним или напишем в ближайшее время, расскажем об оплате и ответим на вопросы.</p><p class="ty-date">Приходите 21 ноября в «МирРа»</p><button class="btn btn-warm" type="button" id="ty-ok">Хорошо</button></dialog>
 <dialog class="vdlg" id="vdlg" aria-label="Видео: как пройти"><button class="vdlg-x" type="button" aria-label="Закрыть">×</button><video controls playsinline preload="none" poster="img/place/route-poster.webp" src="img/place/route.mp4"></video></dialog>
 <button class="upbtn" id="upbtn" type="button" aria-label="К предыдущему разделу" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span class="u-t">Вернуться назад</span></button>
 
@@ -2409,8 +2417,10 @@ footer a{text-decoration:none}
   var form = document.getElementById('reqform'), out = document.getElementById('r-out'), sendBtn = form.querySelector('[type=submit]'), shownAt = Date.now();
   /* «Спасибо» — всплывающим окном; где окна не поддерживаются — прежней строкой под формой */
   var tydlg = document.getElementById('tydlg');
+  var tyH = document.getElementById('ty-h'), tyP = document.getElementById('ty-p'), tyText = tyP.textContent;
   function thanks(name){
-    tydlg.querySelector('#ty-h').textContent = 'Спасибо, ' + name + '!';
+    tydlg.classList.remove('fail'); tyP.textContent = tyText;
+    tyH.textContent = 'Спасибо, ' + name + '!';
     if (tydlg.showModal){ out.hidden = true; tydlg.showModal(); }
     else out.textContent = 'Спасибо, ' + name + '! Заявка принята — мы свяжемся с вами в ближайшее время.';
   }
@@ -2425,6 +2435,22 @@ footer a{text-decoration:none}
   } catch(e){}
   function kodFill(){ if (kod && !form.ref.value) form.ref.value = kod; }
   kodFill();
+  /* Оплата — на странице Т-Банка (картой, СБП, T-Pay, SberPay). Пока у магазина тестовый терминал, гости видят
+     прежнюю заявку без оплаты, а оплату проверяем по адресу с ?paytest=1. Рабочий терминал подключён — PAY_LIVE = true */
+  var PAY_LIVE = false, PRICE = 2888;
+  var payMode = PAY_LIVE || /[?&]paytest=1(&|$)/.test(location.search);
+  var sumEl = document.getElementById('r-sum');
+  function syncSum(){ sumEl.querySelector('b').textContent = (PRICE * form.count.value).toLocaleString('ru-RU') + ' ₽'; }
+  if (payMode){ sumEl.hidden = false; sendBtn.textContent = 'Перейти к оплате'; form.count.addEventListener('change', syncSum); syncSum(); }
+  /* возврат со страницы банка: ?pay=ok или ?pay=fail. Само «оплачено» подтверждает уведомление банка функции,
+     здесь — только окно для гостя */
+  var payRet = (location.search.match(/[?&]pay=(ok|fail)/) || [])[1];
+  if (payRet){
+    history.replaceState(null, '', location.pathname + location.hash);
+    if (payRet === 'ok'){ tyH.textContent = 'Оплата прошла!'; tyP.textContent = 'Спасибо! Место за вами. Если появятся вопросы — звоните: +7 (900) 64-555-66.'; }
+    else { tydlg.classList.add('fail'); tyH.textContent = 'Оплата не прошла'; tyP.textContent = 'Деньги не списаны. Попробуйте ещё раз — заполните форму заново — или позвоните нам: +7 (900) 64-555-66.'; }
+    if (tydlg.showModal) tydlg.showModal();
+  }
   document.getElementById('ty-ok').addEventListener('click', function(){ tydlg.close(); });
   tydlg.addEventListener('click', function(e){ if (e.target === tydlg) tydlg.close(); });   /* щелчок мимо окна */
   form.addEventListener('submit', function(e){
@@ -2434,16 +2460,25 @@ footer a{text-decoration:none}
     out.hidden = false;
     if (err){ out.textContent = err; return; }
     var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
-      ref:form.ref.value.trim(), consent:true, news:form.news.checked, website:form.website.value, ms:Date.now() - shownAt};
+      ref:form.ref.value.trim(), pay:payMode, consent:true, news:form.news.checked, website:form.website.value, ms:Date.now() - shownAt};
     if (!FORM_ENDPOINT){
       out.textContent = 'Заявки с сайта сейчас не принимаются. Позвоните в центр: +7 (900) 64-555-66.';
       return;
     }
     if (sendBtn.disabled) return;
-    out.textContent = 'Отправляем…'; sendBtn.disabled = true;
+    out.textContent = payMode ? 'Готовим оплату…' : 'Отправляем…'; sendBtn.disabled = true;
     /* text/plain — «простой» запрос: браузер не шлёт предварительный OPTIONS */
     fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:JSON.stringify(data)})
-      .then(function(r){ if(!r.ok) throw 0; form.reset(); mark('Весь день'); syncMk(); kodFill(); thanks(name); })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {st:r.status, j:j}; }); })
+      .then(function(x){
+        /* 409 — по этому телефону уже оплачено или оплата идёт прямо сейчас: второй платёж не создаём */
+        if (x.st === 409){ out.textContent = x.j.error === 'busy'
+          ? 'Оплата по этому номеру сейчас проходит. Подождите пару минут — или позвоните: +7 (900) 64-555-66.'
+          : 'По этому номеру билет уже оплачен. Если нужно ещё место или что-то изменить — позвоните: +7 (900) 64-555-66.'; return; }
+        if (x.st !== 200) throw 0;
+        if (x.j.pay){ out.textContent = 'Открываем страницу оплаты…'; location.href = x.j.pay; return; }
+        form.reset(); mark('Весь день'); syncMk(); kodFill(); if (payMode) syncSum(); thanks(name);
+      })
       .catch(function(){ out.textContent = 'Не получилось отправить заявку. Попробуйте ещё раз через минуту — или позвоните в центр: +7 (900) 64-555-66.'; })
       .then(function(){ sendBtn.disabled = false; });
   });

@@ -24,12 +24,26 @@
 #                    (токену нужен доступ ко всему Диску); по умолчанию app:/Заявки на фестиваль.csv —
 #                    папка «Приложения/<имя приложения>/», для неё хватает доступа только к папке приложения
 #
+# Оплата билетов — интернет-эквайринг Т-Банка (включается, когда заданы обе переменные; нужна и таблица на Диске):
+#   TBANK_TERMINAL   номер терминала из кабинета Т-Бизнеса (тестовый — с приставкой DEMO)
+#   TBANK_PASSWORD   пароль этого терминала
+#   TICKET_PRICE     цена билета в рублях, по умолчанию 2888
+#   TBANK_TAXATION   система налогообложения для чека (usn_income или usn_income_outcome) — задать, когда к магазину
+#                    подключена онлайн-касса: тогда в каждый платёж добавляется чек. TBANK_TAX — НДС (по умолчанию none),
+#                    TBANK_PAYMENT_METHOD — признак расчёта (по умолчанию full_payment)
+#   TBANK_NOTIFY_URL адрес этой функции для уведомлений банка, по умолчанию — нынешний адрес функции
+# Гость заполняет форму → функция создаёт платёж и отдаёт сайту ссылку на страницу банка → после оплаты банк присылает
+# уведомление сюда же → «✅ Оплачено» в ВК и отметка в таблице. Таблица служит и списком оплат: по одному телефону
+# принимается одна оплата.
+#
 # Сайт шлёт POST с JSON (Content-Type: text/plain — так браузер не делает лишний CORS-запрос).
 # Каждая заявка дополнительно пишется в журнал функции (Cloud Logging) — на случай, если канал не ответит.
 
 import base64
 import csv
 import datetime
+import hashlib
+import hmac
 import io
 import html
 import json
@@ -56,6 +70,11 @@ TG_API = env('TG_API', 'https://api.telegram.org').rstrip('/')
 MAX_TOKEN, MAX_CHAT_ID = env('MAX_TOKEN'), env('MAX_CHAT_ID')
 DISK_TOKEN, DISK_PATH = env('DISK_TOKEN'), env('DISK_PATH', 'app:/Заявки на фестиваль.csv')
 ORIGINS = [o.strip().rstrip('/') for o in env('ALLOWED_ORIGINS', 'https://fest.mirra-spb.ru').split(',') if o.strip()]
+TBANK_TERMINAL, TBANK_PASSWORD = env('TBANK_TERMINAL'), env('TBANK_PASSWORD')
+TBANK_NOTIFY_URL = env('TBANK_NOTIFY_URL', 'https://functions.yandexcloud.net/d4eoevfjg5c2b9e13dq3')
+TBANK_TAXATION, TBANK_TAX = env('TBANK_TAXATION'), env('TBANK_TAX', 'none')
+TBANK_PAYMENT_METHOD = env('TBANK_PAYMENT_METHOD', 'full_payment')
+PRICE = int(env('TICKET_PRICE', '2888'))
 # Кодовое слово сравниваем латиницей: в ссылке спикера оно латинское (?kod=opora), чтобы ссылка
 # не превращалась в %D0%9A…, а гость может вписать его и по-русски — «Опора» и «opora» совпадут
 _LAT = dict(zip('абвгдеёжзийклмнопрстуфхцчшщъыьэюя',
@@ -64,15 +83,16 @@ _kod = lambda s: re.sub(r'[^0-9a-z]', '', ''.join(_LAT.get(c, c) for c in s.lowe
 REF_CODES = {_kod(k): v.strip() for k, _, v in (p.partition('=') for p in env('REF_CODES').split(';')) if _kod(k) and v.strip()}
 TIMEOUT = 8   # секунд на один запрос к внешнему сервису; таймаут самой функции — 20 с
 
-# Основной адрес API Max подписан сертификатом Минцифры — его нет в стандартном списке доверенных,
-# поэтому кладём корневой и промежуточный сертификаты рядом с кодом. Если не выйдет — запасной адрес.
+# Основной адрес API Max и API Т-Банка подписаны сертификатом Минцифры — его нет в стандартном списке доверенных,
+# поэтому кладём корневой и промежуточный сертификаты рядом с кодом. Для Max если не выйдет — запасной адрес.
 MAX_HOSTS = ['https://platform-api2.max.ru', 'https://platform-api.max.ru']
+TB_API = 'https://securepay.tinkoff.ru/v2/'
 _CA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'russian_trusted_ca.pem')
 
 
 def _ctx(host):
     ctx = ssl.create_default_context()
-    if 'api2.max.ru' in host and os.path.exists(_CA):
+    if ('api2.max.ru' in host or 'securepay.tinkoff.ru' in host) and os.path.exists(_CA):
         ctx.load_verify_locations(_CA)
     return ctx
 
@@ -245,10 +265,14 @@ def _disk_fetch(href, timeout):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (fest-zayavki)'})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
+
+
 TABLE_HEAD = ['Дата и время', 'Имя', 'Телефон', 'Telegram / Max', 'Когда придёт', 'Сколько человек',
-              'Особенно хочет на', 'Рассказывать о мероприятиях', 'Куда пришла заявка', 'Кто пригласил']
-# «Кто пригласил» добавлен 05.11 в конец, чтобы не сдвигать прежние строки; старый заголовок заменяется новым
-TABLE_HEAD_OLD = TABLE_HEAD[:-1]
+              'Особенно хочет на', 'Рассказывать о мероприятиях', 'Куда пришла заявка', 'Кто пригласил',
+              'Номер заказа', 'Оплата']
+# Новые столбцы добавляются в конец, чтобы не сдвигать прежние строки: «Кто пригласил» — 05.11,
+# «Номер заказа» и «Оплата» — 06.11. Заголовок старой таблицы (начало нового) заменяется новым.
+COL = {name: i for i, name in enumerate(TABLE_HEAD)}
 
 
 def _cell(v):
@@ -258,6 +282,14 @@ def _cell(v):
         return '="%s"' % v
     # Excel считает формулой ячейку, которая начинается с = + - @ — и в лучшем случае покажет ошибку
     return "'" + v if v[:1] in ('=', '+', '-', '@') else v
+
+
+def _uncell(v):
+    """Обратное к _cell: значение ячейки из файла, как его записала функция."""
+    m = re.fullmatch(r'="(.*)"', v)
+    if m:
+        return m.group(1)
+    return v[1:] if v[:1] == "'" and v[1:2] in ('=', '+', '-', '@') else v
 
 
 def _phone(p):
@@ -270,10 +302,23 @@ def _phone(p):
     return '+' + dg
 
 
+def _now():
+    return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3)))
+
+
 def table_row(d, where):
-    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3))).strftime('%d.%m.%Y %H:%M')
-    return [now, d['name'], _phone(d['phone']), d['messenger'], d['plan'], d['count'], d['mk'],
-            'да' if d['news'] else 'нет', where, REF_CODES.get(_kod(d['ref']), d['ref'])]
+    return [_now().strftime('%d.%m.%Y %H:%M'), d['name'], _phone(d['phone']), d['messenger'], d['plan'], d['count'], d['mk'],
+            'да' if d['news'] else 'нет', where, REF_CODES.get(_kod(d['ref']), d['ref']), d.get('order', ''), d.get('paid', '')]
+
+
+def col(row, name):
+    i = COL[name]
+    return row[i] if i < len(row) else ''
+
+
+def set_col(row, name, value):
+    row.extend([''] * (COL[name] + 1 - len(row)))
+    row[COL[name]] = value
 
 
 def ref_text(ref):
@@ -288,63 +333,75 @@ def _csv(rows):
     return buf.getvalue()
 
 
-def disk_append(row, deadline):
-    """Дописать строку в CSV на Диске: скачать, добавить, загрузить обратно.
+def _left(deadline, cap=8):
+    """Сколько можно ждать очередной запрос: до cap секунд, но не дольше срока deadline (time.monotonic)."""
+    left = deadline - time.monotonic()
+    if left < 1:
+        raise TimeoutError('не хватило времени')
+    return min(cap, left)
+
+
+def _disk_link(kind, deadline, extra=''):
+    req = urllib.request.Request('%s/%s?path=%s%s' % (DISK_API, kind, urllib.parse.quote(DISK_PATH), extra),
+                                 headers={'Authorization': 'OAuth ' + DISK_TOKEN})
+    with urllib.request.urlopen(req, timeout=_left(deadline)) as r:
+        return json.loads(r.read().decode('utf-8'))['href']
+
+
+def disk_read(deadline):
+    """Таблица заявок с Диска списком строк, первая — заголовок. Файла ещё нет — только заголовок.
     CSV в UTF-8 с BOM и разделителем «;» — так его сразу правильно открывает русский Excel.
-    deadline — момент (time.monotonic), к которому всё должно закончиться: каждый запрос ждёт до 8 с,
-    но не дольше этого срока; если Диск не отдал таблицу вовремя, скачивание повторяется ещё раз."""
-    auth = {'Authorization': 'OAuth ' + DISK_TOKEN}
-    def tmo():
-        left = deadline - time.monotonic()
-        if left < 1:
-            raise TimeoutError('не хватило времени')
-        return min(8, left)
-    def link(kind, extra=''):
-        req = urllib.request.Request('%s/%s?path=%s%s' % (DISK_API, kind, urllib.parse.quote(DISK_PATH), extra), headers=auth)
-        with urllib.request.urlopen(req, timeout=tmo()) as r:
-            return json.loads(r.read().decode('utf-8'))['href']
-    def fetch_table():
+    Если Диск не отдал таблицу вовремя (бывает сразу после прошлой записи), скачивание повторяется ещё раз."""
+    try:
         for attempt in (1, 2):
             try:
-                return _disk_fetch(link('download'), tmo())
+                text = _disk_fetch(_disk_link('download', deadline), _left(deadline)).decode('utf-8-sig')   # не UTF-8 — ошибка, файл не трогаем
+                break
             except urllib.error.HTTPError:
                 raise
             except (urllib.error.URLError, TimeoutError, OSError):
-                # Диск иногда отвечает с задержкой (например, сразу после прошлой записи) — пробуем ещё раз
                 if attempt == 2 or deadline - time.monotonic() < 3:
                     raise
-    def make_folder():
-        # папка таблицы, например «__Клиенты/Заявки фестиваля»; папку приложения (app:/) Диск создаёт сам
-        folder = DISK_PATH.rsplit('/', 1)[0]
-        if folder.endswith(':'):
-            return
-        req = urllib.request.Request('%s?path=%s' % (DISK_API, urllib.parse.quote(folder)), headers=auth, method='PUT')
-        try:
-            urllib.request.urlopen(req, timeout=tmo()).close()
-        except urllib.error.HTTPError as e:
-            if e.code != 409:   # 409 — папка уже есть
-                raise
-    step = 'чтение таблицы'
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return [list(TABLE_HEAD)]
+        raise RuntimeError(_hide('Диск, чтение таблицы: %r' % e, DISK_TOKEN))
+    except Exception as e:
+        raise RuntimeError(_hide('Диск, чтение таблицы: %r' % e, DISK_TOKEN))
+    rows = [[_uncell(v) for v in r] for r in csv.reader(io.StringIO(text), delimiter=';') if r]
+    if not rows:
+        return [list(TABLE_HEAD)]
+    if len(rows[0]) < len(TABLE_HEAD) and rows[0] == TABLE_HEAD[:len(rows[0])]:
+        rows[0] = list(TABLE_HEAD)                   # таблица со старым заголовком — дописываем новые столбцы
+    return rows
+
+
+def disk_write(rows, deadline):
+    """Записать таблицу на Диск целиком (поверх прежней). Папки нет — создаём её и пробуем ещё раз."""
+    data = ('﻿' + _csv(rows)).encode('utf-8')
     try:
         try:
-            old = fetch_table().decode('utf-8-sig')   # не UTF-8 — ошибка, и файл не перезаписываем
+            href = _disk_link('upload', deadline, '&overwrite=true')
         except urllib.error.HTTPError as e:
-            if e.code != 404:
+            # 409 — нет папки таблицы, например «__Клиенты/Заявки фестиваля»; папку приложения (app:/) Диск создаёт сам
+            folder = DISK_PATH.rsplit('/', 1)[0]
+            if e.code != 409 or folder.endswith(':'):
                 raise
-            old = _csv([TABLE_HEAD])                 # таблицы ещё нет — начинаем с заголовка
-            make_folder()
-        head_old = _csv([TABLE_HEAD_OLD])
-        if old.startswith(head_old):                 # таблица со старым заголовком — дописываем столбец «Кто пригласил»
-            old = _csv([TABLE_HEAD]) + old[len(head_old):]
-        if old and not old.endswith('\n'):
-            old += '\r\n'
-        data = ('\ufeff' + old + _csv([row])).encode('utf-8')
-        step = 'запись таблицы'
-        req = urllib.request.Request(link('upload', '&overwrite=true'), data=data, method='PUT')
-        with urllib.request.urlopen(req, timeout=tmo()):
+            req = urllib.request.Request('%s?path=%s' % (DISK_API, urllib.parse.quote(folder)),
+                                         headers={'Authorization': 'OAuth ' + DISK_TOKEN}, method='PUT')
+            urllib.request.urlopen(req, timeout=_left(deadline)).close()
+            href = _disk_link('upload', deadline, '&overwrite=true')
+        with urllib.request.urlopen(urllib.request.Request(href, data=data, method='PUT'), timeout=_left(deadline)):
             pass
     except Exception as e:
-        raise RuntimeError(_hide('Диск, %s: %r' % (step, e), DISK_TOKEN))
+        raise RuntimeError(_hide('Диск, запись таблицы: %r' % e, DISK_TOKEN))
+
+
+def disk_append(row, deadline):
+    """Дописать строку в таблицу: скачать, добавить, загрузить обратно."""
+    rows = disk_read(deadline)
+    rows.append(row)
+    disk_write(rows, deadline)
 
 
 def disk_check():
@@ -383,6 +440,216 @@ def disk_check():
     return out
 
 
+# ---------- оплата: интернет-эквайринг Т-Банка ----------
+
+TB_PAID = {'AUTHORIZED', 'CONFIRMED'}          # одностадийная оплата: AUTHORIZED сразу переходит в CONFIRMED
+TB_BUSY = {'AUTHORIZING', '3DS_CHECKING', '3DS_CHECKED', 'CONFIRMING', 'CONFIRM_CHECKING', 'PAY_CHECKING'}
+TB_OPEN = {'NEW', 'FORM_SHOWED'}               # ссылка выдана, гость ещё не платил — перед новой попыткой отменяем
+TB_REFUND = {'REFUNDED', 'PARTIAL_REFUNDED', 'REVERSED', 'PARTIAL_REVERSED'}
+
+
+def tb_token(params):
+    """Подпись запроса и уведомления: корневые поля без Token и вложенных объектов, плюс пароль терминала,
+    по алфавиту ключей, значения подряд → SHA-256. Булевы значения банк подписывает как true/false."""
+    pairs = {k: v for k, v in params.items() if k != 'Token' and not isinstance(v, (dict, list))}
+    pairs['Password'] = TBANK_PASSWORD
+    s = lambda v: 'true' if v is True else 'false' if v is False else str(v)
+    return hashlib.sha256(''.join(s(pairs[k]) for k in sorted(pairs)).encode('utf-8')).hexdigest()
+
+
+def tb_call(method, deadline, **params):
+    """Запрос к API эквайринга как есть, вместе с ответом об ошибке."""
+    params = dict(params, TerminalKey=TBANK_TERMINAL)
+    params['Token'] = tb_token(params)
+    req = urllib.request.Request(TB_API + method, data=json.dumps(params, ensure_ascii=False).encode('utf-8'),
+                                 method='POST', headers={'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=_left(deadline), context=_ctx(TB_API)) as r:
+            return json.loads(r.read().decode('utf-8'))
+    except Exception as e:
+        raise RuntimeError(_hide('Т-Банк %s недоступен: %r' % (method, e), TBANK_PASSWORD))
+
+
+def tb_api(method, deadline, **params):
+    res = tb_call(method, deadline, **params)
+    if not res.get('Success'):
+        raise RuntimeError('Т-Банк %s: ошибка %s %s %s' % (method, res.get('ErrorCode'), res.get('Message', ''), res.get('Details', '')))
+    return res
+
+
+def rub(kop):
+    return '{:,}'.format(kop // 100).replace(',', ' ') + ' ₽'
+
+
+def tickets(n):
+    return '%d %s' % (n, 'билет' if n == 1 else 'билета' if n < 5 else 'билетов')
+
+
+def tb_init(d, deadline):
+    """Создать платёж; вернуть ссылку на страницу оплаты. Срок ссылки — час: потом гость оформит заявку заново."""
+    n = int(d['count'])
+    params = dict(Amount=PRICE * 100 * n, OrderId=d['order'], PayType='O',
+                  Description='Фестиваль От Страха к Любви, 21.11.2026: ' + tickets(n),
+                  NotificationURL=TBANK_NOTIFY_URL, SuccessURL=ORIGINS[0] + '/?pay=ok', FailURL=ORIGINS[0] + '/?pay=fail',
+                  RedirectDueDate=(_now() + datetime.timedelta(hours=1)).isoformat(timespec='seconds'),
+                  DATA={'OperationInitiatorType': '0'})
+    if TBANK_TAXATION:
+        # онлайн-касса подключена — чек обязателен; его содержимое подтверждает бухгалтер
+        params['Receipt'] = {'Phone': _phone(d['phone']), 'Taxation': TBANK_TAXATION,
+                             'Items': [{'Name': 'Билет на фестиваль От Страха к Любви, 21.11.2026', 'Price': PRICE * 100,
+                                        'Quantity': n, 'Amount': PRICE * 100 * n, 'Tax': TBANK_TAX,
+                                        'PaymentMethod': TBANK_PAYMENT_METHOD, 'PaymentObject': 'service'}]}
+    return tb_api('Init', deadline, **params)['PaymentURL']
+
+
+def tb_check():
+    """Проверка из консоли: {"check": "tbank"}. Спрашивает у банка несуществующий заказ — платёж не создаётся.
+    Ошибка про заказ значит, что связь, сертификат, терминал и пароль в порядке."""
+    if not (TBANK_TERMINAL and TBANK_PASSWORD):
+        return {'TBANK_TERMINAL / TBANK_PASSWORD': 'не заданы'}
+    try:
+        res = tb_call('CheckOrder', time.monotonic() + 9, OrderId='check-0')
+    except Exception as e:
+        return {'связь с банком': str(e)}
+    return {'терминал': TBANK_TERMINAL, 'связь с банком': 'есть', 'ответ банка': {k: res.get(k) for k in ('Success', 'ErrorCode', 'Message', 'Details')},
+            'подсказка': '«Терминал не найден» — проверьте TBANK_TERMINAL; про неверный токен — пароль не от этого терминала; '
+                         'про заказ или пустой список платежей — всё в порядке'}
+
+
+def paid_text(row, order, amount, title):
+    """Сообщение «оплачено» или «возврат» для чата: кто, сколько, от кого."""
+    lines = [title, '']
+    if row:
+        lines += ['Имя: ' + col(row, 'Имя'), 'Телефон: ' + col(row, 'Телефон'), 'Сколько человек: ' + col(row, 'Сколько человек')]
+        if col(row, 'Кто пригласил'):
+            lines.append('Кто пригласил: ' + col(row, 'Кто пригласил'))
+    else:
+        lines += ['Телефон: +' + order.split('-')[0], '⚠ Заявки с этим номером заказа нет в таблице — отметьте оплату вручную']
+    return '\n'.join(lines + ['Заказ: ' + order, '', _stamp()])
+
+
+def tb_notification(raw, started):
+    """Уведомление банка о платеже. Отвечаем OK (иначе банк будет повторять); оплату отмечаем один раз."""
+    if not (TBANK_TERMINAL and TBANK_PASSWORD) or raw.get('TerminalKey') != TBANK_TERMINAL \
+            or not hmac.compare_digest(str(raw.get('Token', '')), tb_token(raw)):
+        print(json.dumps({'event': 'tb_bad_token', 'order': raw.get('OrderId')}, ensure_ascii=False))
+        return reply_text(403, 'bad token')
+    status, order, amount = raw.get('Status'), str(raw.get('OrderId', '')), int(raw.get('Amount') or 0)
+    print(json.dumps({'event': 'tb_notification', 'order': order, 'status': status, 'amount': amount}, ensure_ascii=False))
+    if status != 'CONFIRMED' and status not in TB_REFUND:
+        return reply_text(200, 'OK')
+    deadline = started + 8.5                     # банк ждёт ответа 10 секунд
+    rows = row = None
+    try:
+        rows = disk_read(started + 5)
+        row = next((r for r in rows[1:] if col(r, 'Номер заказа') == order), None)
+    except Exception as e:
+        print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
+    stamp = _now().strftime('%d.%m %H:%M')
+    if status == 'CONFIRMED':
+        if row and col(row, 'Оплата').startswith('оплачено'):
+            return reply_text(200, 'OK')         # повтор уведомления — уже отмечено
+        text = paid_text(row, order, amount, '✅ Оплачено: %s' % rub(amount))
+        if row:
+            expected = PRICE * 100 * int(col(row, 'Сколько человек') or 0) if col(row, 'Сколько человек').isdigit() else None
+            if expected is not None and expected != amount:
+                text = text.replace('\n\n', '\n⚠ Сумма не совпадает с заявкой: ждали %s\n\n' % rub(expected), 1)
+            set_col(row, 'Оплата', 'оплачено %s · %s' % (stamp, rub(amount)))
+    else:
+        if row and col(row, 'Оплата').startswith('возврат'):
+            return reply_text(200, 'OK')
+        text = paid_text(row, order, amount, '↩ Возврат: %s' % rub(amount))
+        if row:
+            set_col(row, 'Оплата', 'возврат %s · %s' % (stamp, rub(amount)))
+    notify(text)
+    if row:
+        try:
+            disk_write(rows, deadline)
+        except Exception as e:
+            print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
+            notify('⚠ Отметка по заказу %s не записалась в таблицу. Причина: %s' % (order, e))
+    return reply_text(200, 'OK')
+
+
+def apply_with_payment(d, chs, origin, started):
+    """Заявка с оплатой: проверить, не оплачено ли уже по этому телефону, создать платёж,
+    отправить заявку в чат, записать или обновить строку в таблице, отдать сайту ссылку на оплату."""
+    phone, n = _phone(d['phone']), int(d['count'])
+    rows = prev = None
+    notes = []
+    try:
+        rows = disk_read(started + 6)
+        prev = next((r for r in reversed(rows[1:]) if col(r, 'Телефон') == phone and col(r, 'Номер заказа')), None)
+    except Exception as e:
+        notes.append('⚠ Таблица не прочиталась, повторную оплату по этому телефону проверить не удалось: %s' % e)
+    attempt = 1
+    if prev:
+        if col(prev, 'Оплата').startswith('оплачено'):
+            return reply(409, {'ok': False, 'error': 'paid'}, origin)
+        order0 = col(prev, 'Номер заказа')
+        try:
+            pays = tb_api('CheckOrder', started + 9, OrderId=order0).get('Payments') or []
+        except Exception as e:
+            pays = []
+            print(json.dumps({'event': 'tb_check_failed', 'error': str(e)}, ensure_ascii=False))
+        done = next((p for p in pays if p.get('Status') in TB_PAID), None)
+        if done:
+            # оплата прошла, а уведомление банка до нас не дошло — отмечаем сейчас
+            amount = int(done.get('Amount') or 0)
+            set_col(prev, 'Оплата', 'оплачено %s · %s' % (_now().strftime('%d.%m %H:%M'), rub(amount)))
+            notify(paid_text(prev, order0, amount, '✅ Оплачено: %s' % rub(amount)))
+            try:
+                disk_write(rows, started + 15)
+            except Exception as e:
+                notify('⚠ Отметка по заказу %s не записалась в таблицу. Причина: %s' % (order0, e))
+            return reply(409, {'ok': False, 'error': 'paid'}, origin)
+        if any(p.get('Status') in TB_BUSY for p in pays):
+            return reply(409, {'ok': False, 'error': 'busy'}, origin)
+        for p in pays:
+            if p.get('Status') in TB_OPEN:
+                try:
+                    tb_api('Cancel', started + 10, PaymentId=p['PaymentId'])
+                except Exception as e:
+                    print(json.dumps({'event': 'tb_cancel_failed', 'error': str(e)}, ensure_ascii=False))
+        m = re.search(r'-(\d+)$', order0)
+        attempt = int(m.group(1)) + 1 if m else 2
+        if col(prev, 'Имя').strip().lower() != d['name'].strip().lower():
+            notes.append('⚠ Этот телефон уже был в неоплаченной заявке «%s» — заявка заменена этой' % col(prev, 'Имя'))
+    # номер заказа: телефон и номер попытки; если таблицы не видно — время, чтобы номер не повторился
+    d['order'] = '%s-%d' % (phone[1:], attempt) if rows is not None else '%s-t%d' % (phone[1:], int(time.time()))
+    d['sum'] = '%s (%s × %s)' % (rub(PRICE * 100 * n), n, rub(PRICE * 100)) if n > 1 else rub(PRICE * 100)
+    pay_url = None
+    try:
+        pay_url = tb_init(d, started + 12)
+        d['paid'] = 'ждём оплату'
+    except Exception as e:
+        print(json.dumps({'event': 'tb_init_failed', 'error': str(e)}, ensure_ascii=False))
+        notes.append('⚠ Ссылка на оплату не создалась — свяжитесь с гостем. Причина: %s' % e)
+        d['paid'] = 'ссылка на оплату не создалась'
+    d['title'] = '🌿 Заявка обновлена — новая попытка оплаты' if prev else '🌿 Новая заявка на фестиваль'
+    d['notes'] = notes
+    where = deliver(d, chs)
+    row = table_row(d, where or 'не доставлена')
+    try:
+        if rows is None:
+            disk_append(row, started + 17)
+        else:
+            if prev:
+                rows[rows.index(prev)] = row
+            else:
+                rows.append(row)
+            disk_write(rows, started + 17)
+        print(json.dumps({'event': 'table_saved'}, ensure_ascii=False))
+    except Exception as e:
+        print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
+        notify('⚠ Заявка «%s» (заказ %s) не записалась в таблицу на Диске. Причина: %s' % (d['name'], d['order'], e))
+    if pay_url:
+        return reply(200, {'ok': True, 'pay': pay_url}, origin)
+    if where:
+        return reply(200, {'ok': True}, origin)
+    return reply(502, {'ok': False, 'error': 'не удалось переслать заявку'}, origin)
+
+
 # ---------- общее ----------
 
 def channels():
@@ -412,6 +679,47 @@ def run_all(jobs):
         return {name: fut.result() for name, fut in futures.items()}
 
 
+def deliver(d, chs):
+    """Отправить заявку в первый канал, который доставит; вернуть его название или None."""
+    for n, has, send, _ in chs:
+        if not has:
+            continue
+        try:
+            send(d)
+            print(json.dumps({'event': 'delivered', 'channel': n}, ensure_ascii=False))
+            return n
+        except Exception as e:
+            print(json.dumps({'event': 'send_failed', 'channel': n, 'error': str(e)}, ensure_ascii=False))
+    return None
+
+
+def notify(text):
+    """Служебное сообщение сотрудникам (оплата, сбой): в чат ВК, а если не вышло — на почту."""
+    if VK_TOKEN and VK_PEER_ID:
+        try:
+            vk_api('messages.send', peer_id=VK_PEER_ID, random_id=random.randint(1, 2 ** 31 - 1), dont_parse_links=1, message=text)
+            return
+        except Exception as e:
+            print(json.dumps({'event': 'notice_failed', 'channel': 'ВКонтакте', 'error': str(e)}, ensure_ascii=False))
+    if MAIL_USER and MAIL_PASSWORD and MAIL_TO:
+        msg = EmailMessage()
+        msg['Subject'] = text.split('\n', 1)[0]
+        msg['From'] = formataddr(('Сайт фестиваля «От Страха к Любви»', MAIL_USER))
+        msg['To'] = ', '.join(MAIL_TO)
+        msg.set_content(text)
+        try:
+            with smtplib.SMTP_SSL(MAIL_HOST, MAIL_PORT, timeout=TIMEOUT, context=ssl.create_default_context()) as s:
+                s.login(MAIL_USER, MAIL_PASSWORD)
+                s.send_message(msg)
+        except Exception as e:
+            print(json.dumps({'event': 'notice_failed', 'channel': 'Почта', 'error': _hide(repr(e), MAIL_PASSWORD)}, ensure_ascii=False))
+
+
+def reply_text(code, text):
+    """Ответ банку на уведомление: простой текст, без JSON."""
+    return {'statusCode': code, 'headers': {'Content-Type': 'text/plain; charset=utf-8'}, 'body': text}
+
+
 def reply(code, obj, origin=None):
     headers = {'Content-Type': 'application/json; charset=utf-8'}
     if origin:
@@ -429,7 +737,8 @@ def clean(v, n):
 def _rows(d):
     rows = [('Имя', d['name']), ('Телефон', d['phone']), ('Telegram / Max', d['messenger']),
             ('Когда придёт', d['plan']), ('Сколько человек', d['count']), ('Особенно хочет на', d['mk']),
-            ('Рассказывать о мероприятиях центра', 'да' if d['news'] else 'нет'), ('Кто пригласил', ref_text(d['ref']))]
+            ('Рассказывать о мероприятиях центра', 'да' if d['news'] else 'нет'), ('Кто пригласил', ref_text(d['ref'])),
+            ('К оплате', d.get('sum', '')), ('Заказ', d.get('order', ''))]
     return [(k, v) for k, v in rows if v]
 
 
@@ -439,14 +748,16 @@ def _stamp():
 
 
 def as_html(d):
-    lines = ['🌿 <b>Новая заявка на фестиваль</b>', '']
+    lines = ['<b>%s</b>' % html.escape(d.get('title', '🌿 Новая заявка на фестиваль')), '']
     lines += ['<b>%s:</b> %s' % (k, html.escape(v)) for k, v in _rows(d)]
+    lines += [html.escape(n) for n in d.get('notes', [])]
     return '\n'.join(lines + ['', '<i>%s</i>' % _stamp()])
 
 
 def as_text(d):
-    lines = ['🌿 Новая заявка на фестиваль', '']
+    lines = [d.get('title', '🌿 Новая заявка на фестиваль'), '']
     lines += ['%s: %s' % (k, v) for k, v in _rows(d)]
+    lines += d.get('notes', [])
     return '\n'.join(lines + ['', _stamp()])
 
 
@@ -467,8 +778,14 @@ def handler(event, context):
     except ValueError:
         return reply(400, {'ok': False, 'error': 'bad json'}, allowed)
 
+    # уведомление Т-Банка о платеже: приходит от банка, без Origin; подлинность — по подписи
+    if 'TerminalKey' in raw and 'Token' in raw and 'Status' in raw:
+        return tb_notification(raw, time.monotonic())
+
     if raw.get('check') == 'disk':
         return reply(200, disk_check())
+    if raw.get('check') == 'tbank':
+        return reply(200, tb_check())
 
     chs = channels()
     if not chs:
@@ -503,17 +820,12 @@ def handler(event, context):
 
     started = time.monotonic()
     print(json.dumps({'event': 'request', **d}, ensure_ascii=False))
-    where = None
-    for n, has, send, _ in chs:
-        if not has:
-            continue
-        try:
-            send(d)
-            where = n
-            print(json.dumps({'event': 'delivered', 'channel': n}, ensure_ascii=False))
-            break
-        except Exception as e:
-            print(json.dumps({'event': 'send_failed', 'channel': n, 'error': str(e)}, ensure_ascii=False))
+    # оплата — когда её включил сайт (поле pay) и заданы ключи терминала; иначе — просто заявка, как раньше
+    if raw.get('pay') is True and TBANK_TERMINAL and TBANK_PASSWORD:
+        if d['count'] not in ('1', '2', '3', '4', '5'):
+            return reply(400, {'ok': False, 'error': 'число гостей — от 1 до 5'}, allowed)
+        return apply_with_payment(d, chs, allowed, started)
+    where = deliver(d, chs)
 
     # Таблица — после отправки и не дольше 15 с от начала: функцию обрывают на 20-й секунде,
     # а заявка уже доставлена, и гость не должен увидеть ошибку из-за Диска; остаток — на сообщение о сбое в ВК.
