@@ -803,7 +803,7 @@ footer .wrap{display:grid;gap:14px;justify-items:center;text-align:center;paddin
 footer .f-addr{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px}
 footer .f-addr a{white-space:nowrap}
 footer .f-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 24px;font-size:.85rem}
-footer .f-req{max-width:760px;font-size:.78rem;line-height:1.5;opacity:.9}   /* продавец — коротко; полные реквизиты в privacy.html, позже и в оферте */
+footer .f-req{max-width:760px;font-size:.78rem;line-height:1.5;opacity:.9}   /* продавец — коротко; полные реквизиты в privacy.html и offer.html */
 footer .f-req a{white-space:nowrap}
 footer b{color:var(--ink);font-weight:600}
 footer a{text-decoration:none}
@@ -1289,7 +1289,7 @@ footer a{text-decoration:none}
         <div class="f full"><label for="r-msg">Telegram или Max <small>— по желанию</small></label><input id="r-msg" name="messenger" placeholder="@имя"></div>
         <div class="f full"><label for="r-ref">Кто пригласил <small>— по желанию</small></label><input id="r-ref" name="ref" placeholder="Кодовое слово, если есть" autocomplete="off" maxlength="40"></div>
         <div class="f full"><label class="check" for="r-ok"><input id="r-ok" type="checkbox" name="consent" required><span>Согласен(а) на обработку моих персональных данных центром «МирРа» (ООО «ИРБИС») для записи на фестиваль и связи со мной — по <a href="privacy.html" target="_blank">политике конфиденциальности</a>.</span></label></div>
-        <div class="f full"><label class="check strong" for="r-norefund"><input id="r-norefund" type="checkbox" name="norefund" required><span>Понимаю, что <b>деньги за оплаченный билет не возвращаются</b>.</span></label></div>
+        <div class="f full"><label class="check strong" for="r-norefund"><input id="r-norefund" type="checkbox" name="norefund" required><span>Понимаю, что <b>деньги за оплаченный билет не возвращаются</b>, и принимаю условия <a href="offer.html" target="_blank">оферты</a>.</span></label></div>
         <div class="f full"><label class="check" for="r-news"><input id="r-news" type="checkbox" name="news"><span>Рассказывайте мне о других мероприятиях центра <small>— по желанию</small></span></label></div>
         <div class="hp" aria-hidden="true"><label>Не заполняйте это поле <input name="website" tabindex="-1" autocomplete="off"></label></div>
         <div class="f full"><button class="btn btn-warm" type="submit" style="justify-self:start">Отправить заявку</button></div>
@@ -1473,7 +1473,7 @@ footer a{text-decoration:none}
 <footer>
   <div class="wrap">
     <div class="f-addr"><b>Центр «МирРа»</b><span>Лиговский пр., 44В</span><a href="https://mirra-spb.ru" target="_blank" rel="noopener">mirra-spb.ru</a></div>
-    <div class="f-meta"><a href="tel:+79006455566">+7 (900) 64-555-66</a><a href="privacy.html">Политика конфиденциальности</a></div>
+    <div class="f-meta"><a href="tel:+79006455566">+7 (900) 64-555-66</a><a href="privacy.html">Политика конфиденциальности</a><a href="offer.html">Публичная оферта</a></div>
     <p class="f-req">© ООО «ИРБИС», психологический центр «МирРа»</p>
   </div>
 </footer>
@@ -2418,7 +2418,7 @@ footer a{text-decoration:none}
   form.addEventListener('submit', function(e){
     e.preventDefault();
     var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,'');
-    var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : !form.norefund.checked ? 'Отметьте, пожалуйста, что знаете: деньги за оплаченный билет не возвращаются.' : '';
+    var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : !form.norefund.checked ? 'Отметьте, пожалуйста, что знаете: деньги за оплаченный билет не возвращаются, — и что принимаете условия оферты.' : '';
     out.hidden = false;
     if (err){ out.textContent = err; return; }
     var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
