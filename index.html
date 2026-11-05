@@ -2448,8 +2448,8 @@ footer a{text-decoration:none}
   var payRet = (location.search.match(/[?&]pay=(ok|fail)/) || [])[1];
   if (payRet){
     history.replaceState(null, '', location.pathname + location.hash);
-    if (payRet === 'ok'){ tyH.textContent = 'Оплата прошла!'; tyP.textContent = 'Спасибо! Место за вами. Если появятся вопросы — звоните: +7 (900) 64-555-66.'; }
-    else { tydlg.classList.add('fail'); tyH.textContent = 'Оплата не прошла'; tyP.textContent = 'Деньги не списаны. Попробуйте ещё раз — заполните форму заново — или позвоните нам: +7 (900) 64-555-66.'; }
+    if (payRet === 'ok'){ tyH.textContent = 'Оплата прошла!'; tyP.textContent = 'Спасибо! Место за вами. Если появятся вопросы — звоните: +7\u00a0(900)\u00a064\u2011555\u201166.'; }
+    else { tydlg.classList.add('fail'); tyH.textContent = 'Оплата не прошла'; tyP.textContent = 'Деньги не списаны. Попробуйте ещё раз — заполните форму заново — или позвоните нам: +7\u00a0(900)\u00a064\u2011555\u201166.'; }
     if (tydlg.showModal) tydlg.showModal();
   }
   document.getElementById('ty-ok').addEventListener('click', function(){ tydlg.close(); });
@@ -2463,7 +2463,7 @@ footer a{text-decoration:none}
     var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
       ref:form.ref.value.trim(), pay:payMode, consent:true, news:form.news.checked, website:form.website.value, ms:Date.now() - shownAt};
     if (!FORM_ENDPOINT){
-      out.textContent = 'Заявки с сайта сейчас не принимаются. Позвоните в центр: +7 (900) 64-555-66.';
+      out.textContent = 'Заявки с сайта сейчас не принимаются. Позвоните в центр: +7\u00a0(900)\u00a064\u2011555\u201166.';
       return;
     }
     send(data, name);
@@ -2478,7 +2478,7 @@ footer a{text-decoration:none}
       .then(function(x){
         /* 409 — оплата по этому телефону идёт прямо сейчас или уже прошла. Уже оплачено — второй платёж
            только после «Да, купить ещё»: так случайно не заплатят дважды, а чужой номер вводить незачем */
-        if (x.st === 409 && x.j.error === 'busy'){ out.textContent = 'Оплата по этому номеру сейчас проходит. Подождите пару минут — или позвоните: +7 (900) 64-555-66.'; return; }
+        if (x.st === 409 && x.j.error === 'busy'){ out.textContent = 'Оплата по этому номеру сейчас проходит. Подождите пару минут — или позвоните: +7\u00a0(900)\u00a064\u2011555\u201166.'; return; }
         if (x.st === 409){
           out.textContent = 'По этому номеру уже оплачено: ' + (x.j.tickets ? tk(x.j.tickets) : 'билет') + '. Купить ещё ' + tk(+data.count) + '?';
           var more = document.createElement('button');
@@ -2491,7 +2491,7 @@ footer a{text-decoration:none}
         if (x.j.pay){ out.textContent = 'Открываем страницу оплаты…'; location.href = x.j.pay; return; }
         form.reset(); mark('Весь день'); syncMk(); kodFill(); if (payMode) syncSum(); thanks(name);
       })
-      .catch(function(){ out.textContent = 'Не получилось отправить заявку. Попробуйте ещё раз через минуту — или позвоните в центр: +7 (900) 64-555-66.'; })
+      .catch(function(){ out.textContent = 'Не получилось отправить заявку. Попробуйте ещё раз через минуту — или позвоните в центр: +7\u00a0(900)\u00a064\u2011555\u201166.'; })
       .then(function(){ sendBtn.disabled = false; });
   }
 })();
