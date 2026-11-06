@@ -595,6 +595,9 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .f-note a{color:var(--accent);text-decoration:none;white-space:nowrap}
 .paysum{display:block;font-size:.95rem;color:var(--soft)}
 .paysum[hidden]{display:none}
+/* «Количество мест ограничено» / «Осталось N мест» / «Билеты закончились» — текст меняет скрипт по ответу функции */
+p.seats,.formwrap .side p.seats{display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:600;font-size:.95rem;color:var(--accent)}
+p.seats::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px rgba(181,74,58,.16)}
 .paysum b{font:500 1.35rem var(--font-display);color:var(--ink);margin-left:4px}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;color:var(--soft);line-height:1.45}
 .check input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex:none}
@@ -1234,6 +1237,7 @@ footer a{text-decoration:none}
       <div class="pb-sel pb-price"><small>Билет</small><b>2 888 ₽</b></div>
       <button class="btn btn-warm" type="button" id="pick-go">Забронировать место</button>
     </div>
+    <p class="seats" data-seats>Количество мест ограничено</p>
     <p class="pick-note">Хотите на один <span class="nw">мастер-класс</span>? Выберите часть, в которой он идёт, а в заявке отметьте, какой именно, — билет тот же. Время частей и <span class="nw">мастер-классов</span> — <a href="#program" data-back>в программе</a>.</p>
 
   </div>
@@ -1275,7 +1279,8 @@ footer a{text-decoration:none}
     <div class="formwrap" id="request">
       <div class="side">
         <div class="eyebrow">Заявка</div>
-        <h3>Оставьте контакты — мы свяжемся и забронируем место</h3>
+        <h3>Оставьте контакты — мы свяжемся и забронируем место</h3>
+        <p class="seats" data-seats>Количество мест ограничено</p>
         <p>Перезвоним или напишем, расскажем об оплате и ответим на вопросы.</p>
       </div>
       <form class="req" id="reqform" novalidate>
@@ -2444,6 +2449,22 @@ footer a{text-decoration:none}
   var sumEl = document.getElementById('r-sum');
   function syncSum(){ sumEl.querySelector('b').textContent = (PRICE * form.count.value).toLocaleString('ru-RU') + ' ₽'; }
   if (payMode){ sumEl.hidden = false; sendBtn.textContent = 'Перейти к оплате'; form.count.addEventListener('change', syncSum); syncSum(); }
+  /* Места: функция считает лимит по таблице оплат. Точное число — только когда осталось мало (порог в функции),
+     иначе остаётся «Количество мест ограничено». Мест нет — форма не отправляется */
+  var soldOut = false, SOLD_TEXT = 'Билеты закончились. Позвоните: +7\u00a0(900)\u00a064\u2011555\u201166 — если освободится место, сообщим.';
+  function plMest(n){ var a = n % 10, b = n % 100; return n + (a === 1 && b !== 11 ? ' место' : a >= 2 && a <= 4 && (b < 12 || b > 14) ? ' места' : ' мест'); }
+  function showSeats(j){
+    if (!j || !j.limit) return;
+    var t = j.soldout ? 'Билеты закончились' : j.left != null ? 'Осталось ' + plMest(j.left) : '';
+    if (t) [].forEach.call(document.querySelectorAll('[data-seats]'), function(el){ el.textContent = t; });
+    if (j.left != null){
+      [].forEach.call(form.count.options, function(o){ o.disabled = +o.value > Math.max(j.left, 1); });
+      if (+form.count.value > j.left && j.left > 0){ form.count.value = String(j.left); if (payMode) syncSum(); }
+    }
+    if (j.soldout){ soldOut = true; sendBtn.disabled = true; out.hidden = false; out.textContent = SOLD_TEXT; }
+  }
+  if (FORM_ENDPOINT) fetch(FORM_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:JSON.stringify({seats:true})})
+    .then(function(r){ return r.json(); }).then(showSeats).catch(function(){});
   /* возврат со страницы банка: ?pay=ok или ?pay=fail. Само «оплачено» подтверждает уведомление банка функции,
      здесь — только окно для гостя */
   var payRet = (location.search.match(/[?&]pay=(ok|fail)/) || [])[1];
@@ -2460,6 +2481,7 @@ footer a{text-decoration:none}
     var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,'');
     var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : !form.norefund.checked ? 'Отметьте, пожалуйста, что знаете: деньги за оплаченный билет не возвращаются, — и что принимаете условия оферты.' : '';
     out.hidden = false;
+    if (soldOut){ out.textContent = SOLD_TEXT; return; }
     if (err){ out.textContent = err; return; }
     var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
       ref:form.ref.value.trim(), pay:payMode, consent:true, news:form.news.checked, website:form.website.value, ms:Date.now() - shownAt};
@@ -2479,6 +2501,12 @@ footer a{text-decoration:none}
       .then(function(x){
         /* 409 — оплата по этому телефону идёт прямо сейчас или уже прошла. Уже оплачено — второй платёж
            только после «Да, купить ещё»: так случайно не заплатят дважды, а чужой номер вводить незачем */
+        /* мест не хватает: осталось меньше, чем выбрано, или не осталось совсем */
+        if (x.st === 409 && x.j.error === 'seats'){
+          if (!x.j.left){ showSeats({limit:true, soldout:true, left:0}); return; }
+          showSeats({limit:true, left:x.j.left});
+          out.textContent = 'Осталось только ' + plMest(x.j.left) + ' — выберите меньше человек в поле «Сколько человек».'; return;
+        }
         if (x.st === 409 && x.j.error === 'busy'){ out.textContent = 'Оплата по этому номеру сейчас проходит. Подождите пару минут — или позвоните: +7\u00a0(900)\u00a064\u2011555\u201166.'; return; }
         if (x.st === 409){
           out.textContent = 'По этому номеру уже оплачено: ' + (x.j.tickets ? tk(x.j.tickets) : 'билет') + '. Купить ещё ' + tk(+data.count) + '?';

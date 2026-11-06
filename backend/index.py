@@ -33,6 +33,9 @@
 #                    TBANK_PAYMENT_METHOD — признак расчёта (по умолчанию full_payment), TBANK_FFD — версия формата
 #                    чека, как у кассы в кабинете: 1.05 (по умолчанию) или 1.2
 #   TBANK_NOTIFY_URL адрес этой функции для уведомлений банка, по умолчанию — нынешний адрес функции
+#   TICKETS_TOTAL    сколько всего мест (не задана — без лимита; 0 — продажи остановлены)
+#   TICKETS_SOLD_ELSEWHERE  сколько билетов продано мимо сайта (наличными, переводом) — обновлять вручную
+#   TICKETS_SHOW_LEFT       с какого остатка сайт пишет «Осталось N мест», по умолчанию 15
 # Гость заполняет форму → функция создаёт платёж и отдаёт сайту ссылку на страницу банка → после оплаты банк присылает
 # уведомление сюда же → «✅ Оплачено» в ВК и отметка в таблице. Таблица служит и списком оплат: по одному телефону
 # принимается одна оплата.
@@ -77,6 +80,10 @@ TBANK_TAXATION, TBANK_TAX = env('TBANK_TAXATION'), env('TBANK_TAX', 'none')
 TBANK_PAYMENT_METHOD = env('TBANK_PAYMENT_METHOD', 'full_payment')
 TBANK_FFD = env('TBANK_FFD', '1.05')
 PRICE = int(env('TICKET_PRICE', '2888'))
+# Лимит мест: переменная не задана — без лимита; 0 — продажи остановлены
+TICKETS_TOTAL = int(env('TICKETS_TOTAL')) if env('TICKETS_TOTAL') else None
+TICKETS_SOLD_ELSEWHERE = int(env('TICKETS_SOLD_ELSEWHERE', '0') or 0)
+TICKETS_SHOW_LEFT = int(env('TICKETS_SHOW_LEFT', '15') or 15)
 # Кодовое слово сравниваем латиницей: в ссылке спикера оно латинское (?kod=opora), чтобы ссылка
 # не превращалась в %D0%9A…, а гость может вписать его и по-русски — «Опора» и «opora» совпадут
 _LAT = dict(zip('абвгдеёжзийклмнопрстуфхцчшщъыьэюя',
@@ -519,6 +526,39 @@ def tb_init(d, deadline):
     return tb_api('Init', deadline, **params)['PaymentURL']
 
 
+def seats_left(rows, skip=None):
+    """Сколько мест ещё можно продать на сайте: всего − продано мимо сайта − оплачено на сайте − места тех,
+    кто сейчас на странице оплаты (ссылка живёт час; возврат место освобождает). skip — строка, которую
+    сейчас заменит новая попытка того же гостя."""
+    taken, hour_ago = 0, _now().replace(tzinfo=None) - datetime.timedelta(hours=1)
+    for r in rows[1:]:
+        if r is skip or not col(r, 'Сколько человек').isdigit():
+            continue
+        pay = col(r, 'Оплата')
+        if pay.startswith('ждём оплату'):
+            try:
+                if datetime.datetime.strptime(col(r, 'Дата и время'), '%d.%m.%Y %H:%M') < hour_ago:
+                    continue
+            except ValueError:
+                continue
+        elif not pay.startswith('оплачено'):
+            continue
+        taken += int(col(r, 'Сколько человек'))
+    return TICKETS_TOTAL - TICKETS_SOLD_ELSEWHERE - taken
+
+
+def seats_info():
+    """Для сайта: есть ли лимит, сколько осталось (точное число — только когда мест мало), закончились ли."""
+    if TICKETS_TOTAL is None:
+        return {'limit': False}
+    try:
+        left = max(0, seats_left(disk_read(time.monotonic() + 8)))
+    except Exception as e:
+        print(json.dumps({'event': 'seats_failed', 'error': str(e)}, ensure_ascii=False))
+        return {'limit': True}               # таблицу не прочитали — сайт просто пишет «мест ограничено»
+    return {'limit': True, 'soldout': left == 0, 'left': left if left <= TICKETS_SHOW_LEFT else None}
+
+
 def tb_check():
     """Проверка из консоли: {"check": "tbank"}. Спрашивает у банка несуществующий заказ — платёж не создаётся.
     Ошибка про заказ значит, что связь, сертификат, терминал и пароль в порядке."""
@@ -645,6 +685,16 @@ def apply_with_payment(d, chs, origin, started, more=False):
             except Exception as e:
                 notify('⚠ Отметка по заказу %s не записалась в таблицу. Причина: %s' % (marked, e))
         return reply(409, {'ok': False, 'error': 'paid', 'tickets': paid_n}, origin)
+    if TICKETS_TOTAL is not None and rows is not None:
+        left = seats_left(rows, skip=replace)
+        if n > left:
+            if marked:
+                try:
+                    disk_write(rows, started + 15)
+                except Exception as e:
+                    notify('⚠ Отметка по заказу %s не записалась в таблицу. Причина: %s' % (marked, e))
+            print(json.dumps({'event': 'no_seats', 'left': left, 'asked': n}, ensure_ascii=False))
+            return reply(409, {'ok': False, 'error': 'seats', 'left': max(0, left)}, origin)
     # номер заказа: телефон и номер попытки; если таблицы не видно — время, чтобы номер не повторился
     nums = [int(m.group(1)) for m in (re.search(r'-(\d+)$', col(r, 'Номер заказа')) for r in mine) if m]
     d['order'] = '%s-%d' % (phone[1:], max(nums, default=0) + 1) if rows is not None else '%s-t%d' % (phone[1:], int(time.time()))
@@ -837,6 +887,10 @@ def handler(event, context):
 
     if not allowed:
         return reply(403, {'ok': False, 'error': 'origin'})
+
+    # сайт при открытии спрашивает, сколько мест осталось
+    if raw.get('seats') is True:
+        return reply(200, seats_info(), allowed)
 
     # Ловушки для спам-ботов: скрытое поле заполнено или форма отправлена быстрее, чем за 3 секунды.
     # Отвечаем «принято», чтобы бот не подбирал обход, но никуда не пересылаем.
