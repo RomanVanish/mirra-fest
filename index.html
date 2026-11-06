@@ -657,7 +657,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .ty-ic{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,var(--accent),var(--accent-2));box-shadow:0 12px 26px -12px rgba(181,74,58,.8)}
 .ty-ic svg{width:30px;height:30px}
 .tydlg h3{font-size:var(--step-2);margin-bottom:10px}
-.tydlg p{color:var(--soft);line-height:1.55}
+.tydlg p{color:var(--soft);line-height:1.55;white-space:pre-line}   /* \n в тексте — перенос: номер телефона отдельной строкой */
 .tydlg .ty-date{margin-top:12px;font:italic 400 1.05rem var(--font-display);color:var(--accent)}
 .tydlg .btn{margin-top:22px;min-width:160px}
 .tydlg.fail .ty-ic,.tydlg.fail .ty-date{display:none}
@@ -2448,8 +2448,8 @@ footer a{text-decoration:none}
   var payRet = (location.search.match(/[?&]pay=(ok|fail)/) || [])[1];
   if (payRet){
     history.replaceState(null, '', location.pathname + location.hash);
-    if (payRet === 'ok'){ tyH.textContent = 'Оплата прошла!'; tyP.textContent = 'Спасибо! Место за вами. Если появятся вопросы — звоните: +7\u00a0(900)\u00a064\u2011555\u201166.'; }
-    else { tydlg.classList.add('fail'); tyH.textContent = 'Оплата не прошла'; tyP.textContent = 'Деньги не списаны. Попробуйте ещё раз — заполните форму заново — или позвоните нам: +7\u00a0(900)\u00a064\u2011555\u201166.'; }
+    if (payRet === 'ok'){ tyH.textContent = 'Оплата прошла!'; tyP.textContent = 'Спасибо! Место за вами. Если появятся вопросы — звоните:\n+7\u00a0(900)\u00a064\u2011555\u201166.'; }
+    else { tydlg.classList.add('fail'); tyH.textContent = 'Оплата не прошла'; tyP.textContent = 'Деньги не списаны. Попробуйте ещё раз — заполните форму заново — или позвоните нам:\n+7\u00a0(900)\u00a064\u2011555\u201166.'; }
     if (tydlg.showModal) tydlg.showModal();
   }
   document.getElementById('ty-ok').addEventListener('click', function(){ tydlg.close(); });
