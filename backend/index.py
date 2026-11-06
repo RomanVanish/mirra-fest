@@ -379,9 +379,9 @@ def disk_read(deadline):
 
 
 def disk_write(rows, deadline):
-    """Записать таблицу на Диск целиком (поверх прежней). Папки нет — создаём её и пробуем ещё раз."""
+    """Записать таблицу на Диск целиком (поверх прежней). Папки нет — создаём её; при сетевом сбое — вторая попытка."""
     data = ('﻿' + _csv(rows)).encode('utf-8')
-    try:
+    def upload():
         try:
             href = _disk_link('upload', deadline, '&overwrite=true')
         except urllib.error.HTTPError as e:
@@ -395,6 +395,18 @@ def disk_write(rows, deadline):
             href = _disk_link('upload', deadline, '&overwrite=true')
         with urllib.request.urlopen(urllib.request.Request(href, data=data, method='PUT'), timeout=_left(deadline)):
             pass
+    try:
+        for attempt in (1, 2):
+            try:
+                upload()
+                break
+            except urllib.error.HTTPError:
+                raise
+            except (urllib.error.URLError, TimeoutError, OSError):
+                # сетевой сбой (облако на миг не нашло сервер загрузки, Диск не ответил) — новая ссылка, ещё раз;
+                # загрузка с перезаписью, поэтому повтор ничего не испортит
+                if attempt == 2 or deadline - time.monotonic() < 2:
+                    raise
     except Exception as e:
         raise RuntimeError(_hide('Диск, запись таблицы: %r' % e, DISK_TOKEN))
 
