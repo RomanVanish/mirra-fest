@@ -568,15 +568,20 @@ def tb_notification(raw, started):
         text = paid_text(row, order, amount, '↩ Возврат: %s' % rub(amount))
         if row:
             set_col(row, 'Оплата', 'возврат %s · %s' % (stamp, rub(amount)))
+    written = False
     if row:
         try:
             disk_write(rows, deadline)
+            written = True
         except Exception as e:
             print(json.dumps({'event': 'table_failed', 'error': str(e)}, ensure_ascii=False))
             body, tail = text.rsplit('\n\n', 1)   # пометку — перед строкой со временем
             text = '%s\n⚠ В таблицу не записалось — отметьте вручную. Причина: %s\n\n%s' % (body, e, tail)
-    notify(text)
-    return reply_text(200, 'OK')
+    if notify(text) or written:
+        return reply_text(200, 'OK')
+    # ни таблица, ни чат, ни почта — отвечаем не OK: банк повторит уведомление через час (24 часа, потом раз в сутки)
+    print(json.dumps({'event': 'tb_notification_lost', 'order': order, 'status': status}, ensure_ascii=False))
+    return reply_text(503, 'retry')
 
 
 def apply_with_payment(d, chs, origin, started, more=False):
@@ -709,11 +714,11 @@ def deliver(d, chs):
 
 
 def notify(text):
-    """Служебное сообщение сотрудникам (оплата, сбой): в чат ВК, а если не вышло — на почту."""
+    """Служебное сообщение сотрудникам (оплата, сбой): в чат ВК, а если не вышло — на почту. True — куда-то дошло."""
     if VK_TOKEN and VK_PEER_ID:
         try:
             vk_api('messages.send', peer_id=VK_PEER_ID, random_id=random.randint(1, 2 ** 31 - 1), dont_parse_links=1, message=text)
-            return
+            return True
         except Exception as e:
             print(json.dumps({'event': 'notice_failed', 'channel': 'ВКонтакте', 'error': str(e)}, ensure_ascii=False))
     if MAIL_USER and MAIL_PASSWORD and MAIL_TO:
@@ -726,8 +731,10 @@ def notify(text):
             with smtplib.SMTP_SSL(MAIL_HOST, MAIL_PORT, timeout=TIMEOUT, context=ssl.create_default_context()) as s:
                 s.login(MAIL_USER, MAIL_PASSWORD)
                 s.send_message(msg)
+            return True
         except Exception as e:
             print(json.dumps({'event': 'notice_failed', 'channel': 'Почта', 'error': _hide(repr(e), MAIL_PASSWORD)}, ensure_ascii=False))
+    return False
 
 
 def reply_text(code, text):
