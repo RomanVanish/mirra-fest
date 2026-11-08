@@ -597,6 +597,7 @@ form.req{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--su
 .paysum[hidden]{display:none}
 /* «Количество мест ограничено» / «Осталось N мест» / «Билеты закончились» — текст меняет скрипт по ответу функции */
 p.seats,.formwrap .side p.seats{display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:600;font-size:.95rem;color:var(--accent)}
+p.seats[hidden]{display:none}
 p.seats::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px rgba(181,74,58,.16)}
 .paysum b{font:500 1.35rem var(--font-display);color:var(--ink);margin-left:4px}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:.86rem;color:var(--soft);line-height:1.45}
@@ -1245,6 +1246,7 @@ footer a{text-decoration:none}
       <div class="pb-sel pb-price"><small>Билет</small><b>2 888 ₽</b></div>
       <button class="btn btn-warm" type="button" id="pick-go">Забронировать место</button>
     </div>
+    <p class="seats" data-seats hidden></p>
     <p class="pick-note">Хотите на один <span class="nw">мастер-класс</span>? Выберите часть, в которой он идёт, а в заявке отметьте, какой именно, — билет тот же. Время частей и <span class="nw">мастер-классов</span> — <a href="#program" data-back>в программе</a>.</p>
 
   </div>
@@ -2460,13 +2462,13 @@ footer a{text-decoration:none}
   function syncSum(){ sumEl.querySelector('b').textContent = (PRICE * form.count.value).toLocaleString('ru-RU') + ' ₽'; }
   if (payMode){ sumEl.hidden = false; sendBtn.textContent = 'Перейти к оплате'; form.count.addEventListener('change', syncSum); syncSum(); }
   /* Места: функция считает лимит по таблице оплат. Точное число — только когда осталось мало (порог в функции),
-     иначе остаётся «Количество мест ограничено» (только у формы: под выбором билета пользователь убрал 08.11). Мест нет — форма не отправляется */
+     иначе у формы остаётся «Количество мест ограничено», а под выбором билета нет ничего (строка скрыта до точного числа — 08.11). Мест нет — форма не отправляется */
   var soldOut = false, SOLD_TEXT = 'Билеты закончились. Позвоните: +7\u00a0(900)\u00a064\u2011555\u201166 — если освободится место, сообщим.';
   function plMest(n){ var a = n % 10, b = n % 100; return n + (a === 1 && b !== 11 ? ' место' : a >= 2 && a <= 4 && (b < 12 || b > 14) ? ' места' : ' мест'); }
   function showSeats(j){
     if (!j || !j.limit) return;
     var t = j.soldout ? 'Билеты закончились' : j.left != null ? 'Осталось ' + plMest(j.left) : '';
-    if (t) [].forEach.call(document.querySelectorAll('[data-seats]'), function(el){ el.textContent = t; });
+    if (t) [].forEach.call(document.querySelectorAll('[data-seats]'), function(el){ el.textContent = t; el.hidden = false; });
     if (j.left != null){
       [].forEach.call(form.count.options, function(o){ o.disabled = +o.value > Math.max(j.left, 1); });
       if (+form.count.value > j.left && j.left > 0){ form.count.value = String(j.left); if (payMode) syncSum(); }
