@@ -66,7 +66,7 @@ a{color:inherit}
 .nav{display:flex;gap:22px;margin-left:auto;font-size:.92rem}
 .nav a{text-decoration:none;color:var(--soft)}
 .nav a:hover{color:var(--ink)}
-.top .btn{padding:.7em 1.1em;font-size:.9rem}
+.top .btn{padding:.7em 1.1em;font-size:.9rem;white-space:nowrap;flex:none}   /* «Купить билет» — всегда в одну строку */
 /* мобильное меню: круглая кнопка, по контуру бежит алый огонёк; панель раскрывается кругом от кнопки, как рассвет,
    справа от пунктов и у кнопки порхают бабочки, пункты всплывают из дымки по очереди */
 .burger{display:none;position:relative;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.75);box-shadow:0 6px 16px -8px rgba(196,18,48,.5)}
@@ -788,8 +788,8 @@ p.seats::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;back
 
 /* узкие телефоны (360 px): шапка в одну строку без выхода за край */
 @media (max-width:400px){
-  .top .wrap{gap:8px}
-  .brand{font-size:1rem}
+  body .top .wrap{gap:6px}   /* body — чтобы перебить gap:12px из правила для ≤960 px ниже */
+  .brand{font-size:1rem;white-space:normal;min-width:0;line-height:1.15}   /* крупный шрифт в телефоне: название в две строки «От Страха / к Любви», кнопка остаётся в одну */
   .top .btn{padding:.65em .85em;font-size:.86rem}
 }
 @media (max-width:345px){
@@ -900,7 +900,7 @@ footer a{text-decoration:none}
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#start">От Страха <i>к</i> Любви</a>
+    <a class="brand" href="#start">От Страха <i>к</i> Любви</a>
     <nav class="nav" aria-label="Разделы">
       <a href="#idea">Идея</a>
       <a href="#people">Ведущие</a>
@@ -1288,7 +1288,7 @@ footer a{text-decoration:none}
       <div class="side">
         <div class="eyebrow">Билеты</div>
         <h3>Купите билет на фестиваль</h3>
-        <p>Оплата картой или по СБП на странице Т‑Банка, чек придёт по СМС. Есть вопросы — звоните: <a href="tel:+79006455566">+7 (900) 64‑555‑66</a>.</p>
+        <p>Оплата картой или по СБП на странице Т‑Банка. Есть вопросы — звоните: <a href="tel:+79006455566">+7 (900) 64‑555‑66</a>.</p>
         <p class="seats" data-seats>Количество мест ограничено</p>
       </div>
       <form class="req" id="reqform" novalidate>
