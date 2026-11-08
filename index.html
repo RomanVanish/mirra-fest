@@ -1323,7 +1323,7 @@ footer a{text-decoration:none}
         <div class="hp" aria-hidden="true"><label>Не заполняйте это поле <input name="website" tabindex="-1" autocomplete="off"></label></div>
         <div class="f full paysum" id="r-sum" hidden>К оплате: <b>2 888 ₽</b></div>
         <div class="f full"><button class="btn btn-warm" type="submit" style="justify-self:start">Отправить заявку</button></div>
-        <div class="msg" id="r-out" hidden></div>
+        <div class="msg" id="r-out" role="status" aria-live="polite" hidden></div>
       </form>
     </div>
   </div>
@@ -2487,6 +2487,13 @@ footer a{text-decoration:none}
   }
   document.getElementById('ty-ok').addEventListener('click', function(){ tydlg.close(); });
   tydlg.addEventListener('click', function(e){ if (e.target === tydlg) tydlg.close(); });   /* щелчок мимо окна */
+  /* сообщение формы — под кнопкой, на телефоне его легко не заметить (ошибка, «уже оплачено — купить ещё?»):
+     при каждом новом тексте докручиваем страницу, если сообщение не видно целиком */
+  new MutationObserver(function(){
+    if (out.hidden) return;
+    var r = out.getBoundingClientRect();
+    if (r.bottom > innerHeight || r.top < 0) out.scrollIntoView({block:'nearest'});
+  }).observe(out, {childList:true, characterData:true, subtree:true});
   form.addEventListener('submit', function(e){
     e.preventDefault();
     var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,''), email = form.email.value.trim();
