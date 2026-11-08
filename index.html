@@ -663,7 +663,15 @@ p.seats::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;back
 .tydlg p{color:var(--soft);line-height:1.55;white-space:pre-line}   /* \n в тексте — перенос: номер телефона отдельной строкой */
 .tydlg .ty-date{margin-top:12px;font:italic 400 1.05rem var(--font-display);color:var(--accent)}
 .tydlg .btn{margin-top:22px;min-width:160px}
-.tydlg.fail .ty-ic,.tydlg.fail .ty-date{display:none}
+.tydlg.fail .ty-ic,.tydlg.fail .ty-date,.tydlg.fail .ty-soc{display:none}
+/* каналы фестиваля в окне «Спасибо» (после заявки и после оплаты; при неудачной оплате скрыты) */
+.ty-soc{margin-top:18px;padding-top:16px;border-top:1px solid rgba(181,74,58,.18)}
+.tydlg .ty-soc p{font-size:.92rem;line-height:1.5}
+.ty-soc-b{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:12px}
+.ty-soc-b a{display:inline-flex;align-items:center;gap:6px;padding:9px 11px;border-radius:999px;border:1px solid rgba(181,74,58,.35);color:var(--accent);font-size:.92rem;font-weight:500;text-decoration:none;transition:background-color .3s,color .3s,border-color .3s}
+.ty-soc-b a:hover,.ty-soc-b a:focus-visible{background:var(--accent);border-color:var(--accent);color:#fff}
+.ty-soc-b svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ty-soc-b svg.solid{fill:currentColor;stroke:none}
 @media (prefers-reduced-motion:reduce){.tydlg[open]{animation:none}}
 .vdlg-x{position:absolute;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:1.5rem;line-height:1;cursor:pointer;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
 @media (prefers-reduced-motion:reduce){.vbtn-txt{animation:none}}
@@ -1487,7 +1495,7 @@ footer a{text-decoration:none}
   </div>
 </section>
 </main>
-<dialog class="tydlg" id="tydlg" aria-labelledby="ty-h"><div class="ty-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div><h3 id="ty-h">Спасибо!</h3><p id="ty-p">Заявка принята. Мы перезвоним или напишем в ближайшее время, расскажем об оплате и ответим на вопросы.</p><p class="ty-date">Приходите 21 ноября в «МирРа»</p><button class="btn btn-warm" type="button" id="ty-ok">Хорошо</button></dialog>
+<dialog class="tydlg" id="tydlg" aria-labelledby="ty-h"><div class="ty-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div><h3 id="ty-h">Спасибо!</h3><p id="ty-p">Заявка принята. Мы перезвоним или напишем в ближайшее время, расскажем об оплате и ответим на вопросы.</p><p class="ty-date">Приходите 21 ноября в «МирРа»</p><div class="ty-soc"><p>Подпишитесь на канал фестиваля — там напомним о дне фестиваля, расскажем, как добраться, и сообщим, если что-то изменится в программе.</p><div class="ty-soc-b"><a href="https://t.me/mirrafest" target="_blank" rel="noopener" aria-label="Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3.6 2.9 10.8c-.9.4-.9 1.5 0 1.8l4.6 1.5 1.8 5.6c.2.8 1.2 1 1.8.4l2.6-2.4 4.8 3.5c.7.5 1.6.1 1.8-.7l3.1-15.6c.2-1-.8-1.7-1.7-1.3Z"/><path d="m7.5 14.1 10.6-7.3-7.9 8.6"/></svg><span>Telegram</span></a><a href="https://max.ru/channel_mirrafest" target="_blank" rel="noopener" aria-label="MAX"><svg class="solid" viewBox="130 110 770 780" aria-hidden="true"><path fill-rule="evenodd" d="M508.211 878.328c-75.007 0-109.864-10.95-170.453-54.75-38.325 49.275-159.686 87.783-164.979 21.9 0-49.456-10.95-91.248-23.36-136.873-14.782-56.21-31.572-118.807-31.572-209.508 0-216.626 177.754-379.597 388.357-379.597 210.785 0 375.947 171.001 375.947 381.604.707 207.346-166.595 376.118-373.94 377.224m3.103-571.585c-102.564-5.292-182.499 65.7-200.201 177.024-14.6 92.162 11.315 204.398 33.397 210.238 10.585 2.555 37.23-18.98 53.837-35.587a189.8 189.8 0 0 0 92.71 33.032c106.273 5.112 197.08-75.794 204.215-181.95 4.154-106.382-77.67-196.486-183.958-202.574Z"/></svg><span>MAX</span></a><a href="https://vk.ru/fest.mirra" target="_blank" rel="noopener" aria-label="ВКонтакте"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5h3.2c.6 3.4 2.2 5.4 3.6 5.8V7.5h3v3.2c1.4-.2 2.8-1.7 3.3-3.2h3c-.4 2.1-2 3.8-3.2 4.5 1.2.6 3 2.1 3.6 4.5h-3.3c-.5-1.6-1.9-2.9-3.4-3v3H13c-5.5 0-8.9-3.8-9.5-9Z"/></svg><span>ВК</span></a></div></div><button class="btn btn-warm" type="button" id="ty-ok" autofocus>Хорошо</button></dialog>
 <dialog class="vdlg" id="vdlg" aria-label="Видео: как пройти"><button class="vdlg-x" type="button" aria-label="Закрыть">×</button><video controls playsinline preload="none" poster="img/place/route-poster.webp" src="img/place/route.mp4"></video></dialog>
 <button class="upbtn" id="upbtn" type="button" aria-label="К предыдущему разделу" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span class="u-t">Вернуться назад</span></button>
 
