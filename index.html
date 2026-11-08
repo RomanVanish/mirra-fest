@@ -2448,7 +2448,9 @@ footer a{text-decoration:none}
     if (kod) localStorage.setItem('fest-kod', JSON.stringify({k:kod, t:Date.now()}));
     else { var ks = JSON.parse(localStorage.getItem('fest-kod') || 'null'); if (ks && Date.now() - ks.t < 60*864e5) kod = ks.k; }
   } catch(e){}
-  function kodFill(){ if (kod && !form.ref.value) form.ref.value = kod; }
+  /* в ссылке слово латиницей, в поле — по-русски; функция понимает оба написания. Нового слова тут нет — впишется латиницей */
+  var KOD_RU = {rodnik:'Родник', raduga:'Радуга', teplo:'Тепло', zerkalo:'Зеркало', opora:'Опора', lotos:'Лотос'};
+  function kodFill(){ if (kod && !form.ref.value) form.ref.value = KOD_RU[kod.toLowerCase()] || kod; }
   kodFill();
   /* Оплата — на странице Т-Банка (картой, СБП, T-Pay, SberPay). PAY_LIVE = true — форма у всех гостей ведёт к оплате
      (рабочий терминал, с 08.11.2026). false — прежняя заявка без оплаты, оплата только по адресу с ?paytest=1 */
