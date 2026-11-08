@@ -1245,7 +1245,6 @@ footer a{text-decoration:none}
       <div class="pb-sel pb-price"><small>Билет</small><b>2 888 ₽</b></div>
       <button class="btn btn-warm" type="button" id="pick-go">Забронировать место</button>
     </div>
-    <p class="seats" data-seats>Количество мест ограничено</p>
     <p class="pick-note">Хотите на один <span class="nw">мастер-класс</span>? Выберите часть, в которой он идёт, а в заявке отметьте, какой именно, — билет тот же. Время частей и <span class="nw">мастер-классов</span> — <a href="#program" data-back>в программе</a>.</p>
 
   </div>
@@ -2461,7 +2460,7 @@ footer a{text-decoration:none}
   function syncSum(){ sumEl.querySelector('b').textContent = (PRICE * form.count.value).toLocaleString('ru-RU') + ' ₽'; }
   if (payMode){ sumEl.hidden = false; sendBtn.textContent = 'Перейти к оплате'; form.count.addEventListener('change', syncSum); syncSum(); }
   /* Места: функция считает лимит по таблице оплат. Точное число — только когда осталось мало (порог в функции),
-     иначе остаётся «Количество мест ограничено». Мест нет — форма не отправляется */
+     иначе остаётся «Количество мест ограничено» (только у формы: под выбором билета пользователь убрал 08.11). Мест нет — форма не отправляется */
   var soldOut = false, SOLD_TEXT = 'Билеты закончились. Позвоните: +7\u00a0(900)\u00a064\u2011555\u201166 — если освободится место, сообщим.';
   function plMest(n){ var a = n % 10, b = n % 100; return n + (a === 1 && b !== 11 ? ' место' : a >= 2 && a <= 4 && (b < 12 || b > 14) ? ' места' : ' мест'); }
   function showSeats(j){
@@ -2488,14 +2487,16 @@ footer a{text-decoration:none}
   document.getElementById('ty-ok').addEventListener('click', function(){ tydlg.close(); });
   tydlg.addEventListener('click', function(e){ if (e.target === tydlg) tydlg.close(); });   /* щелчок мимо окна */
   /* сообщение формы — под кнопкой, на телефоне его легко не заметить (ошибка, «уже оплачено — купить ещё?»):
-     при каждом новом тексте докручиваем страницу, если сообщение не видно целиком */
+     при каждом новом тексте докручиваем страницу, если сообщение не видно целиком. Только после нажатия кнопки:
+     «Билеты закончились» при открытии страницы не должно утаскивать гостя к форме */
+  var acted = false;
   new MutationObserver(function(){
-    if (out.hidden) return;
+    if (out.hidden || !acted) return;
     var r = out.getBoundingClientRect();
     if (r.bottom > innerHeight || r.top < 0) out.scrollIntoView({block:'nearest'});
   }).observe(out, {childList:true, characterData:true, subtree:true});
   form.addEventListener('submit', function(e){
-    e.preventDefault();
+    e.preventDefault(); acted = true;
     var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,''), email = form.email.value.trim();
     /* почта — для кассового чека (54-ФЗ): банк присылает его на неё после оплаты */
     var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? 'Проверьте почту — на неё придёт чек об оплате.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : !form.norefund.checked ? 'Отметьте, пожалуйста, что знаете: деньги за оплаченный билет не возвращаются, — и что принимаете условия оферты.' : '';
