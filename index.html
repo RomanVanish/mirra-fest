@@ -909,7 +909,7 @@ footer a{text-decoration:none}
       <a href="#tickets">Участие</a>
       <a href="#place">Как добраться</a>
     </nav>
-    <a class="btn btn-warm" href="#request">Записаться</a>   <!-- сразу на форму; «Забронировать место» на странице ведут в «Участие» -->
+    <a class="btn btn-warm" href="#request">Купить билет</a>   <!-- сразу на форму; «Забронировать место» на странице ведут в «Участие» -->
 
     <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="mnav" aria-label="Открыть меню"><i></i><i></i><i></i></button>
   </div>
@@ -1286,9 +1286,9 @@ footer a{text-decoration:none}
 
     <div class="formwrap" id="request">
       <div class="side">
-        <div class="eyebrow">Заявка</div>
-        <h3>Оставьте контакты — мы свяжемся и забронируем место</h3>
-        <p>Перезвоним или напишем, расскажем об оплате и ответим на вопросы.</p>
+        <div class="eyebrow">Билеты</div>
+        <h3>Купите билет на фестиваль</h3>
+        <p>Оплата картой или по СБП на странице Т‑Банка, чек придёт по СМС. Есть вопросы — звоните: <a href="tel:+79006455566">+7 (900) 64‑555‑66</a>.</p>
         <p class="seats" data-seats>Количество мест ограничено</p>
       </div>
       <form class="req" id="reqform" novalidate>
@@ -2421,7 +2421,7 @@ footer a{text-decoration:none}
       var lean = score[1] > score[2] ? 1 : score[2] > score[1] ? 2 : 1, k;
       if (time === 0) k = 0; else if (time === 3) k = lean === 2 ? 'm2' : 'm1'; else k = (score[1]===score[2] && score[0]>0) ? 1 : lean;
       var r = RES[k];
-      card.innerHTML = '<div class="qbar"><i style="width:100%"></i></div><div class="qres"><div class="eyebrow">Подсказка</div><h3>'+r.t+'</h3><p>'+r.p+'</p><div class="acts"><button class="btn btn-warm" type="button" id="q-go">Оставить заявку</button><button class="linkbtn" type="button" id="q-re">Пройти ещё раз</button></div></div>';
+      card.innerHTML = '<div class="qbar"><i style="width:100%"></i></div><div class="qres"><div class="eyebrow">Подсказка</div><h3>'+r.t+'</h3><p>'+r.p+'</p><div class="acts"><button class="btn btn-warm" type="button" id="q-go">Купить билет</button><button class="linkbtn" type="button" id="q-re">Пройти ещё раз</button></div></div>';
       document.getElementById('q-go').addEventListener('click', function(){ choose(r.plan, r.mk); });
       document.getElementById('q-re').addEventListener('click', function(){ step = 0; score = {0:0,1:0,2:0}; time = null; renderQ(); });
     }
