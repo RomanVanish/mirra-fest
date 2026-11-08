@@ -278,9 +278,9 @@ def _disk_fetch(href, timeout):
 
 TABLE_HEAD = ['Дата и время', 'Имя', 'Телефон', 'Telegram / Max', 'Когда придёт', 'Сколько человек',
               'Особенно хочет на', 'Рассказывать о мероприятиях', 'Куда пришла заявка', 'Кто пригласил',
-              'Номер заказа', 'Оплата']
+              'Номер заказа', 'Оплата', 'Почта']
 # Новые столбцы добавляются в конец, чтобы не сдвигать прежние строки: «Кто пригласил» — 05.11,
-# «Номер заказа» и «Оплата» — 06.11. Заголовок старой таблицы (начало нового) заменяется новым.
+# «Номер заказа» и «Оплата» — 06.11, «Почта» (для чека) — 08.11. Заголовок старой таблицы (начало нового) заменяется новым.
 COL = {name: i for i, name in enumerate(TABLE_HEAD)}
 
 
@@ -317,7 +317,7 @@ def _now():
 
 def table_row(d, where):
     return [_now().strftime('%d.%m.%Y %H:%M'), d['name'], _phone(d['phone']), d['messenger'], d['plan'], d['count'], d['mk'],
-            'да' if d['news'] else 'нет', where, REF_CODES.get(_kod(d['ref']), d['ref']), d.get('order', ''), d.get('paid', '')]
+            'да' if d['news'] else 'нет', where, REF_CODES.get(_kod(d['ref']), d['ref']), d.get('order', ''), d.get('paid', ''), d.get('email', '')]
 
 
 def col(row, name):
@@ -517,7 +517,8 @@ def tb_init(d, deadline):
                   DATA={'OperationInitiatorType': '0'})
     if TBANK_TAXATION:
         # онлайн-касса подключена — чек обязателен; его содержимое подтверждает бухгалтер
-        params['Receipt'] = {'Phone': _phone(d['phone']), 'Taxation': TBANK_TAXATION,
+        # чек банк присылает на почту (поле обязательно в форме — так советует поддержка Т-Банка, 08.11); телефон — тоже в чек
+        params['Receipt'] = {'Email': d['email'], 'Phone': _phone(d['phone']), 'Taxation': TBANK_TAXATION,
                              'Items': [{'Name': 'Билет на фестиваль От Страха к Любви, 21.11.2026', 'Price': PRICE * 100,
                                         'Quantity': n, 'Amount': PRICE * 100 * n, 'Tax': TBANK_TAX,
                                         'PaymentMethod': TBANK_PAYMENT_METHOD, 'PaymentObject': 'service'}]}
@@ -819,7 +820,7 @@ def clean(v, n):
 
 
 def _rows(d):
-    rows = [('Имя', d['name']), ('Телефон', d['phone']), ('Telegram / Max', d['messenger']),
+    rows = [('Имя', d['name']), ('Телефон', d['phone']), ('Почта', d.get('email', '')), ('Telegram / Max', d['messenger']),
             ('Когда придёт', d['plan']), ('Сколько человек', d['count']), ('Особенно хочет на', d['mk']),
             ('Рассказывать о мероприятиях центра', 'да' if d['news'] else 'нет'), ('Кто пригласил', ref_text(d['ref'])),
             ('К оплате', d.get('sum', '')), ('Заказ', d.get('order', ''))]
@@ -901,7 +902,7 @@ def handler(event, context):
     d = {'name': clean(raw.get('name'), 80), 'phone': clean(raw.get('phone'), 20),
          'messenger': clean(raw.get('messenger'), 64), 'plan': clean(raw.get('plan'), 40),
          'count': clean(raw.get('count'), 20), 'mk': clean(raw.get('mk'), 120),
-         'ref': clean(raw.get('ref'), 40), 'news': raw.get('news') is True}
+         'ref': clean(raw.get('ref'), 40), 'news': raw.get('news') is True, 'email': clean(raw.get('email'), 100)}
     digits = re.sub(r'\D', '', d['phone'])
     if not d['name'] or not 10 <= len(digits) <= 15 or raw.get('consent') is not True:
         return reply(400, {'ok': False, 'error': 'проверьте имя, телефон и согласие'}, allowed)
@@ -912,6 +913,8 @@ def handler(event, context):
     if raw.get('pay') is True and TBANK_TERMINAL and TBANK_PASSWORD:
         if d['count'] not in ('1', '2', '3', '4', '5'):
             return reply(400, {'ok': False, 'error': 'число гостей — от 1 до 5'}, allowed)
+        if not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', d['email']):
+            return reply(400, {'ok': False, 'error': 'проверьте почту — на неё придёт чек'}, allowed)
         return apply_with_payment(d, chs, allowed, started, more=raw.get('more') is True)
     where = deliver(d, chs)
 

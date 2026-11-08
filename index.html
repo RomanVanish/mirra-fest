@@ -1294,6 +1294,7 @@ footer a{text-decoration:none}
       <form class="req" id="reqform" novalidate>
         <div class="f"><label for="r-name">Имя</label><input id="r-name" name="name" autocomplete="given-name" required></div>
         <div class="f"><label for="r-phone">Телефон</label><input id="r-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+7" required></div>
+        <div class="f full"><label for="r-email">Почта для чека</label><input id="r-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="name@mail.ru" maxlength="100" required></div>
         <div class="f"><label for="r-plan">Когда придёте</label>
           <select id="r-plan" name="plan">
             <option>Весь день</option><option>Первая часть</option><option>Вторая часть</option><option>Пока не решил(а)</option>
@@ -2488,12 +2489,13 @@ footer a{text-decoration:none}
   tydlg.addEventListener('click', function(e){ if (e.target === tydlg) tydlg.close(); });   /* щелчок мимо окна */
   form.addEventListener('submit', function(e){
     e.preventDefault();
-    var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,'');
-    var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : !form.norefund.checked ? 'Отметьте, пожалуйста, что знаете: деньги за оплаченный билет не возвращаются, — и что принимаете условия оферты.' : '';
+    var name = form.name.value.trim(), phone = form.phone.value.replace(/[^\d+]/g,''), email = form.email.value.trim();
+    /* почта — для кассового чека (54-ФЗ): банк присылает его на неё после оплаты */
+    var err = !name ? 'Впишите, пожалуйста, имя.' : phone.replace(/\D/g,'').length < 10 ? 'Проверьте телефон: нужно 10–11 цифр.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? 'Проверьте почту — на неё придёт чек об оплате.' : !form.consent.checked ? 'Отметьте согласие на обработку данных — без него мы не сможем связаться с вами.' : !form.norefund.checked ? 'Отметьте, пожалуйста, что знаете: деньги за оплаченный билет не возвращаются, — и что принимаете условия оферты.' : '';
     out.hidden = false;
     if (soldOut){ out.textContent = SOLD_TEXT; return; }
     if (err){ out.textContent = err; return; }
-    var data = {name:name, phone:phone, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
+    var data = {name:name, phone:phone, email:email, messenger:form.messenger.value.trim(), plan:form.plan.value, mk: form.mk.value, count:form.count.value,
       ref:form.ref.value.trim(), pay:payMode, consent:true, news:form.news.checked, website:form.website.value, ms:Date.now() - shownAt};
     if (!FORM_ENDPOINT){
       out.textContent = 'Заявки с сайта сейчас не принимаются. Позвоните в центр: +7\u00a0(900)\u00a064\u2011555\u201166.';
