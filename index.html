@@ -2450,9 +2450,9 @@ footer a{text-decoration:none}
   } catch(e){}
   function kodFill(){ if (kod && !form.ref.value) form.ref.value = kod; }
   kodFill();
-  /* Оплата — на странице Т-Банка (картой, СБП, T-Pay, SberPay). Пока у магазина тестовый терминал, гости видят
-     прежнюю заявку без оплаты, а оплату проверяем по адресу с ?paytest=1. Рабочий терминал подключён — PAY_LIVE = true */
-  var PAY_LIVE = false, PRICE = 2888;
+  /* Оплата — на странице Т-Банка (картой, СБП, T-Pay, SberPay). PAY_LIVE = true — форма у всех гостей ведёт к оплате
+     (рабочий терминал, с 08.11.2026). false — прежняя заявка без оплаты, оплата только по адресу с ?paytest=1 */
+  var PAY_LIVE = true, PRICE = 2888;
   var payMode = PAY_LIVE || /[?&]paytest=1(&|$)/.test(location.search);
   var sumEl = document.getElementById('r-sum');
   function syncSum(){ sumEl.querySelector('b').textContent = (PRICE * form.count.value).toLocaleString('ru-RU') + ' ₽'; }
