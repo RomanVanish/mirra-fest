@@ -80,6 +80,8 @@ TBANK_TAXATION, TBANK_TAX = env('TBANK_TAXATION'), env('TBANK_TAX', 'none')
 TBANK_PAYMENT_METHOD = env('TBANK_PAYMENT_METHOD', 'full_payment')
 TBANK_FFD = env('TBANK_FFD', '1.05')
 PRICE = int(env('TICKET_PRICE', '2888'))
+# Фестиваль завершился 21 ноября 2026 в 18:45 по Москве.
+SALES_CLOSED_AT = datetime.datetime(2026, 11, 21, 15, 45, tzinfo=datetime.timezone.utc)
 # Лимит мест: переменная не задана — без лимита; 0 — продажи остановлены
 TICKETS_TOTAL = int(env('TICKETS_TOTAL')) if env('TICKETS_TOTAL') else None
 TICKETS_SOLD_ELSEWHERE = int(env('TICKETS_SOLD_ELSEWHERE', '0') or 0)
@@ -871,6 +873,13 @@ def handler(event, context):
         return reply(200, disk_check())
     if raw.get('check') == 'tbank':
         return reply(200, tb_check())
+
+    # Старые страницы узнают о закрытии через тот же ответ, что и при отсутствии мест.
+    # Отклоняем новые заявки до чтения таблицы и обращения в банк.
+    if allowed and (TICKETS_TOTAL == 0 or datetime.datetime.now(datetime.timezone.utc) >= SALES_CLOSED_AT):
+        if raw.get('seats') is True:
+            return reply(200, {'limit': True, 'soldout': True, 'left': 0}, allowed)
+        return reply(410, {'ok': False, 'error': 'sales_closed'}, allowed)
 
     chs = channels()
     if not chs:
